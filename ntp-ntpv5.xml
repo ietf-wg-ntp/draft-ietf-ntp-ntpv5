@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
+<!ENTITY RFC5905 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5905.xml">
+<!ENTITY RFC7384 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7384.xml">
+<!ENTITY RFC8174 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.8174.xml">
+<!ENTITY RFC8573 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.8573.xml">
+]>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<?rfc strict="yes"?>
+<?rfc toc="yes"?>
+<?rfc tocdepth="3"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes"?>
+<?rfc compact="yes"?>
+<?rfc subcompact="no"?>
+
+<rfc category="std" docName="draft-mlichvar-ntp-ntpv5-00" ipr="trust200902">
+  <front>
+    <title>Network Time Protocol Version 5</title>
+
+    <author fullname="Miroslav Lichvar" initials="M." surname="Lichvar">
+      <organization>Red Hat</organization>
+      <address>
+        <postal>
+          <street>Purkynova 115</street>
+          <city>Brno</city>
+          <region></region>
+          <code>612 00</code>
+          <country>Czech Republic</country>
+        </postal>
+        <email>mlichvar@redhat.com</email>
+      </address>
+    </author>
+
+    <date year="2020" month="Nov" day="23"/>
+
+    <area>General</area>
+
+    <workgroup>Internet Engineering Task Force</workgroup>
+
+    <keyword>NTP</keyword>
+
+    <abstract>
+      <t>This document describes the version 5 of the Network Time Protocol (NTP).</t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section title="Introduction">
+      <t>Network Time Protocol (NTP) is a protocol which enables computers to
+        synchronize their clocks over network. Time is distributed from primary
+        time servers to clients, which can be servers for other clients, and so
+        on. Clients can use multiple servers simultaneously.</t>
+
+      <t>NTPv5 is similar to <xref target="RFC5905">NTPv4</xref>. The main
+        differences are:
+
+        <list style="numbers">
+          <t>The protocol specification (this document) doesn't describe any
+            algorithms.</t>
+
+          <t>NTPv5 drops support for the symmetric active, symmetric passive,
+            broadcast, control, and private modes. Only the client and server
+            modes are supported.</t>
+
+          <t>Timestamps are clearly separated from values used as cookies.</t>
+
+          <t>NTPv5 messages can be extended only with extension fields. The MAC
+            field is wrapped in an extension field.</t>
+
+          <t>Extension fields can be of any length, even indivisible by 4, but are
+            padded to 4 octets. Extension fields specified for NTPv4 are
+            compatible with NTPv5.</t>
+
+          <t>NTPv5 adds support for other timescales than UTC.</t>
+
+          <t>The NTP era number is exchanged in the protocol, which extends the
+            unambiguous interval of the client from 136 years to about 35000
+            years.</t>
+
+          <t>NTPv5 adds new measurement modes to provide clients with more
+            accurate transmit timestamps.</t>
+        </list>
+      </t>
+
+      <section title="Requirements Language">
+        <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+          NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
+          "MAY", and "OPTIONAL" in this document are to be interpreted as
+          described in BCP 14 <xref target="RFC2119"/>
+          <xref target="RFC8174"/> when, and only when, they appear in all
+          capitals, as shown here.</t>
+      </section>
+    </section>
+
+    <section title="Data types">
+      <t>NTPv5 uses few different data types. They are all in the network
+        order. Beside signed and unsigned integers, it has also three
+        fixed-point types.</t>
+
+      <t>A 16-bit fixed-point type contains values in seconds. It has 1
+        signed integer bit (i.e. it is just the sign) and 15 fractional bits.
+        The minimum value is -1.0, the maximum value is 32767/32768, and the
+        resolution is about 30 microseconds.</t>
+
+      <t>A 32-bit fixed-point type contains values in seconds. It has 4
+        unsigned integer bits and 28 fractional bits. The maximum value is 16
+        seconds and the resolution is about 3.7 nanoseconds.</t>
+
+      <t>A 64-bit fixed-point type is used for timestamps. It has 32 signed
+        integer bits and 32 fractional bits. It spans an interval of about 136
+        years and has a resolution of about 0.23 nanoseconds. It can be used in
+        different timescales. In the UTC timescale it is the number of SI
+        seconds since 1 Jan 1972 plus 2272060800, excluding leap seconds.
+        Timestamps in the TAI timescale are the same except they include leap
+        seconds and extra 10 seconds for the original difference between TAI
+        and UTC in 1972, when leap seconds were introduced.</t>
+    </section>
+
+    <section title="Message format">
+      <t>NTPv5 servers and clients exchange messages as UDP datagrams. Clients
+        send requests to servers and servers send them back responses. The
+        format of the UDP payload is shown in Figure <xref format="counter"
+          target="message-format"/>.</t>
+
+      <figure align="center" anchor="message-format"
+          title="Format of NTPv5 messages">
+        <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|LI | VN  |Mode | Scale |Stratum|     Poll      |  Precision    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Flags     |      Era      |        Timescale Offset       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Root Delay                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Root Dispersion                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                        Server Cookie (64)                     +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                        Client Cookie (64)                     +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                      Receive Timestamp (64)                   +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                      Transmit Timestamp (64)                  +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+.                                                               .
+.                    Extension Field 1 (variable)               .
+.                                                               .
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+.                                                               .
+.                                                               .
+.                                                               .
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+.                                                               .
+.                    Extension Field N (variable)               .
+.                                                               .
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        ]]></artwork>
+      </figure>
+
+      <t>Each NTPv5 message has a header containing the following fields:
+
+        <list style="hanging">
+          <t hangText="Leap indicator (LI)"><vspace/>
+            A 2-bit field which can have the following values: 0 (normal), 1
+            (leap second inserted at the end of the month), 2 (leap second
+            deleted at the end of the month), 3 (not synchronized). The values
+            1 and 2 are set at most 14 days in advance before the leap second.
+            In requests it is always 0.</t>
+
+          <t hangText="Version Number (VN)"><vspace/>
+            A 3-bit field containing the value 5.</t>
+
+          <t hangText="Mode"><vspace/>
+            A 3-bit field containing the value 3 (request) or 4 (response).</t>
+
+          <t hangText="Scale"><vspace/>
+            A 4-bit identifier of the timescale. In requests it is the
+            requested timescale. In responses it is the timescale of the
+            receive and transmit timestamps. Defined values are:
+
+            <list style="hanging">
+              <t>0: UTC</t>
+              <t>1: TAI</t>
+              <t>2: UT1</t>
+              <t>3: Leap-smeared UTC</t>
+            </list>
+          </t>
+
+          <t hangText="Stratum"><vspace/>
+            A 4-bit field containing the stratum of host. Primary time
+            servers have a stratum of 1, their clients have a stratum of 2, and
+            so on. The value of 0 indicates an unknown or infinite stratum. In
+            requests it is always 0.</t>
+
+          <t hangText="Poll"><vspace/>
+            An 8-bit signed integer containing the polling interval as a
+            rounded log2 value in seconds. In requests it is the current
+            polling interval. In responses it is the minimum allowed polling
+            interval.</t>
+
+          <t hangText="Precision"><vspace/>
+            An 8-bit signed integer containing the precision of the timestamps
+            included in the message as a rounded log2 value in seconds. In
+            requests, which don't contain any timestamps, it is always 0.</t>
+
+          <t hangText="Flags"><vspace/>
+            An 8-bit integer that can contain the following flags:
+
+            <list style="hanging">
+              <t hangText="0x1: Multi-message response"><vspace/>
+                In requests it is a request for a multi-message response.
+                In responses it indicates the response may, but does not have
+                to, have multiple messages.</t>
+
+              <t hangText="0x2: Follow-up message"><vspace/>
+                In responses it indicates it is not the first message of a
+                multi-message response.</t>
+
+              <t hangText="0x4: Interleaved mode"><vspace/>
+                In requests it is a request for a response in the interleaved
+                mode. In responses it indicates the response is in the
+                interleaved mode.</t>
+            </list>
+          </t>
+
+          <t hangText="Era"><vspace/>
+            An 8-bit unsigned NTP era number corresponding to the receive
+            timestamp. In requests it is always 0.</t>
+
+          <t hangText="Timescale Offset"><vspace/>
+            A 16-bit value specific to the selected timescale, which is
+            referenced to the receive timestamp. In requests it is always
+            0.
+
+            <list style="symbols">
+              <t>In the UTC (0) and TAI (1) timescales it is the TAI-UTC offset
+                as a signed integer, or 0x8000 if unknown.</t>
+              <t>In the UT1 timescale (2) it is the UT1-UTC offset as the
+                16-bit fixed-point number, or 0x8000 (-1.0) if unknown.</t>
+              <t>In the leap-smeared UTC, it is the current offset between the
+                leap smeared time and UTC as the 16-bit fixed-point number, or
+                0x8000 (-1.0) if unknown.</t>
+            </list>
+          </t>
+
+          <t hangText="Root Delay"><vspace/>
+            A field using the 32-bit fixed-point type. In responses it is the
+            server's root delay. In requests it is always 0.</t>
+
+          <t hangText="Root Dispersion"><vspace/>
+            A field using the 32-bit fixed-point type. In responses it is the
+            server's root dispersion. In requests it is always 0.</t>
+
+          <t hangText="Server Cookie"><vspace/>
+            A 32-bit field that enables follow-up messages and interleaved
+            mode. It allows the server to verify that the client is actually
+            receiving the responses. In requests it is either 0 or a copy of
+            the server cookie from the last response. </t>
+
+          <t hangText="Client Cookie"><vspace/>
+            A 32-bit field containing a random number generated by the client.
+            Responses contain a copy of the field from the corresponding
+            request, which allows the client to verify that the responses
+            arevalid responses to the requests.</t>
+
+          <t hangText="Receive Timestamp"><vspace/>
+            A field using the 64-bit fixed-point type. In requests it is always
+            0. In responses it is the time when the request was received. The
+            timestamp corresponds to the end of the reception.</t>
+
+          <t hangText="Transmit Timestamp"><vspace/>
+            A field using the 64-bit fixed-point type. In requests it is always
+            0. In responses it is the time when a response to the client was
+            transmitted. The specific response depends on the selected mode
+            (basic, follow-up, interleaved). The timestamp corresponds to the
+            beginning of the transmission.</t>
+        </list>
+      </t>
+
+      <t>The header has 48 octets, which is the minimum length of a valid NTPv5
+        message. A message can contain zero, one, or multiple extension fields.
+        The maximum length is not specified, but the length is always divisible
+        by 4.</t>
+    </section>
+
+    <section title="Extension fields">
+      <t>The format of NTPv5 extension fields is shown in Figure <xref
+          format="counter" target="extension-field"/>.</t>
+
+      <figure align="center" anchor="extension-field"
+          title="Format of NTPv5 extension fields">
+        <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Type              |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+.                                                               .
+.                           Data (variable)                     .
+.                                                               .
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+        ]]></artwork>
+      </figure>
+
+      <t>Each extension field has a header which contains a 16-bit type and
+        16-bit length. The length is in octets and it includes the header. The
+        minimum length is 4, i.e. an extension field doesn't have to contain
+        any data. If the length is not divisible by 4, the extension field is
+        padded with zeroes to 4 octets.</t>
+
+      <t>Generally, if a request contains an extension field, the client is
+        asking the server to include the same extension field in the response.
+        Exceptions to this rule are allowed.</t>
+
+      <t>Extension fields specified for NTPv4 can be included in NTPv5 messages
+        as specified for NTPv4.</t>
+
+      <t>The rest of this section describes new extension fields specified for
+        NTPv5. Clients are not required to use or support any of these
+        extension fields, but servers are required to support some extension
+        fields.</t>
+
+      <section title="Padding Extension Field">
+        <t>This field is used by servers to pad the response to the same length
+          as the request if the response doesn't contain all requested
+          extension fields, or some have a variable length. It can have any
+          length.</t>
+
+        <t>This field MUST be supported on server.</t>
+      </section>
+
+      <section title="MAC Extension Field">
+        <t>This field authenticates the NTPv5 message with a symmetric key.
+          Implementations SHOULD use the MAC specified in <xref
+          target="RFC8573">RFC8573</xref>. The extension field MUST be the last
+          extension field in the message unless an extension field is
+          specifically allowed to be placed after a MAC or another
+          authenticator field.</t>
+      </section>
+
+      <section title="Reference IDs Extension Field">
+        <t>This fields allows servers to prevent synchronization loops, i.e.
+          synchronizing to one of its direct or indirect clients. It contains a
+          set (bloom filter) of reference IDs.</t>
+
+        <t>TODO</t>
+
+        <t>This field MUST be supported on server.</t>
+      </section>
+
+      <section title="Correction Extension Field">
+        <t>This field allows switches and routers to make corrections in NTPv5
+          messages to allow clients to compensate for queueing and processing
+          delays in the network.</t>
+
+        <t>TODO (reuse draft-mlichvar-ntp-correction-field?)</t>
+      </section>
+
+      <section title="Reference timestamp">
+        <t>This fields contains the time of the last update of the clock. It
+          has a fixed length of 12 octets. In requests, the timestamp is always
+          0.</t>
+
+        <t>(Is this really needed? It was mostly unused in NTPv4.)</t>
+
+        <figure align="center" anchor="reference-timestamp-ext-field"
+            title="Format of Reference Timestamp Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Type              |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+|                      Reference Timestamp (64)                 |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+      </section>
+
+      <section title="Monotonic Timestamp Extension Field">
+        <t>This field contains an extra receive timestamp with a 32-bit step
+          counter from a clock which doesn't have adjusted phase and can be
+          used for a frequency transfer, e.g. to stabilize synchronization in
+          a long chain of servers. It has a constant length of 16 octets. In
+          requests, the counter and timestamp are always 0.</t>
+
+        <figure align="center" anchor="monotonic-timestamp-ext-field"
+            title="Format of Monotonic Timestamp Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Type              |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Step counter                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+|                  Monotonic Receive Timestamp (64)             |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+      </section>
+
+    </section>
+
+    <section title="Client operation">
+      <t>An NTPv5 client can use one or multiple servers. It has a separate
+        association with each server. It makes periodic measurements of its
+        offset and delay to the server. It can filter the measurements and
+        compare measurements from different servers to select and combine the
+        best servers for synchronization. It can adjust its clock in order to
+        minimize its offset and keep the clock synchronized. These algorithms
+        are not specified in this document.</t>
+
+      <t>The polling interval can be adjusted for the network conditions and
+        stability of the clock. When polling a public server on Internet, the
+        client SHOULD use at least a polling interval of 64 seconds, increasing
+        up to at least 1024 seconds.</t>
+
+      <t>The client can make measurements in the following modes: basic,
+        follow-up, interleaved. The follow-up and interleaved modes are two
+        different mechanisms with different trade-offs that allow the server to
+        provide the client with a more accurate transmit timestamp which is
+        available only after the server forms or sends the response.</t>
+
+      <t>Each successful measurement provides the client with an offset, delay
+        and dispersion. When combined with the server's root delay and
+        dispersion, it gives the client an estimate of the maximum error.</t>
+
+      <t>On each poll, the client:
+
+        <list style="numbers">
+          <t>Generates a new random cookie.</t>
+
+          <t>Formats a request with necessary extension fields and the fields
+            in the header all zero except:
+            <list style="symbols">
+              <t>Version is set to 5.</t>
+
+              <t>Mode is set to 3.</t>
+
+              <t>Scale is set to the timescale in which the client wants to
+                operate.</t>
+
+              <t>Poll is set to the rounded log2 value of the current client's
+                polling interval in seconds.</t>
+
+              <t>Flags are set according to the requested mode. The
+                Multi-message response flag enables the server to respond with
+                multiple messages. The interleaved mode flag requests a
+                response in the interleaved mode.</t>
+
+              <t>Server cookie is set only in the follow-up and interleaved
+                modes. If a valid response from the server was received
+                previously, it is set to the Server Cookie from the previous
+                response.</t>
+
+              <t>Client cookie is set to the newly generated cookie.</t>
+            </list>
+          </t>
+
+          <t>Sends the request to the server to the UDP port 123 and captures a
+            transmit timestamp.</t>
+
+          <t>Waits for a valid response from the server and captures a receive
+            timestamp. A valid response has version 5, mode 4, client cookie
+            equal to the cookie from the request, and passes authentication if
+            enabled. The client MUST ignore all invalid responses. In the basic
+            mode and interleaved mode it MUST accept at most one valid
+            response. In the follow-up mode, if the first received response has
+            the "Multi-message response" or "Follow-up message" flag set, the
+            client SHOULD wait for some time (e.g. 10 milliseconds) and process
+            all valid responses that have the same receive timestamp as the
+            first received message. As the local receive timestamp, the client
+            SHOULD use the timestamp of the message which didn't have the
+            "Follow-up message" flag, or the message which it received
+            first.</t>
+
+          <t>Checks whether the response is usable for synchronization of the
+            clock. Such a response has a leap indicator not equal to 3, stratum
+            between 0 and 16, root delay and dispersion both smaller than a
+            specific value, e.g. 16 seconds, and timescale equal to the
+            requested timescale. If the response is in a different timescale,
+            the client can switch to the provided timescale, convert the
+            timestamps if the offset between the timescales is provided or
+            known, or drop the response.</t>
+
+          <t>Saves the server's receive and transmit timestamps. In the
+            follow-up mode, if multiple messages were received, only the latest
+            transmit timestamp is saved. If the client internally counts
+            seconds using a type wider than 32 bits, it SHOULD expand the
+            timestamps with the provided NTP era.</t>
+
+          <t>Calculates the offset, delay, and dispersion:
+            <list style="none">
+              <t>offset = ((T2 + T3) - (T4 + T1)) / 2</t>
+              <t>delay = |(T4 - T1) - (T3 - T2)|</t>
+              <t>dispersion = |T4 - T1| * DR</t>
+            </list>
+
+            where
+
+            <list style="none">
+              <t>T1 is the client's transmit timestamp</t>
+              <t>T2 is the server's receive timestamp</t>
+              <t>T3 is the server's transmit timestamp</t>
+              <t>T4 is the client's receive timestamp</t>
+              <t>DR is the client's estimated dispersion rate</t>
+            </list>
+          </t>
+        </list>
+      </t>
+    </section>
+
+    <section title="Server operation">
+      <t>A server receives requests on the UDP port 123. The server
+        MUST support measurements in the basic mode. It MAY support the
+        follow-up and/or interleaved modes.</t>
+
+      <t>For the basic and follow-up modes the server doesn't need to keep any
+        client-specific state. For the interleaved mode it needs to save
+        transmit timestamps and be able to identify them by a cookie.</t>
+
+      <t>The server maintains its leap indicator, stratum, root delay, and root
+        dispersion:
+
+        <list style="symbols">
+          <t>Leap indicator MUST be 3 if the clock is not synchronized or its
+            maximum error cannot be estimated with the root delay and
+            dispersion. Otherwise, it MUST be 0, 1, 2, depending on whether a
+            leap second will be inserted or deleted in the next 14 days.</t>
+          <t>Stratum SHOULD be one larger than stratum of the best
+            server it uses for its own synchronization.</t>
+          <t>Root delay SHOULD be the best server's root delay in addition to
+            the measured delay to the server.</t>
+          <t>Root dispersion SHOULD be the best server's root dispersion in
+            addition to an estimate of the maximum drift of its own clock since
+            the last update of the clock.</t>
+        </list>
+      </t>
+
+      <t>The server has a randomly generated reference ID and it MUST track
+        reference IDs of its servers using the Reference IDs Extension
+        Field.</t>
+
+      <t>For each received request, the server:
+        <list style="numbers">
+          <t>Captures a receive timestamp.</t>
+
+          <t>Checks the version in the request. If it is larger than 5, it MUST
+            drop the request. If it is smaller than 5, it SHOULD either drop
+            the request, or handle it according to the corresponding
+            specification.</t>
+
+          <t>Drops the request if the format is not valid, mode is not 3, or
+            authentication fails if the MAC Extension Field or another
+            authenticator field is present.</t>
+
+          <t>Server forms a response with requested extension fields and sets
+            the fields in the header as follows:
+
+            <list style="symbols">
+              <t>Leap Indicator, Stratum, Root delay, and Root dispersion, are
+                set to the current server's values.</t>
+
+              <t>Version is set to 5.</t>
+
+              <t>Scale is set to the client's requested timescale if it is
+                supported by the server. If not, the server SHOULD respond in
+                any timescale it supports.</t>
+
+              <t>Flags are set according to the requested mode and supported
+                mode. If the follow-up mode was requested, it is supported by
+                the server, and the provided server cookie is valid, the
+                response may have multiple messages. They have the same length
+                and content except the flags, transmit timestamps (captured at
+                different points of the first message's transmission), and MAC
+                or authenticator field if present. The first message in the
+                response has the Multi-message response flag set and all
+                follow-up messages have the Follow-up flag set. If the
+                interleaved mode is requested and a response in the interleaved
+                mode is possible (i.e. a transmit timestamp is associated with
+                the server cookie), the Interleaved mode flag is set.</t>
+
+              <t>Era is set to the NTP era of the receive timestamp.</t>
+
+              <t>Timescale Offset is set to the timescale-specific offset, or
+                0x8000 if unknown.</t>
+
+              <t>Server Cookie is set when the follow-up or interleaved
+                mode is requested and it is supported by the server, even if
+                the response cannot be in the requested mode yet due to the
+                request having an invalid server cookie. In the follow-up mode
+                the cookie SHOULD be derived from the client's address and a
+                secret key, which is rotated frequently (e.g. once per hour).
+                It MUST prevent multi-message responses to addresses that
+                didn't receive a previous response (other than by guessing the
+                64-bit number). In the interleaved mode, the cookie identifies
+                a more accurate transmit timestamp, which can be retrieved by
+                the client later with another request.</t>
+
+              <t>Client Cookie is set to the Client Cookie from the
+                request.</t>
+
+              <t>Receive Timestamp is set to the server's receive timestamp of
+                the request.</t>
+
+              <t>Transmit Timestamp is set to a value which depends on the
+                measurement mode. In the basic mode and the first message of a
+                multi-message response in the follow-up mode, it is the
+                server's current time when the message if formed. In the second
+                and following messages in the follow-up mode it is a more
+                accurate transmit timestamp of the first message captured after
+                it was formed or sent. In the interleaved mode it is the
+                transmit timestamp of the previous response identified by the
+                server cookie in the request, captured at some point after the
+                message was formed.</t>
+            </list>
+          </t>
+
+          <t>Drops the response if it is longer than the request to prevent
+            traffic amplification.</t>
+
+          <t>Sends the response. In the follow-up mode, the follow-up messages
+            are sent as soon as more accurate transmit timestamps are
+            available. If the server can predict which transmit timestamps it
+            will get, it SHOULD send only one follow-up message containing the
+            most accurate timestamp.</t>
+
+          <t>Saves the transmit timestamp and server cookie, if the interleaved
+            mode was requested and is supported by the server.</t>
+        </list>
+      </t>
+    </section>
+
+    <section anchor="Acknowledgements" title="Acknowledgements">
+      <t>Some ideas were taken from a different NTPv5 design proposed by Daniel
+        Franke.</t>
+
+      <t>The follow-up mode was inspired by PTP (IEEE 1588-2008).</t>
+
+      <!--
+      <t>The author would like to thank ... their useful comments.</t>
+      -->
+    </section>
+
+    <section anchor="IANA" title="IANA Considerations">
+      <t>This memo includes no request to IANA.</t>
+    </section>
+
+    <section anchor="Security" title="Security Considerations">
+    </section>
+  </middle>
+
+  <back>
+    <references title="Normative References">
+      &RFC2119;
+
+      &RFC8174;
+
+      &RFC8573;
+
+      <!-- packet timestamps &RFC8877; -->
+
+    </references>
+
+    <references title="Informative References">
+      &RFC5905;
+
+      <!-- security requirements &RFC7384; -->
+
+    </references>
+  </back>
+</rfc>
