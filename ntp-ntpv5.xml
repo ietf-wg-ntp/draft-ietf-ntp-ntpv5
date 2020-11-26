@@ -57,8 +57,10 @@
         differences are:
 
         <list style="numbers">
-          <t>The protocol specification (this document) doesn't describe any
-            algorithms.</t>
+          <t>The protocol specification (this document) describes only the
+            on-wire protocol. Filtering of measurements, security mechanisms,
+            source selection, clock control, and other algorithms, are out of
+            scope.</t>
 
           <t>NTPv5 drops support for the symmetric active, symmetric passive,
             broadcast, control, and private modes. Only the client and server
@@ -70,8 +72,8 @@
             field is wrapped in an extension field.</t>
 
           <t>Extension fields can be of any length, even indivisible by 4, but are
-            padded to 4 octets. Extension fields specified for NTPv4 are
-            compatible with NTPv5.</t>
+            padded to a multiple of 4 octets. Extension fields specified for
+            NTPv4 are compatible with NTPv5.</t>
 
           <t>NTPv5 adds support for other timescales than UTC.</t>
 
@@ -322,7 +324,7 @@
         16-bit length. The length is in octets and it includes the header. The
         minimum length is 4, i.e. an extension field doesn't have to contain
         any data. If the length is not divisible by 4, the extension field is
-        padded with zeroes to 4 octets.</t>
+        padded with zeroes to the smallest multiple of 4 octets.</t>
 
       <t>Generally, if a request contains an extension field, the client is
         asking the server to include the same extension field in the response.
@@ -547,7 +549,8 @@
           <t>Leap indicator MUST be 3 if the clock is not synchronized or its
             maximum error cannot be estimated with the root delay and
             dispersion. Otherwise, it MUST be 0, 1, 2, depending on whether a
-            leap second will be inserted or deleted in the next 14 days.</t>
+            leap second is pending in the next 14 day and, if it is, whether it
+            will be inserted or deleted.</t>
           <t>Stratum SHOULD be one larger than stratum of the best
             server it uses for its own synchronization.</t>
           <t>Root delay SHOULD be the best server's root delay in addition to
@@ -658,9 +661,7 @@
 
       <t>The follow-up mode was inspired by PTP (IEEE 1588-2008).</t>
 
-      <!--
-      <t>The author would like to thank ... their useful comments.</t>
-      -->
+      <t>The author would like to thank Doug Arnold for his useful comments.</t>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
