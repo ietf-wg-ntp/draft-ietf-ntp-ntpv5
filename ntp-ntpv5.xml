@@ -551,10 +551,11 @@
         <list style="numbers">
           <t>Captures a receive timestamp.</t>
 
-          <t>Checks the version in the request. If it is larger than 5, it MUST
-            drop the request. If it is smaller than 5, it SHOULD either drop
-            the request, or handle it according to the corresponding
-            specification.</t>
+          <t>Checks the version in the request. If it is not equal to 5, it
+            MUST either drop the request, or handle it according to the
+            specification corresponding to the protocol version. The server MAY
+            respond with an NTPv5 message if and only if the request has
+            version 5.</t>
 
           <t>Drops the request if the format is not valid, mode is not 3, or
             authentication fails if the MAC Extension Field or another
@@ -622,6 +623,31 @@
             mode was requested and is supported by the server.</t>
         </list>
       </t>
+    </section>
+
+    <section title="NTPv5 negotiation in NTPv4">
+      <t>NTPv5 messages are not compatible with NTPv4, even if they do not
+        contain any extension fields. Some widely used NTPv4 implementations are
+        known to ignore the version and interpret all requests as NTPv4. Their
+        responses to NTPv5 requests have a zero client cookie, which means they
+        fail the client's validation and are ignored.</t>
+
+      <t>The implementations are also known to not respond to requests
+        with an unknown extension field, which prevents an NTPv4 extension
+        field to be specified for NTPv5 negotiation. Instead, the reference
+        timestamp field in the NTPv4 header is reused for this purpose.</t>
+
+      <t>An NTP server which supports both NTPv4 and NTPv5 SHOULD check the
+        reference timestamp in all NTPv4 client requests. If the reference
+        timestamp contains the value 0x4E5450354E545035 ("NTP5NTP5" in ASCII),
+        it SHOULD respond with the same reference timestamp to indicate
+        it supports NTPv5.</t>
+
+      <t>An NTP client which supports both NTPv4 and NTPv5, and is not
+        configured to use a particular version, SHOULD start with NTPv4
+        requests having the reference timestamp set to 0x4e5450354e545035.
+        If the server responds with the same reference timestamp, the client
+        SHOULD switch to NTPv5.</t>
     </section>
 
     <section anchor="Acknowledgements" title="Acknowledgements">
