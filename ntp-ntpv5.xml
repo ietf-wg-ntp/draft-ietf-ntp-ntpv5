@@ -96,7 +96,7 @@
       </section>
     </section>
 
-    <section title="Data types">
+    <section title="Data Types">
       <t>NTPv5 uses few different data types. They are all in the network
         order. Beside signed and unsigned integers, it has also three
         fixed-point types.</t>
@@ -120,7 +120,7 @@
         and UTC in 1972, when leap seconds were introduced.</t>
     </section>
 
-    <section title="Message format">
+    <section title="Message Format">
       <t>NTPv5 servers and clients exchange messages as UDP datagrams. Clients
         send requests to servers and servers send them back responses. The
         format of the UDP payload is shown in Figure <xref format="counter"
@@ -297,7 +297,7 @@
         by 4.</t>
     </section>
 
-    <section title="Extension fields">
+    <section title="Extension Fields">
       <t>The format of NTPv5 extension fields is shown in Figure <xref
           format="counter" target="extension-field"/>.</t>
 
@@ -370,7 +370,7 @@
         <t>TODO (reuse draft-mlichvar-ntp-correction-field?)</t>
       </section>
 
-      <section title="Reference timestamp">
+      <section title="Reference Timestamp Extension Field">
         <t>This fields contains the time of the last update of the clock. It
           has a fixed length of 12 octets. In requests, the timestamp is always
           0.</t>
@@ -420,7 +420,7 @@
 
     </section>
 
-    <section title="Client operation">
+    <section title="Client Operation">
       <t>An NTPv5 client can use one or multiple servers. It has a separate
         association with each server. It makes periodic measurements of its
         offset and delay to the server. It can filter the measurements and
@@ -515,7 +515,7 @@
       </t>
     </section>
 
-    <section title="Server operation">
+    <section title="Server Operation">
       <t>A server receives requests on the UDP port 123. The server
         MUST support measurements in the basic mode. It MAY support the
         interleaved mode.</t>
@@ -625,7 +625,7 @@
       </t>
     </section>
 
-    <section title="NTPv5 negotiation in NTPv4">
+    <section title="NTPv5 Negotiation in NTPv4">
       <t>NTPv5 messages are not compatible with NTPv4, even if they do not
         contain any extension fields. Some widely used NTPv4 implementations are
         known to ignore the version and interpret all requests as NTPv4. Their
