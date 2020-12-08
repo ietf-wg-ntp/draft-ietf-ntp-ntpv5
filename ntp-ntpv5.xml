@@ -96,6 +96,36 @@
       </section>
     </section>
 
+    <section title="Basic Concepts">
+      <t>The distance to the reference time sources in the hierarchy of servers
+        is called stratum. Primary time servers, which are synchronized to the
+        reference clocks, are stratum 1, their clients are stratum 2, and so
+        on.</t>
+
+      <t>Root delay measures the total delay on the path to the reference time
+        source used by the primary time server. Each client on the path adds to
+        the root delay the NTP delay measured to the server it considers best
+        for synchronization. The delay includes network delays and any delays
+        between timestamping of NTP messages and their actual reception and
+        transmission. Half of the root delay estimates the maximum error of the
+        clock due to asymmetries in the delay.</t>
+
+      <t>Root dispersion estimates the maximum error of the clock due to the
+        instability of the clocks on the path and instability of NTP
+        measurements. Each server on the path adds its own dispersion to the
+        root dispersion. Different clock models can be used. In a simple model,
+        the clock can have a constant dispersion rate, e.g. 15 ppm as used in
+        NTPv4.</t>
+
+      <t>The sum of the root dispersion and half of the root delay is called
+        root distance. It is the estimated maximum error of the clock, taking
+        into account asymmetry in delay and stability of clocks and
+        measurements.</t>
+
+      <t>Servers have randomly generated reference IDs to prevent
+        synchronization loops.</t>
+    </section>
+
     <section title="Data Types">
       <t>NTPv5 uses few different data types. They are all in the network
         order. Beside signed and unsigned integers, it has also three
