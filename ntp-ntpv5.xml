@@ -225,6 +225,12 @@
             An 8-bit integer that can contain the following flags:
 
             <list style="hanging">
+              <t hangText="0x1: Unknown leap"><vspace/>
+                In requests it is zero. In responses it indicates the server
+                does not have a time source which provides information about
+                leap seconds and the client should interpret the Leap Indicator
+                as having only two values: synchronized (0) and not
+                synchronized (3).</t>
               <t hangText="0x4: Interleaved mode"><vspace/>
                 In requests it is a request for a response in the interleaved
                 mode. In responses it indicates the response is in the
@@ -567,11 +573,18 @@
                 supported by the server. If not, the server SHOULD respond in
                 any timescale it supports.</t>
 
-              <t>Flags are set according to the requested mode and supported
-                mode. If the interleaved mode is requested and a response in
-                the interleaved mode is possible (i.e. a transmit timestamp is
-                associated with the server cookie), the Interleaved mode flag
-                is set.</t>
+              <t>The flags are set as follows:
+                <list style="hanging">
+                  <t hangText="Unknown leap"> is set if the server does not
+                    know if a leap second is pending in the next 14 days, i.e.
+                    it has no source providing information about leap
+                    seconds.</t>
+                  <t hangText="Interleaved mode"> is set if the interleaved
+                    mode was requested and a response in the interleaved mode
+                    is possible (i.e. a transmit timestamp is associated with
+                    the server cookie).</t>
+                </list>
+              </t>
 
               <t>Era is set to the NTP era of the receive timestamp.</t>
 
