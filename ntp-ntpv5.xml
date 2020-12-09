@@ -83,6 +83,12 @@
 
           <t>NTPv5 adds a new measurement mode to provide clients with more
             accurate transmit timestamps.</t>
+
+          <t>NTPv5 works with sets of reference IDs to prevent synchronization
+            loops over multiple hosts.</t>
+
+          <t>Resolution of the root delay and root dispersion fields is
+            improved.</t>
         </list>
       </t>
 
