@@ -405,6 +405,28 @@
         <t>This field MUST be supported on server.</t>
       </section>
 
+      <section title="Server Information Extension Field">
+        <t>This field provides clients with information about which NTP
+          versions are supported by the server, as a minimum and maximum
+          version. The extension field has a fixed length of 8 octets. In
+          requests, all data fields of the extension are 0. </t>
+
+        <figure align="center" anchor="server-information-ext-field"
+            title="Format of Server Information Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Type              |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Min. Version  | Max. Version  |            Reserved           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>This field MUST be supported on server.</t>
+      </section>
+
       <section title="Correction Extension Field">
         <t>This field allows switches and routers to make corrections in NTPv5
           messages to allow clients to compensate for queueing and processing
