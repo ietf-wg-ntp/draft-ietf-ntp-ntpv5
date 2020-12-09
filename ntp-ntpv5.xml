@@ -431,11 +431,15 @@
       </section>
 
       <section title="Monotonic Timestamp Extension Field">
-        <t>This field contains an extra receive timestamp with a 32-bit step
-          counter from a clock which doesn't have adjusted phase and can be
+        <t>This field contains an extra receive timestamp with a 32-bit epoch
+          identifier from a clock which doesn't have adjusted phase and can be
           used for a frequency transfer, e.g. to stabilize synchronization in
           a long chain of servers. It has a constant length of 16 octets. In
           requests, the counter and timestamp are always 0.</t>
+
+        <t>The epoch identifier is a random number which is changed when the
+          transfer of the frequency should be restarted, e.g. due to a step of
+          the clock.</t>
 
         <figure align="center" anchor="monotonic-timestamp-ext-field"
             title="Format of Monotonic Timestamp Extension Field">
@@ -445,7 +449,7 @@
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |             Type              |             Length            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Step counter                         |
+|                            Epoch ID                           |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 |                  Monotonic Receive Timestamp (64)             |
