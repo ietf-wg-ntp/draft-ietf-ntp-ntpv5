@@ -723,7 +723,8 @@
       <t>Some ideas were taken from a different NTPv5 design proposed by Daniel
         Franke.</t>
 
-      <t>The author would like to thank Doug Arnold for his useful comments.</t>
+      <t>The author would like to thank Doug Arnold, Watson Ladd, Hal Murray,
+        Kurt Roeckx, and Ulrich Windl for their useful comments.</t>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
