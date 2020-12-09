@@ -396,7 +396,7 @@
       </section>
 
       <section title="Reference IDs Extension Field">
-        <t>This fields allows servers to prevent synchronization loops, i.e.
+        <t>This field allows servers to prevent synchronization loops, i.e.
           synchronizing to one of its direct or indirect clients. It contains a
           set (bloom filter) of reference IDs.</t>
 
