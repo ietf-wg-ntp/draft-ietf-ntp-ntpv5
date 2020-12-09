@@ -158,7 +158,9 @@
             seconds. Timestamps in the TAI timescale are the same except they
             include leap seconds and extra 10 seconds for the original
             difference between TAI and UTC in 1972, when leap seconds were
-            introduced.</t>
+            introduced. One interval covered by the type is called an NTP era.
+            The era starting at the epoch is era number 0, the following era is
+            number 1, and so on.</t>
         </list>
       </t>
     </section>
