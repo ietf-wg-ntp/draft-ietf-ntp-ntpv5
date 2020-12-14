@@ -686,6 +686,9 @@
             </list>
           </t>
 
+          <t>Adds the Padding Extension field if necessary to make the length
+            of the response equal to the length of the request.</t>
+
           <t>Drops the response if it is longer than the request to prevent
             traffic amplification.</t>
 
