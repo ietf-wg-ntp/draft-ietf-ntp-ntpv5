@@ -630,7 +630,8 @@
 
           <t>Drops the request if the format is not valid, mode is not 3, or
             authentication fails if the MAC Extension Field or another
-            authenticator field is present.</t>
+            authenticator field is present. The server MUST ignore unknown
+            extension fields.</t>
 
           <t>Server forms a response with requested extension fields and sets
             the fields in the header as follows:
