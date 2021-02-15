@@ -63,9 +63,12 @@
             source selection, clock control, and other algorithms, are out of
             scope.</t>
 
-          <t>NTPv5 drops support for the symmetric active, symmetric passive,
-            broadcast, control, and private modes. Only the client and server
-            modes are supported.</t>
+          <t>For security reasons, NTPv5 drops support for the symmetric
+            active, symmetric passive, broadcast, control, and private modes.
+            The symmetric and broadcast modes are vulnerable to replay attacks.
+            The control and private modes can be exploited for
+            denial-of-service traffic amplification attacks. Only the client
+            and server modes remain in NTPv5.</t>
 
           <t>Timestamps are clearly separated from values used as cookies.</t>
 
@@ -90,6 +93,9 @@
 
           <t>Resolution of the root delay and root dispersion fields is
             improved.</t>
+
+          <t>Clients don't leak information about their clock (e.g.
+            timestamps).</t>
         </list>
       </t>
 
