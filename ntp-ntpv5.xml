@@ -3,6 +3,7 @@
 <!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
 <!ENTITY RFC5905 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5905.xml">
 <!ENTITY RFC7384 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7384.xml">
+<!ENTITY RFC7821 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7821.xml">
 <!ENTITY RFC8174 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.8174.xml">
 <!ENTITY RFC8573 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.8573.xml">
 ]>
@@ -430,11 +431,128 @@
       </section>
 
       <section title="Correction Extension Field">
-        <t>This field allows switches and routers to make corrections in NTPv5
-          messages to allow clients to compensate for queueing and processing
-          delays in the network.</t>
 
-        <t>TODO (reuse draft-mlichvar-ntp-correction-field?)</t>
+        <t>Processing and queueing delays in network switches and routers may
+          be a significant source of jitter and asymmetry in network delay,
+          which has a negative impact on accuracy and stability of clocks
+          synchronized by NTP. A solution to this problem is defined in the
+          <xref target="IEEE1588">Precision Time Protocol (PTP)</xref>, which
+          is a different protocol for synchronization of clocks in networks. In
+          PTP a special type of switch or router, called a Transparent Clock
+          (TC), updates a correction field in PTP messages to account for the
+          time messages spend in the TC. This is accomplished by timestamping
+          the message at the ingress and egress ports, taking the difference to
+          determine time in the TC and adding this to the Delay Correction.
+          Clients can acccount for the accumated Delay Correction to determine
+          a more accurate clock offset.</t>
+
+        <t>The NTPv5 Delay Correction has the same format as the PTP
+          correctionField to make it easier for manfacturers of switches and
+          routers to implement NTP corrections. The format of the Correction
+          Extension Field is shown in Figure <xref format="counter"
+          target="correction-ext-field"/>.</t>
+
+        <figure align="center" anchor="correction-ext-field"
+                title="Format of Correction Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Type              |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                       Origin Correction                      +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Origin path ID        |            Reserved           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                       Delay Correction                        +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       Delay Path ID        |     Checksum complement       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>
+          <list style="hanging">
+            <t hangText="Field Type"><vspace/>
+               The type which identifies the Correction extension field (value
+               TBD).</t>
+
+            <t hangText="Length"><vspace/>
+               The length of the extension field, which is 28 octets.</t>
+
+            <t hangText="Origin Correction"><vspace/>
+               A field which contains a copy of the accumulated delay
+               correction from the request packet in the NTP exchange.</t>
+
+            <t hangText="Origin ID"><vspace/>
+               A field which contains a copy of the final path ID from the
+               request packet in the NTP exchange.</t>
+
+            <t hangText="Reserved"><vspace/>
+               16 bit reserved for future specification by the IETF.
+               Transmit with all zeros.</t>
+
+            <t hangText="Delay Correction"><vspace/>
+               A signed fixed-point number of nanoseconds with 48 integer
+               bits and 16 binary fractional bits, which represents the current
+               correction of the network delay that has accumulated for this
+               packet on the path from the source to the destination. The
+               format of this field is identical to the PTP correctionField.</t>
+
+            <t hangText="Path ID"><vspace/>
+               A 16-bit identification number of the path where the delay
+               correction was updated.</t>
+
+            <t hangText="Checksum Complement"><vspace/>
+               A field which can be modified in order to keep the UDP
+               checksum of the packet valid. This allows the UDP checksum
+               to be transmitted before the Correction Field is received and
+               modified. The same field is described in <xref
+               target="RFC7821">RFC 7821</xref>.</t>
+          </list>
+        </t>
+
+        <t>A correction capable client SHALL transmit the request with the
+          Origin Correction, Origin ID, Delay Correction and Path ID fields
+          filled with all zeros.</t>
+
+        <t>Network nodes, such as switches and routers, that are NTP
+          corrections capable SHALL add the difference between the beginning of
+          an NTP message retransmission and the end of the message reception to
+          the received Delay Correction value, and update this field. Note that
+          this time difference might be negative, for example in a cut-through
+          switch. If the packet is transmitted at the same speed as it was
+          received and the length of the packet does not change (e.g. due to
+          adding or removing a VLAN tag), the beginning and end of the interval
+          may correspond to any point of the reception and transmission as long
+          as it is consistent for all forwarded packets of the same length. If
+          the transmission speed or length of the packet is different, the
+          beginning and end of the interval SHOULD correspond to the end of the
+          reception and beginning of the transmission respectively. Both
+          timestamps MUST be based on the same clock. This clock does not need
+          to be synchronized as long as the frequency is accurate enough such
+          that resulting time difference estimation errors are acceptable to
+          the precision required by the application.</t>
+
+        <t>If a network node updates the delay correction, it SHOULD also add
+          the identification numbers of the incoming and outgoing port to the
+          path ID. Path ID values can be used by clients to determine if the
+          ntp request and response messages are likely to have traversed the
+          same network path.</t>
+
+        <t>If a network node modified any field of the extension field, it MUST
+          update the checksum complement field in order to keep the current UDP
+          checksum valid, or update the UDP checksum itself.</t>
+
+        <t>The server SHALL write the received Delay Correction value in the
+          origin correction field of the response message, and the recieved
+          path ID value in the origin ID field. The server SHALL set the Delay
+          Correction field and Path ID fields to all zeros</t>
+
       </section>
 
       <section title="Reference Timestamp Extension Field">
@@ -580,6 +698,21 @@
               <t>T3 is the server's transmit timestamp</t>
               <t>T4 is the client's receive timestamp</t>
               <t>DR is the client's estimated dispersion rate</t>
+            </list>
+          </t>
+
+          <t>If the Correction Extension Field is used the offset and delay
+             are modified as:
+            <list style="none">
+              <t>offset = ((T2 + T3) - (T4 + T1) + (Cd - Co)) / 2</t>
+              <t>delay = |(T4 - T1) - (T3 - T2) - (Cd + Co)|</t>
+            </list>
+
+            where
+
+            <list style="none">
+              <t>Co is the Correction Extension Field Origin Correction value</t>
+              <t>Cd is the Correction Extension Field Delay Correction value</t>
             </list>
           </t>
         </list>
@@ -729,8 +862,9 @@
       <t>Some ideas were taken from a different NTPv5 design proposed by Daniel
         Franke.</t>
 
-      <t>The author would like to thank Doug Arnold, Watson Ladd, Hal Murray,
-        Kurt Roeckx, and Ulrich Windl for their useful comments.</t>
+      <t>The author would like to thank Doug Arnold for his contributions and
+        Watson Ladd, Hal Murray, Kurt Roeckx, and Ulrich Windl for their useful
+        comments.</t>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
@@ -756,7 +890,25 @@
     <references title="Informative References">
       &RFC5905;
 
+      &RFC7821;
+
       <!-- security requirements &RFC7384; -->
+
+      <reference anchor="IEEE1588" target="https://www.ieee.org">
+        <front>
+          <title>
+            IEEE std. 1588-2019, "IEEE Standard for a Precision Clock
+            Synchronization for Networked Measurement and Control
+            Systems."
+          </title>
+          <author>
+            <organization>
+              Institute of Electrical and Electronics Engineers
+            </organization>
+          </author>
+          <date month="11" year="2019" />
+        </front>
+      </reference>
 
     </references>
   </back>
