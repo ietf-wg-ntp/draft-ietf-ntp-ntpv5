@@ -585,15 +585,27 @@
       </section>
 
       <section title="Monotonic Timestamp Extension Field">
-        <t>This field contains an extra receive timestamp with a 32-bit epoch
-          identifier from a clock which doesn't have adjusted phase and can be
-          used for a frequency transfer, e.g. to stabilize synchronization in
-          a long chain of servers. It has a constant length of 16 octets. In
+
+        <t>When a clock is synchronized to a time source, there is a compromise
+          between time (phase) accuracy and frequency accuracy, because the
+          frequency of the clock has to be adjusted to correct time errors that
+          accumulate due to the frequency error (e.g. caused by changes in the
+          temperature of the crystal). Faster corrections of time can minimize
+          the time error, but increase the frequency error, which transfers to
+          clients using that clock as a time source and increases their
+          frequency and time errors. This issue can be avoided by transfering
+          time and frequency separately using different clocks.</t>
+
+        <t>The Monotonic Timestamp Extension Field contains an extra receive
+          timestamp with a 32-bit epoch identifier captured by a clock which
+          doesn't have corrected phase and can better transfer frequency than
+          the clock which captures the receive and transmit timestamps in the
+          header. The extension field has a constant length of 16 octets. In
           requests, the counter and timestamp are always 0.</t>
 
-        <t>The epoch identifier is a random number which is changed when the
-          transfer of the frequency should be restarted, e.g. due to a step of
-          the clock.</t>
+        <t>The epoch identifier is a random number which is changed when
+          frequency transfer needs to be restarted, e.g. due to a step of the
+          clock.</t>
 
         <figure align="center" anchor="monotonic-timestamp-ext-field"
             title="Format of Monotonic Timestamp Extension Field">
@@ -611,6 +623,13 @@
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
           ]]></artwork>
         </figure>
+
+        <t>The client can determine the frequency-transfer offset from the
+          time-transfer offset and difference between the two receive
+          timestamps in the response. It can use the frequency-transfer offset
+          to better control the frequency of its clock, avoiding the frequency
+          error in the server's time-transfer clock.</t>
+
       </section>
 
     </section>
