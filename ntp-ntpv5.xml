@@ -6,6 +6,7 @@
 <!ENTITY RFC7821 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7821.xml">
 <!ENTITY RFC8174 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.8174.xml">
 <!ENTITY RFC8573 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.8573.xml">
+<!ENTITY XLEAVE SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-ntp-interleaved-modes.xml">
 ]>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 <?rfc strict="yes"?>
@@ -634,6 +635,132 @@
 
     </section>
 
+    <section title="Measurement Modes">
+
+      <t>An NTPv5 client needs four timestamps to measure the offset and delay
+        of its clock relative to the server's clock:
+
+        <list style="numbers">
+          <t>T1 - client's transmit timestamp of a request</t>
+          <t>T2 - server's receive timestamp of the request</t>
+          <t>T3 - server's transmit timestamp of a response</t>
+          <t>T4 - client's receive timestamp of the response</t>
+        </list>
+      </t>
+
+      <t>The offset, delay and dispersion are calculated as:
+
+        <list style="symbols">
+          <t>offset = ((T2 + T3) - (T4 + T1) + (Cd - Co)) / 2</t>
+          <t>delay = |(T4 - T1) - (T3 - T2) - (Cd + Co)|</t>
+          <t>dispersion = |T4 - T1| * DR</t>
+        </list>
+
+        where
+
+        <list style="symbols">
+          <t>T1, T2, T3, T4 are the receive and transmit timestamps of a
+            request and response</t>
+          <t>Co is the Origin Correction from the Correction Extension Field if
+            present in the response and has acceptable values, zero otherwise</t>
+          <t>Cd is the Delay Correction from the Correction Extension Field if
+            present in the response and has acceptable values, zero otherwise</t>
+          <t>DR is the client's dispersion rate</t>
+        </list>
+      </t>
+
+      <t>The client can make measurements in the basic mode, or interleaved
+        mode if supported on the server. In the basic mode, the transmit
+        timestamp in the server response corresponds to the message which
+        contains the timestamp itself. In the interleaved mode it corresponds
+        to a previous response indentified by the server cookie. The
+        interleaved mode enables the server to provide the client with a more
+        accurate transmit timestamp which is available only after the previous
+        response was formed or sent.</t>
+
+      <t>An example of cookies and timestamps in an NTPv5 exchange using the
+        basic mode is shown in Figure <xref format="counter"
+        target="basic-exchange"></xref>.</t>
+
+      <figure align="center" anchor="basic-exchange"
+          title="Cookies and timestamps in basic mode">
+        <artwork><![CDATA[
+Server   t2   t3               t6   t7              t10  t11
+    -----+----+----------------+----+----------------+----+-----
+        /      \              /      \              /      \
+Client /        \            /        \            /        \
+    --+----------+----------+----------+----------+----------+--
+      t1         t4         t5         t8         t9        t12
+
+    +----+    +----+      +----+    +----+      +----+    +----+
+SC  | 0  |    | s1 |      | 0  |    | s2 |      | 0  |    | s3 |
+CC  | c1 |    | c1 |      | c2 |    | c2 |      | c3 |    | c3 |
+Rx  | 0  |    | t2 |      | 0  |    | t6 |      | 0  |    |t10 |
+Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
+    +----+    +----+      +----+    +----+      +----+    +----+
+        ]]></artwork>
+      </figure>
+
+      <t>From the three exchanges in this example, the client would use the
+        the following sets of timestamps:
+
+        <list style="symbols">
+          <t>(t1, t2, t3, t4)</t>
+          <t>(t5, t6, t7, t8)</t>
+          <t>(t9, t10, t11, t12)</t>
+        </list>
+      </t>
+
+      <t>For NTPv4, the interleaved mode is described in <xref
+        target="I-D.ietf-ntp-interleaved-modes">NTP Interleaved Modes</xref>.
+        The difference between the NTPv5 and NTPv4 interleaved modes is that in
+        NTPv5 it is enabled with a flag and the previous transmit timestamp on
+        the server is identified by a random cookie instead of the receive
+        timestamp.</t>
+
+      <t>An example of an NTPv5 exchange using the interleaved mode is shown in
+        Figure <xref format="counter" target="interleaved-exchange"></xref>.
+        The messages in the basic and interleaved mode are indicated with B and
+        I respectively. The timestamps t3' and t11' correspond to the same
+        transmissions as t3 and t11, but they may be less accurate. The first
+        exchange is in the basic mode followed by a second exchange in the
+        interleaved mode. For the third exchange, the client request is in the
+        interleaved mode, but the server response is in the basic mode, because
+        the server no longer had the timestamp t7 (e.g. it was dropped to save
+        timestamps for other clients using the interleaved mode).</t>
+
+      <figure align="center" anchor="interleaved-exchange"
+          title="Cookies and timestamps in interleaved mode">
+        <artwork><![CDATA[
+Server   t2   t3               t6   t7              t10  t11
+    -----+----+----------------+----+----------------+----+-----
+        /      \              /      \              /      \
+Client /        \            /        \            /        \
+    --+----------+----------+----------+----------+----------+--
+      t1         t4         t5         t8         t9        t12
+
+Mode: B         B           I         I           I         B
+    +----+    +----+      +----+    +----+      +----+    +----+
+SC  | 0  |    | s1 |      | s1 |    | s2 |      | s2 |    | s3 |
+CC  | c1 |    | c1 |      | c2 |    | c2 |      | c3 |    | c3 |
+Rx  | 0  |    | t2 |      | 0  |    | t6 |      | 0  |    |t10 |
+Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
+    +----+    +----+      +----+    +----+      +----+    +----+
+        ]]></artwork>
+      </figure>
+
+      <t>From the three exchanges in this example, the client would use the
+        following sets of timestamps:
+
+        <list style="symbols">
+          <t>(t1, t2, t3', t4)</t>
+          <t>(t1, t2, t3, t4) or (t5, t6, t3, t4)</t>
+          <t>(t9, t10, t11', t12)</t>
+        </list>
+      </t>
+
+    </section>
+
     <section title="Client Operation">
       <t>An NTPv5 client can use one or multiple servers. It has a separate
         association with each server. It makes periodic measurements of its
@@ -647,11 +774,6 @@
         stability of the clock. When polling a public server on Internet, the
         client SHOULD use at least a polling interval of 64 seconds, increasing
         up to at least 1024 seconds.</t>
-
-      <t>The client can make measurements in the basic or interleaved mode. The
-        interleaved mode allows the server to provide the client with a more
-        accurate transmit timestamp which is available only after the server
-        formed or sent the response.</t>
 
       <t>Each successful measurement provides the client with an offset, delay
         and dispersion. When combined with the server's root delay and
@@ -708,38 +830,7 @@
             internally counts seconds using a type wider than 32 bits, it
             SHOULD expand the timestamps with the provided NTP era.</t>
 
-          <t>Calculates the offset, delay, and dispersion:
-            <list style="none">
-              <t>offset = ((T2 + T3) - (T4 + T1)) / 2</t>
-              <t>delay = |(T4 - T1) - (T3 - T2)|</t>
-              <t>dispersion = |T4 - T1| * DR</t>
-            </list>
-
-            where
-
-            <list style="none">
-              <t>T1 is the client's transmit timestamp</t>
-              <t>T2 is the server's receive timestamp</t>
-              <t>T3 is the server's transmit timestamp</t>
-              <t>T4 is the client's receive timestamp</t>
-              <t>DR is the client's estimated dispersion rate</t>
-            </list>
-          </t>
-
-          <t>If the Correction Extension Field is used the offset and delay
-             are modified as:
-            <list style="none">
-              <t>offset = ((T2 + T3) - (T4 + T1) + (Cd - Co)) / 2</t>
-              <t>delay = |(T4 - T1) - (T3 - T2) - (Cd + Co)|</t>
-            </list>
-
-            where
-
-            <list style="none">
-              <t>Co is the Correction Extension Field Origin Correction value</t>
-              <t>Cd is the Correction Extension Field Delay Correction value</t>
-            </list>
-          </t>
+          <t>Calculates the offset, delay, and dispersion.</t>
         </list>
       </t>
     </section>
@@ -918,6 +1009,8 @@
       &RFC7821;
 
       <!-- security requirements &RFC7384; -->
+
+      &XLEAVE;
 
       <reference anchor="IEEE1588" target="https://www.ieee.org">
         <front>
