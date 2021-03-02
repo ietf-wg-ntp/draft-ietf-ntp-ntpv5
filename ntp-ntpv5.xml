@@ -375,9 +375,12 @@
         any data. If the length is not divisible by 4, the extension field is
         padded with zeroes to the smallest multiple of 4 octets.</t>
 
-      <t>Generally, if a request contains an extension field, the client is
-        asking the server to include the same extension field in the response.
-        Exceptions to this rule are allowed.</t>
+      <t>If a request contains an extension field, the server MUST include this
+        extension field in the response unless the specification of the
+        extension field states otherwise, or the server does not support the
+        extension field. A client can interpret the absence of an expected
+        extension field in a response as an indication that the server does not
+        support the extension field.</t>
 
       <t>Extension fields specified for NTPv4 can be included in NTPv5 messages
         as specified for NTPv4.</t>
