@@ -149,9 +149,10 @@
           <t hangText="time16"><vspace/>
             A 16-bit fixed-point type containing values in seconds. It has 1
             signed integer bit (i.e. it is just the sign) and 15 fractional
-            bits. The minimum value is -1.0, the maximum value is the fraction
-            32767/32768 (almost 1 second), and the resolution is about 30
-            microseconds.</t>
+            bits. The minimum value is the fraction -32767/32768 (almost -1
+            second), the maximum value is 32767/32768 (almost 1 second), and
+            the resolution is about 30 microseconds. The type has a special
+            value of 0x8000, which indicates an unknown value.</t>
 
           <t hangText="time32"><vspace/>
             A 32-bit fixed-point type containing values in seconds. It has 4
@@ -311,10 +312,10 @@
               <t>In the UTC (0) and TAI (1) timescales it is the TAI-UTC offset
                 as a signed integer, or 0x8000 if unknown.</t>
               <t>In the UT1 timescale (2) it is the UT1-UTC offset using the
-                time16 type, or 0x8000 (-1.0) if unknown.</t>
+                time16 type (0x8000 if unknown).</t>
               <t>In the leap-smeared UTC, it is the current offset between the
-                leap smeared time and UTC using the time16 type, or
-                0x8000 (-1.0) if unknown.</t>
+                leap smeared time and UTC using the time16 type (0x8000 if
+                unknown).</t>
             </list>
           </t>
 
