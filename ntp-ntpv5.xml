@@ -149,13 +149,15 @@
           <t hangText="time16"><vspace/>
             A 16-bit fixed-point type containing values in seconds. It has 1
             signed integer bit (i.e. it is just the sign) and 15 fractional
-            bits. The minimum value is -1.0, the maximum value is 32767/32768,
-            and the resolution is about 30 microseconds.</t>
+            bits. The minimum value is -1.0, the maximum value is the fraction
+            32767/32768 (almost 1 second), and the resolution is about 30
+            microseconds.</t>
 
           <t hangText="time32"><vspace/>
             A 32-bit fixed-point type containing values in seconds. It has 4
             unsigned integer bits and 28 fractional bits. The maximum value is
-            16 seconds and the resolution is about 3.7 nanoseconds.</t>
+            16 seconds and the resolution is about 3.7 nanoseconds. Note that
+            this is different than the 32-bit time format in NTPv4.</t>
 
           <t hangText="timestamp64"><vspace/>
             A 64-bit fixed-point type containing timestamps. It has 32 signed
@@ -171,6 +173,11 @@
             number 1, and so on.</t>
         </list>
       </t>
+
+      <t>Some fields use a logarithmic scale, where an 8-bit signed integer
+        represents the rounded log2 value of seconds. For example, a log2 value
+        of 4 is 2 to the power of 4 (16 seconds), or a log2 value of -2 is 2 to
+        the power of -2 (0.25 seconds).</t>
     </section>
 
     <section title="Message Format">
@@ -337,10 +344,10 @@
 
           <t hangText="Transmit Timestamp"><vspace/>
             A field using the timestamp64 type. In requests it is always
-            0. In responses it is the time when a response to the client was
-            transmitted. The specific response depends on the selected mode
-            (basic or interleaved). The timestamp corresponds to the
-            beginning of the transmission.</t>
+            0. In responses it is the beginning of the transmission of a
+            response to the client. Which response it refers to depends
+            on the selected mode (basic or interleaved). See <xref
+            target="measurement-modes">Measurement Modes</xref> for detail.</t>
         </list>
       </t>
 
@@ -638,7 +645,7 @@
 
     </section>
 
-    <section title="Measurement Modes">
+    <section title="Measurement Modes" anchor="measurement-modes">
 
       <t>An NTPv5 client needs four timestamps to measure the offset and delay
         of its clock relative to the server's clock:
@@ -982,8 +989,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         Franke.</t>
 
       <t>The author would like to thank Doug Arnold for his contributions and
-        Watson Ladd, Hal Murray, Kurt Roeckx, and Ulrich Windl for their useful
-        comments.</t>
+        Dan Drown, Watson Ladd, Hal Murray, Kurt Roeckx, and Ulrich Windl for
+        their suggestions and comments.</t>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
