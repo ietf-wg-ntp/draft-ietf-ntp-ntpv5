@@ -310,12 +310,12 @@
 
             <list style="symbols">
               <t>In the UTC (0) and TAI (1) timescales it is the TAI-UTC offset
-                as a signed integer, or 0x8000 if unknown.</t>
-              <t>In the UT1 timescale (2) it is the UT1-UTC offset using the
+                (TAI minus UTC) as a signed integer, or 0x8000 if unknown.</t>
+              <t>In the UT1 timescale (2) it is the UT1-UTC offset (UT1 minus
+                UTC) using the time16 type (0x8000 if unknown).</t>
+              <t>In the leap-smeared UTC (3), it is the current offset between
+                the leap smeared time and UTC (former minus latter) using the
                 time16 type (0x8000 if unknown).</t>
-              <t>In the leap-smeared UTC, it is the current offset between the
-                leap smeared time and UTC using the time16 type (0x8000 if
-                unknown).</t>
             </list>
           </t>
 
