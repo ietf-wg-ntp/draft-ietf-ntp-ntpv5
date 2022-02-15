@@ -461,11 +461,11 @@
           time messages spend in the TC. This is accomplished by timestamping
           the message at the ingress and egress ports, taking the difference to
           determine time in the TC and adding this to the Delay Correction.
-          Clients can acccount for the accumated Delay Correction to determine
+          Clients can account for the accumulated Delay Correction to determine
           a more accurate clock offset.</t>
 
         <t>The NTPv5 Delay Correction has the same format as the PTP
-          correctionField to make it easier for manfacturers of switches and
+          correctionField to make it easier for manufacturers of switches and
           routers to implement NTP corrections. The format of the Correction
           Extension Field is shown in Figure <xref format="counter"
           target="correction-ext-field"/>.</t>
@@ -567,7 +567,7 @@
           checksum valid, or update the UDP checksum itself.</t>
 
         <t>The server SHALL write the received Delay Correction value in the
-          origin correction field of the response message, and the recieved
+          origin correction field of the response message, and the received
           path ID value in the origin ID field. The server SHALL set the Delay
           Correction field and Path ID fields to all zeros</t>
 
@@ -605,7 +605,7 @@
           temperature of the crystal). Faster corrections of time can minimize
           the time error, but increase the frequency error, which transfers to
           clients using that clock as a time source and increases their
-          frequency and time errors. This issue can be avoided by transfering
+          frequency and time errors. This issue can be avoided by transferring
           time and frequency separately using different clocks.</t>
 
         <t>The Monotonic Timestamp Extension Field contains an extra receive
@@ -684,7 +684,7 @@
         mode if supported on the server. In the basic mode, the transmit
         timestamp in the server response corresponds to the message which
         contains the timestamp itself. In the interleaved mode it corresponds
-        to a previous response indentified by the server cookie. The
+        to a previous response identified by the server cookie. The
         interleaved mode enables the server to provide the client with a more
         accurate transmit timestamp which is available only after the previous
         response was formed or sent.</t>
