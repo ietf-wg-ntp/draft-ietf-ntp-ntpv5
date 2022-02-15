@@ -416,14 +416,96 @@
           authenticator field.</t>
       </section>
 
-      <section title="Reference IDs Extension Field">
-        <t>This field allows servers to prevent synchronization loops, i.e.
-          synchronizing to one of its direct or indirect clients. It contains a
-          set (bloom filter) of reference IDs.</t>
+      <section title="Reference IDs Request and Response Extension Fields">
+        <t>Each NTPv5 server has a randomly generated 120-bit reference ID. The
+          extension fields described in this section are used to exchange sets
+          of reference IDs in order to detect synchronization loops, i.e. when
+          a client is synchronizing (directly or indirectly) to one of its own
+          clients.</t>
 
-        <t>TODO</t>
+        <t>As each client can be synchronized to an unlimited number of
+          servers (and there can be up to 15 strata of servers), the reference
+          IDs are exchanged as a Bloom filter instead of a list to limit the
+          amount of data that needs to be exchanged.</t>
 
-        <t>This field MUST be supported on server.</t>
+        <t>The Bloom filter is an array of 4096 bits. When empty, all bits are
+          zero. To add a reference ID to the filter, the 120-bit value of the
+          reference ID is split into 10 12-bit values and the bits of the array
+          at the 10 positions given by the 12-bit values are set to one.</t>
+
+        <t>A server maintains a copy of the filter for each server it is using
+          as an NTP client. The filter provided by the server to clients is the
+          union of the filters (using the bitwise OR operation) of the server's
+          sources selected for synchronization and the server's own reference
+          ID.</t>
+
+        <t>If the server uses a previous version of NTP for some of its
+          sources, the reference IDs added to the filter are generated from
+          their IP addresses as the first 120 bits of the MD5 sum of the
+          address.</t>
+
+        <t>A client checking whether the server's set of reference IDs contains
+          the client's own reference ID checks whether the bits at the 10
+          positions corresponding to the 12-bit values from the reference ID
+          are all set to one. False positives are possible, but should be very
+          rare for the specified length of the filter, even with a large number
+          of reference IDs in the filter.</t>
+
+        <t>The filter can be exchanged as a single 512-octet array, or it can
+          be exchanged in smaller chunks over multiple NTP messages, making
+          them shorter, but delaying the detection of the synchronization
+          loop.</t>
+
+        <t>The request extension field specifies the offset of the requested
+          chunk in the filter as a number of octets. The requested length of
+          the chunk is given by the length of the extension field. The response
+          extension field MUST have the same length as the request extension
+          field. If the request contains an invalid offset, the extension field
+          MUST be ignored.</t>
+
+        <t>The client SHOULD use requests of a constant length for the
+          association to avoid adding a variation to the measured NTP
+          delay.</t>
+
+        <t>The format of the Reference IDs Request is shown in Figure <xref
+          format="counter" target="reference-ids-req-ext-field"/>.</t>
+
+        <figure align="center" anchor="reference-ids-req-ext-field"
+            title="Format of Reference IDs Request Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Type              |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|            Offset             |                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
+.                                                               .
+.                        Padding (variable)                     .
+.                                                               .
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>The format of the Reference IDs Response is shown in Figure <xref
+          format="counter" target="reference-ids-res-ext-field"/>.</t>
+
+        <figure align="center" anchor="reference-ids-res-ext-field"
+            title="Format of Reference IDs Response Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Type              |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+.                                                               .
+.                  Bloom filter chunk (variable)                .
+.                                                               .
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>These fields MUST be supported on server.</t>
       </section>
 
       <section title="Server Information Extension Field">
@@ -844,6 +926,12 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
           <t>Calculates the offset, delay, and dispersion.</t>
         </list>
       </t>
+
+      <t>A client which operates as a server for other clients MUST include the
+        Reference IDs Request Extension Field in its requests in order to track
+        reference IDs of its sources. If the server's set of reference IDs
+        contains the client's own reference ID, it SHOULD not select the server
+        for synchronization to avoid a synchronization loop.</t>
     </section>
 
     <section title="Server Operation">
@@ -874,9 +962,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         </list>
       </t>
 
-      <t>The server has a randomly generated reference ID and it MUST track
-        reference IDs of its servers using the Reference IDs Extension
-        Field.</t>
+      <t>The server has a randomly generated 120-bit reference ID. It MUST
+        track reference IDs of its servers in order to be able to respond with
+        a Reference IDs Response Extension Field.</t>
 
       <t>For each received request, the server:
         <list style="numbers">
