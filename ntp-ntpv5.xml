@@ -808,7 +808,7 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
         target="I-D.ietf-ntp-interleaved-modes">NTP Interleaved Modes</xref>.
         The difference between the NTPv5 and NTPv4 interleaved modes is that in
         NTPv5 it is enabled with a flag and the previous transmit timestamp on
-        the server is identified by a random cookie instead of the receive
+        the server is identified by the server cookie instead of the receive
         timestamp.</t>
 
       <t>An example of an NTPv5 exchange using the interleaved mode is shown in
@@ -1014,10 +1014,11 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
               <t>Server Cookie is set when the interleaved
                 mode is requested and it is supported by the server, even if
-                the response cannot be in the requested mode yet due to the
-                request having an invalid server cookie. The cookie identifies
-                a more accurate transmit timestamp, which can be retrieved by
-                the client later with another request.</t>
+                the response cannot be in the requested mode due to the request
+                having an unknown or invalid server cookie. The cookie
+                identifies a more accurate transmit timestamp of the response,
+                which can be retrieved by the client later with another
+                request. The cookie generation is implementation-specific.</t>
 
               <t>Client Cookie is set to the Client Cookie from the
                 request.</t>
