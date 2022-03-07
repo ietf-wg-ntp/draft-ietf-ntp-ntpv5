@@ -266,7 +266,7 @@
           </t>
 
           <t hangText="Stratum"><vspace/>
-            A 4-bit field containing the stratum of host. Primary time
+            A 4-bit field containing the stratum of the server. Primary time
             servers have a stratum of 1, their clients have a stratum of 2, and
             so on. The value of 0 indicates an unknown or infinite stratum. In
             requests it is always 0.</t>
@@ -379,7 +379,7 @@
 
       <t>Each extension field has a header which contains a 16-bit type and
         16-bit length. The length is in octets and it includes the header. The
-        minimum length is 4, i.e. an extension field doesn't have to contain
+        minimum length is 4, i.e. an extension field does not have to contain
         any data. If the length is not divisible by 4, the extension field is
         padded with zeroes to the smallest multiple of 4 octets.</t>
 
@@ -400,7 +400,7 @@
 
       <section title="Padding Extension Field">
         <t>This field is used by servers to pad the response to the same length
-          as the request if the response doesn't contain all requested
+          as the request if the response does not contain all requested
           extension fields, or some have a variable length. It can have any
           length.</t>
 
@@ -692,7 +692,7 @@
 
         <t>The Monotonic Timestamp Extension Field contains an extra receive
           timestamp with a 32-bit epoch identifier captured by a clock which
-          doesn't have corrected phase and can better transfer frequency than
+          does not have corrected phase and can better transfer frequency than
           the clock which captures the receive and transmit timestamps in the
           header. The extension field has a constant length of 16 octets. In
           requests, the counter and timestamp are always 0.</t>
@@ -939,7 +939,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         MUST support measurements in the basic mode. It MAY support the
         interleaved mode.</t>
 
-      <t>For the basic mode the server doesn't need to keep any
+      <t>For the basic mode the server does not need to keep any
         client-specific state. For the interleaved mode it needs to save
         transmit timestamps and be able to identify them by a cookie.</t>
 
