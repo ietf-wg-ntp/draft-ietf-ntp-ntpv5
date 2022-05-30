@@ -1,5 +1,5 @@
 XML2RFC = xml2rfc
-XML2RFC_OPTIONS = -N
+XML2RFC_OPTIONS =
 
 XMLS := $(wildcard *.xml)
 TXTS := $(patsubst %.xml,%.txt,$(XMLS))
@@ -10,7 +10,7 @@ txt: $(TXTS)
 html: $(HTMLS)
 
 %.txt: %.xml
-	$(XML2RFC) $(XML2RFC_OPTIONS) --raw -o $@ $<
+	$(XML2RFC) $(XML2RFC_OPTIONS) --text -o $@ $<
 
 %.html: %.xml
 	$(XML2RFC) $(XML2RFC_OPTIONS) --html -o $@ $<
