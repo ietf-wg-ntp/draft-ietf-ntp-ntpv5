@@ -287,15 +287,15 @@
 
             <list style="hanging">
               <t hangText="0x1: Unknown leap"><vspace/>
-                In requests it is zero. In responses it indicates the server
-                does not have a time source which provides information about
-                leap seconds and the client should interpret the Leap Indicator
-                as having only two values: synchronized (0) and not
-                synchronized (3).</t>
+                In requests it is 0. In responses a value of 1 indicates the
+                server does not have a time source which provides information
+                about leap seconds and the client should interpret the Leap
+                Indicator as having only two possible values: synchronized (0)
+                and not synchronized (3).</t>
               <t hangText="0x4: Interleaved mode"><vspace/>
-                In requests it is a request for a response in the interleaved
-                mode. In responses it indicates the response is in the
-                interleaved mode.</t>
+                In requests a value of 1 is a request for a response in the
+                interleaved mode. In responses a value of 1 indicates the
+                response is in the interleaved mode.</t>
             </list>
           </t>
 
