@@ -449,9 +449,24 @@
         <t>A client checking whether the server's set of reference IDs contains
           the client's own reference ID checks whether the bits at the 10
           positions corresponding to the 12-bit values from the reference ID
-          are all set to one. False positives are possible, but should be very
-          rare for the specified length of the filter, even with a large number
-          of reference IDs in the filter.</t>
+          are all set to one.</t>
+
+        <t>When a client which serves time to other clients detects a
+          synchronization loop with one of its servers, it SHOULD stop using
+          the server for synchronization. When the client's reference ID is
+          no longer detected in the server's filter, it SHOULD wait for a
+          random number of polling intervals (e.g. between 0 and 4) before
+          selecting the server again. The random delay helps with stabilization
+          of the selection in longer loops.</t>
+
+        <t>False positives are possible. The probability of a collision grows
+          with the number of reference IDs in the filter. With 26 reference IDs
+          it is about 1e-12. With 118 IDs it is about 1e-6. The client MAY avoid
+          selecting a server which has too many bits set in the filter (e.g.
+          more than half) to reduce the probability of the collision for its
+          own clients. A client which detected a synchronization loop MAY
+          change its own reference ID to limit the duration of the potential
+          collision.</t>
 
         <t>The filter can be exchanged as a single 512-octet array, or it can
           be exchanged in smaller chunks over multiple NTP messages, making
