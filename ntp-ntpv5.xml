@@ -1088,11 +1088,12 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         it SHOULD respond with the same reference timestamp to indicate
         it supports NTPv5.</t>
 
-      <t>An NTP client which supports both NTPv4 and NTPv5, and is not
-        configured to use a particular version, SHOULD start with NTPv4
-        requests having the reference timestamp set to 0x4e5450354e545035.
-        If the server responds with the same reference timestamp, the client
-        SHOULD switch to NTPv5.</t>
+      <t>An NTP client which supports both NTPv4 and NTPv5, does not use NTS,
+        and is not configured to use a particular NTP version, SHOULD start
+        with NTPv4 and set the reference timestamp to 0x4e5450354e545035. If
+        the server responds with the same reference timestamp, the client
+        SHOULD switch to NTPv5. If no valid response is received for a number
+        of requests (e.g. 8), the client SHOULD switch back to NTPv4.</t>
     </section>
 
     <section anchor="Acknowledgements" title="Acknowledgements">
