@@ -978,14 +978,13 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
           <t>Checks the version in the request. If it is not equal to 5, it
             MUST either drop the request, or handle it according to the
-            specification corresponding to the protocol version. The server MAY
-            respond with an NTPv5 message if and only if the request has
-            version 5.</t>
+            specification corresponding to the protocol version.</t>
 
           <t>Drops the request if the format is not valid, mode is not 3, or
-            authentication fails if the MAC Extension Field or another
-            authenticator field is present. The server MUST ignore unknown
-            extension fields.</t>
+            authentication fails with the MAC Extension Field or another
+            authenticator which does not have a specified response for failed
+            authentication. The server MUST ignore unknown extension
+            fields.</t>
 
           <t>Server forms a response with requested extension fields and sets
             the fields in the header as follows:
