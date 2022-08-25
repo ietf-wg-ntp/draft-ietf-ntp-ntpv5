@@ -293,7 +293,7 @@
                 about leap seconds and the client should interpret the Leap
                 Indicator as having only two possible values: synchronized (0)
                 and not synchronized (3).</t>
-              <t hangText="0x4: Interleaved mode"><vspace/>
+              <t hangText="0x2: Interleaved mode"><vspace/>
                 In requests a value of 1 is a request for a response in the
                 interleaved mode. In responses a value of 1 indicates the
                 response is in the interleaved mode.</t>
