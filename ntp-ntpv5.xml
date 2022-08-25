@@ -769,7 +769,7 @@
         contains the timestamp itself. In the interleaved mode it corresponds
         to a previous response identified by the server cookie. The
         interleaved mode enables the server to provide the client with a more
-        accurate transmit timestamp which is available only after the previous
+        accurate transmit timestamp which is available only after the
         response was formed or sent.</t>
 
       <t>An example of cookies and timestamps in an NTPv5 exchange using the
@@ -892,11 +892,15 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
                 polling interval in seconds.</t>
 
               <t>Flags are set according to the requested mode. The interleaved
-                mode flag requests a response in the interleaved mode.</t>
+                mode flag requests the server to save the transmit timestamp of
+                the response and provide the transmit timestamp of a previous
+                response corresponding to the server cookie (if not zero).</t>
 
-              <t>Server cookie is set only in the interleaved mode. If a valid
-                response from the server was received previously, it is set to
-                the server cookie from the previous response.</t>
+              <t>Server cookie is set only in the interleaved mode. It is set
+                to the server cookie from the last valid response, or zero if
+                no such response was received yet or the transmit timestamp of
+                that response would no longer be useful to the client (e.g.
+                after missing too many responses).</t>
 
               <t>Client cookie is set to the newly generated cookie.</t>
             </list>
@@ -1016,7 +1020,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
               <t>Server Cookie is set when the interleaved
                 mode is requested and it is supported by the server, even if
                 the response cannot be in the requested mode due to the request
-                having an unknown or invalid server cookie. The cookie
+                having an unknown or zero server cookie. The cookie
                 identifies a more accurate transmit timestamp of the response,
                 which can be retrieved by the client later with another
                 request. The cookie generation is implementation-specific.</t>
