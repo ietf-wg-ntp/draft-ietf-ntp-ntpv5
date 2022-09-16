@@ -18,7 +18,7 @@
 <?rfc sortrefs="yes"?>
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
-
+<!--UW: I'll add my comments as XML comments like this -->
 <rfc category="std" docName="draft-mlichvar-ntp-ntpv5-05" ipr="trust200902">
   <front>
     <title>Network Time Protocol Version 5</title>
@@ -50,6 +50,9 @@
     </abstract>
   </front>
 
+  <!--UW: In general: I don't vote for or against this draft, but just point
+      out how to improve that draft -->
+
   <middle>
     <section title="Introduction">
       <t>Network Time Protocol (NTP) is a protocol which enables computers to
@@ -73,7 +76,10 @@
             denial-of-service traffic amplification attacks. Only the client
             and server modes remain in NTPv5.</t>
 
-          <t>Timestamps are clearly separated from values used as cookies.</t>
+            <t>Timestamps are clearly separated from values used as cookies.</t>
+	    <!--UW: In general it would be advisable to define phrases before
+		using them; "cookies", "MAC field" and "timescales" for
+		example. -->
 
           <t>NTPv5 messages can be extended only with extension fields. The MAC
             field is wrapped in an extension field.</t>
@@ -89,13 +95,18 @@
             years.</t>
 
           <t>NTPv5 adds a new measurement mode to provide clients with more
-            accurate transmit timestamps.</t>
+          accurate transmit timestamps.</t>
+	  <!--UW: Should that "new measurement mode" have a name? -->
 
           <t>NTPv5 works with sets of reference IDs to prevent synchronization
-            loops over multiple hosts.</t>
+          loops over multiple hosts.</t>
+	  <!--UW: Should "sets of reference IDs" be defined, specifically
+	      "reference ID"? -->
 
           <t>Resolution of the root delay and root dispersion fields is
-            improved.</t>
+          improved.</t>
+	  <!--UW: Should the improvement be explained? What is it
+	      specifically? -->
 
           <t>Clients don't leak information about their clock (e.g.
             timestamps).</t>
@@ -143,31 +154,36 @@
     </section>
 
     <section title="Data Types">
+      <!--UW: In general I'd define any data type that occurs in a packet here
+      -->
       <t>NTPv5 uses few different data types. They are all in the network
         order. Beside signed and unsigned integers, it has also the following
         fixed-point types:
 
         <list style="hanging">
           <t hangText="time16"><vspace/>
-            A 16-bit fixed-point type containing values in seconds. It has 1
-            signed integer bit (i.e. it is just the sign) and 15 fractional
-            bits. The minimum value is the fraction -32767/32768 (almost -1
+            A 16-bit signed fixed-point type containing values in seconds. It has 1
+            sign bit (i.e. it is just the sign) and 15 bits describing the fractional
+            part. The minimum value is the fraction -32767/32768 (almost -1
             second), the maximum value is 32767/32768 (almost 1 second), and
             the resolution is about 30 microseconds. The type has a special
-            value of 0x8000, which indicates an unknown value.</t>
+            value of 0x8000 ("-0"), which indicates an unknown value.</t>
 
           <t hangText="time32"><vspace/>
-            A 32-bit fixed-point type containing values in seconds. It has 4
-            unsigned integer bits and 28 fractional bits. The maximum value is
+            A 32-bit unsigned fixed-point type containing values in seconds. It has 4
+            bits describing the unsigned integral part and 28 bits describing
+	    the fractional part. The maximum value is
             16 seconds and the resolution is about 3.7 nanoseconds. Note that
-            this is different than the 32-bit time format in NTPv4.</t>
+            this is different from the 32-bit time format in NTPv4.</t>
 
           <t hangText="timestamp64"><vspace/>
-            A 64-bit fixed-point type containing timestamps. It has 32 signed
+            A 64-bit unsigned fixed-point type containing a timestamp
+	    describes in seconds. It has 32 signed
             integer bits and 32 fractional bits. It spans an interval of about
             136 years and has a resolution of about 0.23 nanoseconds. It can be
             used in different timescales. In the UTC timescale it is the number
             of SI seconds since 1 Jan 1972 plus 2272060800, excluding leap
+	    <!--UW: Explain the magic number! -->
             seconds. Timestamps in the TAI timescale are the same except they
             include leap seconds and extra 10 seconds for the original
             difference between TAI and UTC in 1972, when leap seconds were
@@ -176,11 +192,14 @@
             number 1, and so on.</t>
         </list>
       </t>
-
+      <!--UW: I would add more types like s_log8 (signed number expressed as a
+          power of two using 8 bits, maybe including an undefined value),
+          u_log8 (unsigned number expressed as a power of two using 8 bits,
+          s_i16 (signed interger using 16 bits) -->
       <t>Some fields use a logarithmic scale, where an 8-bit signed integer
         represents the rounded log2 value of seconds. For example, a log2 value
-        of 4 is 2 to the power of 4 (16 seconds), or a log2 value of -2 is 2 to
-        the power of -2 (0.25 seconds).</t>
+        of 4 is 2^4 (2 to the power of 4, 16) seconds, or a log2 value of -2
+	is 2^-2 (0.25 seconds).</t>
     </section>
 
     <section title="Message Format">
@@ -190,7 +209,10 @@
           target="message-format"/>.</t>
 
       <figure align="center" anchor="message-format"
-          title="Format of NTPv5 messages">
+              title="Format of NTPv5 messages">
+	<!--UW: I'd assign a short label for the fields with a long name, used
+	     to reference them uniquely in the main text (like "CC" for
+	     "Client Cookie") -->
         <artwork><![CDATA[
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -273,13 +295,19 @@
             so on. The value of 0 indicates an unknown or infinite stratum. In
             requests it is always 0.</t>
 
-          <t hangText="Poll"><vspace/>
+            <t hangText="Poll"><vspace/>
+	    <!--UW: This could be the s_log8 data type, no need to explain it
+	        again, just saying it specifies the polling interval in
+	        seconds. -->
             An 8-bit signed integer containing the polling interval as a
             rounded log2 value in seconds. In requests it is the current
             polling interval. In responses it is the minimum allowed polling
             interval.</t>
 
           <t hangText="Precision"><vspace/>
+	  <!--UW: This could be the s_log8 data type, no need to explain it
+	      again; you could specify that requests use the undefined
+	      ("-0") value instead of zero -->
             An 8-bit signed integer containing the precision of the timestamps
             included in the message as a rounded log2 value in seconds. In
             requests, which don't contain any timestamps, it is always 0.</t>
@@ -305,22 +333,33 @@
             An 8-bit unsigned NTP era number corresponding to the receive
             timestamp. In requests it is always 0.</t>
 
-          <t hangText="Timescale Offset"><vspace/>
+            <t hangText="Timescale Offset"><vspace/>
+	    <!--UW: This could be the s_i16 type -->
             A 16-bit value specific to the selected timescale, which is
             referenced to the receive timestamp. In requests it is always
             0.
+	    <!--UW: A high-level description is missing -->
 
             <list style="symbols">
               <t>In the UTC (0) and TAI (1) timescales it is the TAI-UTC offset
                 (TAI minus UTC) as a signed integer, or 0x8000 if unknown.</t>
               <t>In the UT1 timescale (2) it is the UT1-UTC offset (UT1 minus
-                UTC) using the time16 type (0x8000 if unknown).</t>
+              UTC) using the time16 type (0x8000 if unknown).</t>
+	      <!--UW: Shouldn't it be something like UT1-TAI instead (or
+	          TAI-UT1?)? -->
+	      <!--UW: I also think it's bad design to use two different data
+		  types in one field -->
               <t>In the leap-smeared UTC (3), it is the current offset between
                 the leap smeared time and UTC (former minus latter) using the
                 time16 type (0x8000 if unknown).</t>
+		<!--UW: Again: when not based on TAI? -->
+		<!--UW: Depends on the high-level definition that is
+		    missing... -->
             </list>
           </t>
 
+	  <!--UW: I wonder: Maybe the data type should be given in parentheses
+	      after the field name(s) -->
           <t hangText="Root Delay"><vspace/>
             A field using the time32 type. In responses it is the server's root
             delay. In requests it is always 0.</t>
@@ -338,16 +377,17 @@
             A 64-bit field containing a random number generated by the client.
             Responses contain a copy of the field from the corresponding
             request, which allows the client to verify that the responses
-            are valid responses to the requests.</t>
+            are related to the requests.</t>
 
           <t hangText="Receive Timestamp"><vspace/>
             A field using the timestamp64 type. In requests it is always
-            0. In responses it is the time when the request was received. The
+            0. In responses it is the time when the request was received by
+	    the server. The
             timestamp corresponds to the end of the reception.</t>
 
           <t hangText="Transmit Timestamp"><vspace/>
             A field using the timestamp64 type. In requests it is always
-            0. In responses it is the beginning of the transmission of a
+            0. In responses it is the server's time denoting the beginning of the transmission of a
             response to the client. Which response it refers to depends
             on the selected mode (basic or interleaved). See <xref
             target="measurement-modes">Measurement Modes</xref> for detail.</t>
@@ -355,8 +395,8 @@
       </t>
 
       <t>The header has 48 octets, which is the minimum length of a valid NTPv5
-        message. A message can contain zero, one, or multiple extension fields.
-        The maximum length is not specified, but the length is always divisible
+        message. A message can contain optional extension fields (zero or more).
+        The maximum length is not specified, but the length MUST be divisible
         by 4.</t>
     </section>
 
@@ -395,9 +435,12 @@
       <t>Extension fields specified for NTPv4 can be included in NTPv5 messages
         as specified for NTPv4.</t>
 
-      <t>The rest of this section describes new extension fields specified for
+	<t>The rest of this section describes new extension fields specified for
+	<!--UW: "new" is bad here; I'd leave it out as the rest of the draft
+	    does not use NTPv4 extension fields -->
         NTPv5. Clients are not required to use or support any of these
         extension fields, but servers are required to support some extension
+	<!--UW: "some" is very vague here; be specific! -->
         fields.</t>
 
       <section title="Padding Extension Field">
@@ -406,7 +449,10 @@
           extension fields, or some have a variable length. It can have any
           length.</t>
 
-        <t>This field MUST be supported on server.</t>
+          <t>This field MUST be supported on server.</t>
+	  <!--UW: The specification should be improved, e.g.: The sender
+	      SHOULD fill the field with binary zeroes, and the receiver MUST
+	      ignore then content -->
       </section>
 
       <section title="MAC Extension Field">
@@ -419,7 +465,10 @@
       </section>
 
       <section title="Reference IDs Request and Response Extension Fields">
-        <t>Each NTPv5 server has a randomly generated 120-bit reference ID. The
+        <t>Each NTPv5 server has a randomly generated 120-bit reference
+	ID. The
+	<!--UW: At this point tha "magic" value 120 should be explained; why
+	    120? -->
           extension fields described in this section are used to exchange sets
           of reference IDs in order to detect synchronization loops, i.e. when
           a client is synchronizing (directly or indirectly) to one of its own
@@ -428,6 +477,7 @@
         <t>As each client can be synchronized to an unlimited number of
           servers (and there can be up to 15 strata of servers), the reference
           IDs are exchanged as a Bloom filter instead of a list to limit the
+	  <!--UW: Add a reference for "Bloom Filter" -->
           amount of data that needs to be exchanged.</t>
 
         <t>The Bloom filter is an array of 4096 bits. When empty, all bits are
@@ -439,7 +489,9 @@
           as an NTP client. The filter provided by the server to clients is the
           union of the filters (using the bitwise OR operation) of the server's
           sources selected for synchronization and the server's own reference
-          ID.</t>
+        ID.</t>
+	<!--UW: The above sounds quite abstract; maybe give a an example
+	    (appendix?) -->
 
         <t>If the server uses a previous version of NTP for some of its
           sources, the reference IDs added to the filter are generated from
@@ -451,9 +503,13 @@
           positions corresponding to the 12-bit values from the reference ID
           are all set to one.</t>
 
-        <t>When a client which serves time to other clients detects a
+          <t>When a client which serves time to other clients detects a
+	  <!--UW: Isn't "a client which serves time to other clients" "the
+	      server part of a client"? -->
+
           synchronization loop with one of its servers, it SHOULD stop using
-          the server for synchronization. When the client's reference ID is
+	  <!--UW: Formally define "synchronization loop"! -->
+          the <!--UW: particular -->server for synchronization. When the client's reference ID is
           no longer detected in the server's filter, it SHOULD wait for a
           random number of polling intervals (e.g. between 0 and 4) before
           selecting the server again. The random delay helps with stabilization
@@ -461,12 +517,12 @@
 
         <t>False positives are possible. The probability of a collision grows
           with the number of reference IDs in the filter. With 26 reference IDs
-          it is about 1e-12. With 118 IDs it is about 1e-6. The client MAY avoid
+          it is about 1e-12.<!-- please explain giving a formula! --> With 118 IDs it is about 1e-6. The client MAY avoid
           selecting a server which has too many bits set in the filter (e.g.
           more than half) to reduce the probability of the collision for its
           own clients. A client which detected a synchronization loop MAY
           change its own reference ID to limit the duration of the potential
-          collision.</t>
+          collision.</t><!--UW: Please explain the last sentence! -->
 
         <t>The filter can be exchanged as a single 512-octet array, or it can
           be exchanged in smaller chunks over multiple NTP messages, making
@@ -605,24 +661,33 @@
                A field which contains a copy of the accumulated delay
                correction from the request packet in the NTP exchange.</t>
 
-            <t hangText="Origin ID"><vspace/>
+               <t hangText="Origin ID"><vspace/>
+	       <!--UW: (See my earlier comment on labels) In figure 6 the
+		   label is "Origin path ID"; please be consistent! -->
                A field which contains a copy of the final path ID from the
+	       <!--UW: Explain "path ID" -->
                request packet in the NTP exchange.</t>
 
             <t hangText="Reserved"><vspace/>
                16 bit reserved for future specification by the IETF.
                Transmit with all zeros.</t>
 
-            <t hangText="Delay Correction"><vspace/>
+               <t hangText="Delay Correction"><vspace/>
+	       <!--UW: Is there a specific reason to add yet another datatype
+		   instead of using "timestamp64"? -->
                A signed fixed-point number of nanoseconds with 48 integer
                bits and 16 binary fractional bits, which represents the current
                correction of the network delay that has accumulated for this
                packet on the path from the source to the destination. The
                format of this field is identical to the PTP correctionField.</t>
+	       <!--UW: Is it necessary to use the PTP format here? The
+		   hardware owuld have to be adapted for NTP anyway -->
 
             <t hangText="Path ID"><vspace/>
                A 16-bit identification number of the path where the delay
-               correction was updated.</t>
+            correction was updated.</t>
+	    <!--UW: Please explain construction and use of the (u16?) number!
+	    -->
 
             <t hangText="Checksum Complement"><vspace/>
                A field which can be modified in order to keep the UDP
@@ -633,12 +698,12 @@
           </list>
         </t>
 
-        <t>A correction capable client SHALL transmit the request with the
+        <t>A correction capable client system SHALL transmit the request with the
           Origin Correction, Origin ID, Delay Correction and Path ID fields
           filled with all zeros.</t>
 
-        <t>Network nodes, such as switches and routers, that are NTP
-          corrections capable SHALL add the difference between the beginning of
+        <t>Network nodes, such as switches and routers, that are capable of NTP
+          corrections SHALL add the difference between the beginning of
           an NTP message retransmission and the end of the message reception to
           the received Delay Correction value, and update this field. Note that
           this time difference might be negative, for example in a cut-through
@@ -673,11 +738,12 @@
       </section>
 
       <section title="Reference Timestamp Extension Field">
-        <t>This fields contains the time of the last update of the clock. It
-          has a fixed length of 12 octets. In requests, the timestamp is always
+        <t>This field contains the time of the last update of the clock. It
+          has a fixed length of 12 octets. In requests, that timestamp is always
           0.</t>
 
-        <t>(Is this really needed? It was mostly unused in NTPv4.)</t>
+          <t>(Is this really needed? It was mostly unused in NTPv4.)</t>
+	  <!--UW: Please explain format and semantics! -->
 
         <figure align="center" anchor="reference-timestamp-ext-field"
             title="Format of Reference Timestamp Extension Field">
@@ -714,7 +780,7 @@
           header. The extension field has a constant length of 16 octets. In
           requests, the counter and timestamp are always 0.</t>
 
-        <t>The epoch identifier is a random number which is changed when
+        <t>The epoch identifier <!--UW: It's "epoch ID" elsewhere; be consistent! -->is a random number which is changed when
           frequency transfer needs to be restarted, e.g. due to a step of the
           clock.</t>
 
@@ -747,6 +813,8 @@
 
     <section title="Measurement Modes" anchor="measurement-modes">
 
+      <!--UW: Shouldn't you give at least a sketch of the NTP algorithms here?
+      -->
       <t>An NTPv5 client needs four timestamps to measure the offset and delay
         of its clock relative to the server's clock:
 
@@ -762,11 +830,13 @@
 
         <list style="symbols">
           <t>offset = ((T2 + T3) - (T4 + T1) + (Cd - Co)) / 2</t>
+	  <!--UW: The use of the "Cd" and "Co" labels is inconsistent; see
+	      what I write earlier on use of field names and labels -->
           <t>delay = |(T4 - T1) - (T3 - T2) - (Cd + Co)|</t>
           <t>dispersion = |T4 - T1| * DR</t>
         </list>
 
-        where
+        where<!-- Shouldn't these definitions be given before the formulas? -->
 
         <list style="symbols">
           <t>T1, T2, T3, T4 are the receive and transmit timestamps of a
@@ -775,7 +845,8 @@
             present in the response and has acceptable values, zero otherwise</t>
           <t>Cd is the Delay Correction from the Correction Extension Field if
             present in the response and has acceptable values, zero otherwise</t>
-          <t>DR is the client's dispersion rate</t>
+            <t>DR is the client's dispersion rate</t>
+	    <!--UW: Pleae define "client's dispersion rate"! -->
         </list>
       </t>
 
@@ -786,11 +857,16 @@
         to a previous response identified by the server cookie. The
         interleaved mode enables the server to provide the client with a more
         accurate transmit timestamp which is available only after the
-        response was formed or sent.</t>
+      response was formed or sent.</t>
+      <!--UW: Explain interleave mode in greater detail; leaving out the
+	  algorithms and just claiming the "correct" values should be in the
+	  packet is a strange concept. -->
 
       <t>An example of cookies and timestamps in an NTPv5 exchange using the
         basic mode is shown in Figure <xref format="counter"
         target="basic-exchange"></xref>.</t>
+	<!--UW: The role of the cookies should be explained in greater detail
+	    IMHO -->
 
       <figure align="center" anchor="basic-exchange"
           title="Cookies and timestamps in basic mode">
@@ -809,6 +885,8 @@ Rx  | 0  |    | t2 |      | 0  |    | t6 |      | 0  |    |t10 |
 Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
     +----+    +----+      +----+    +----+      +----+    +----+
         ]]></artwork>
+	<!--UW: maybe refer to figure 1 and the matching labels (to be added!)
+	-->
       </figure>
 
       <t>From the three exchanges in this example, the client would use the
@@ -833,6 +911,7 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
         The messages in the basic and interleaved mode are indicated with B and
         I respectively. The timestamps t3' and t11' correspond to the same
         transmissions as t3 and t11, but they may be less accurate. The first
+	<!--UW: It's not obvious what the reason for t3' and T11' is -->
         exchange is in the basic mode followed by a second exchange in the
         interleaved mode. For the third exchange, the client request is in the
         interleaved mode, but the server response is in the basic mode, because
@@ -883,7 +962,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       <t>The polling interval can be adjusted for the network conditions and
         stability of the clock. When polling a public server on Internet, the
         client SHOULD use at least a polling interval of 64 seconds, increasing
-        up to at least 1024 seconds.</t>
+      up to at least 1024 seconds.</t>
+      <!--UW: Why exactly those numbers; explain! -->
 
       <t>Each successful measurement provides the client with an offset, delay
         and dispersion. When combined with the server's root delay and
@@ -893,6 +973,11 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
         <list style="numbers">
           <t>Generates a new random cookie.</t>
+	  <!--UW: Is it a "new" coockie in the sense of NONCE, or is it a
+	      random cookie (which is also new in most cases); if it has to be
+	      random AND unique, say so!-->
+	  <!--UW: Also: Shouldn't the list start with the second item, and
+	      talking about the cookie when it it needed? -->
 
           <t>Formats a request with necessary extension fields and the fields
             in the header all zero except:
@@ -905,7 +990,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
                 operate.</t>
 
               <t>Poll is set to the rounded log2 value of the current client's
-                polling interval in seconds.</t>
+              polling interval in seconds.</t>
+	      <!--UW: Why does it have to be set? -->
 
               <t>Flags are set according to the requested mode. The interleaved
                 mode flag requests the server to save the transmit timestamp of
@@ -923,10 +1009,12 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
           </t>
 
           <t>Sends the request to the server to the UDP port 123 and captures a
-            transmit timestamp.</t>
+            transmit timestamp for the packet.</t>
 
-          <t>Waits for a valid response from the server and captures a receive
-            timestamp. A valid response has version 5, mode 4, client cookie
+          <t>Waits a specific time for a valid<!--UW: What happens with an
+	  invalid response? Does it wait for another packet, or does it simply
+	  wait "for a response (or timeout)"? --> response from the server and captures a receive
+            timestamp fo the packet. A valid response has version 5, mode 4, client cookie
             equal to the cookie from the request, and passes authentication if
             enabled. The client MUST ignore all invalid responses and accept at
             most one valid response.</t>
@@ -944,7 +1032,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             internally counts seconds using a type wider than 32 bits, it
             SHOULD expand the timestamps with the provided NTP era.</t>
 
-          <t>Calculates the offset, delay, and dispersion.</t>
+          <t>Calculates the offset, delay, and dispersion according to section
+	  "6. Measurement Modes"<!--UW: Make it a hyperlink, of course -->.</t>
         </list>
       </t>
 
@@ -972,7 +1061,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             maximum error cannot be estimated with the root delay and
             dispersion. Otherwise, it MUST be 0, 1, 2, depending on whether a
             leap second is pending in the next 14 day and, if it is, whether it
-            will be inserted or deleted.</t>
+          will be inserted or deleted.</t>
+	  <!--UW: Should there be an extension field describing the time (at
+	      least) of the leap event; maybe more details could be added. -->
           <t>Stratum SHOULD be one larger than stratum of the best
             server it uses for its own synchronization.</t>
           <t>Root delay SHOULD be the best server's root delay in addition to
@@ -1021,13 +1112,13 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
                     it has no source providing information about leap
                     seconds.</t>
                   <t hangText="Interleaved mode"> is set if the interleaved
-                    mode was requested and a response in the interleaved mode
+                    mode is implemented, was requested, and a response in the interleaved mode
                     is possible (i.e. a transmit timestamp is associated with
                     the server cookie).</t>
                 </list>
               </t>
 
-              <t>Era is set to the NTP era of the receive timestamp.</t>
+              <t>Era is set to the NTP era of the receive timestamp if it was valid.</t>
 
               <t>Timescale Offset is set to the timescale-specific offset, or
                 0x8000 if unknown.</t>
@@ -1038,7 +1129,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
                 having an unknown or zero server cookie. The cookie
                 identifies a more accurate transmit timestamp of the response,
                 which can be retrieved by the client later with another
-                request. The cookie generation is implementation-specific.</t>
+              request. The cookie generation is implementation-specific.</t>
+	      <!--UW: I'd expect "random" or "NONCE", but is this for
+		  compatibility where it would just be a timestamp? This
+		  should be discussed IMHO -->
 
               <t>Client Cookie is set to the Client Cookie from the
                 request.</t>
