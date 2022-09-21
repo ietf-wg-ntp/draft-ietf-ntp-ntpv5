@@ -681,7 +681,7 @@
                packet on the path from the source to the destination. The
                format of this field is identical to the PTP correctionField.</t>
 	       <!--UW: Is it necessary to use the PTP format here? The
-		   hardware owuld have to be adapted for NTP anyway -->
+		   hardware would have to be adapted for NTP anyway -->
 
             <t hangText="Path ID"><vspace/>
                A 16-bit identification number of the path where the delay
