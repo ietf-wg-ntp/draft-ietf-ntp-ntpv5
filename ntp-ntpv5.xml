@@ -526,7 +526,8 @@
           ]]></artwork>
         </figure>
 
-        <t>These fields MUST be supported on server.</t>
+        <t>These fields MUST be supported on server which can be synchronized
+          to other NTP servers (i.e. it can be in a synchronization loop).</t>
       </section>
 
       <section title="Server Information Extension Field">
