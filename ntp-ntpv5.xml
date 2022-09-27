@@ -957,7 +957,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         Reference IDs Request Extension Field in its requests in order to track
         reference IDs of its sources. If the server's set of reference IDs
         contains the client's own reference ID, it SHOULD not select the server
-        for synchronization to avoid a synchronization loop.</t>
+        for synchronization to avoid a synchronization loop. If the client
+        is requesting the reference IDs in multiple chunks, it SHOULD NOT
+        select the server until it received the whole set.</t>
     </section>
 
     <section title="Server Operation">
