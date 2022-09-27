@@ -154,7 +154,8 @@
             bits. The minimum value is the fraction -32767/32768 (almost -1
             second), the maximum value is 32767/32768 (almost 1 second), and
             the resolution is about 30 microseconds. The type has a special
-            value of 0x8000, which indicates an unknown value.</t>
+            value of 0x8000, which indicates an unknown value or value that is
+            too large to be represented by this type.</t>
 
           <t hangText="time32"><vspace/>
             A 32-bit unsigned fixed-point type containing values in seconds. It
