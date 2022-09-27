@@ -138,8 +138,8 @@
         into account asymmetry in delay and stability of clocks and
         measurements.</t>
 
-      <t>Servers have randomly generated reference IDs to prevent
-        synchronization loops.</t>
+      <t>Servers have randomly generated reference IDs to enable detection and
+        prevention of synchronization loops.</t>
     </section>
 
     <section title="Data Types">
