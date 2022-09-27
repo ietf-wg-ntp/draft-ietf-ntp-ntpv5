@@ -88,14 +88,14 @@
             unambiguous interval of the client from 136 years to about 35000
             years.</t>
 
-          <t>NTPv5 adds a new measurement mode to provide clients with more
+          <t>NTPv5 adds interleaved mode to provide clients with more
             accurate transmit timestamps.</t>
 
           <t>NTPv5 works with sets of reference IDs to prevent synchronization
             loops over multiple hosts.</t>
 
           <t>Resolution of the root delay and root dispersion fields is
-            improved.</t>
+            improved from about 15 microseconds to about 4 nanoseconds.</t>
 
           <t>Clients don't leak information about their clock (e.g.
             timestamps).</t>
@@ -169,7 +169,8 @@
             integer bits and 32 fractional bits. It spans an interval of about
             136 years and has a resolution of about 0.23 nanoseconds. It can be
             used in different timescales. In the UTC timescale it is the number
-            of SI seconds since 1 Jan 1972 plus 2272060800, excluding leap
+            of SI seconds since 1 Jan 1972 plus 2272060800 (number of seconds
+            since 1 Jan 1900 assuming 86400-second days), excluding leap
             seconds. Timestamps in the TAI timescale are the same except they
             include leap seconds and extra 10 seconds for the original
             difference between TAI and UTC in 1972, when leap seconds were
@@ -399,16 +400,19 @@
       <t>Extension fields specified for NTPv4 can be included in NTPv5 messages
         as specified for NTPv4.</t>
 
-      <t>The rest of this section describes new extension fields specified for
+      <t>The rest of this section describes extension fields specified for
         NTPv5. Clients are not required to use or support any of these
-        extension fields, but servers are required to support some extension
-        fields.</t>
+        extension fields, but servers are required to support at least the
+        Padding Extension Field, and if they can be synchronized to another
+        server, also the Reference IDs Request and Response extension fields to
+        enable detection of synchronization loops.</t>
 
       <section title="Padding Extension Field">
         <t>This field is used by servers to pad the response to the same length
           as the request if the response does not contain all requested
           extension fields, or some have a variable length. It can have any
-          length.</t>
+          length. The data field of the extension field SHOULD contain zeros
+          and it MUST be ignored by the receiver.</t>
 
         <t>This field MUST be supported on server.</t>
       </section>
@@ -423,7 +427,8 @@
       </section>
 
       <section title="Reference IDs Request and Response Extension Fields">
-        <t>Each NTPv5 server has a randomly generated 120-bit reference ID. The
+        <t>Each NTPv5 server has a randomly generated 120-bit reference ID
+          (it will be split into 10 12-bit values). The
           extension fields described in this section are used to exchange sets
           of reference IDs in order to detect synchronization loops, i.e. when
           a client is synchronizing (directly or indirectly) to one of its own
@@ -610,7 +615,7 @@
                A field which contains a copy of the accumulated delay
                correction from the request packet in the NTP exchange.</t>
 
-            <t hangText="Origin ID"><vspace/>
+            <t hangText="Origin Path ID"><vspace/>
                A field which contains a copy of the final path ID from the
                request packet in the NTP exchange.</t>
 
@@ -713,13 +718,13 @@
           time and frequency separately using different clocks.</t>
 
         <t>The Monotonic Timestamp Extension Field contains an extra receive
-          timestamp with a 32-bit epoch identifier captured by a clock which
+          timestamp with a 32-bit epoch ID captured by a clock which
           does not have corrected phase and can better transfer frequency than
           the clock which captures the receive and transmit timestamps in the
           header. The extension field has a constant length of 16 octets. In
           requests, the counter and timestamp are always 0.</t>
 
-        <t>The epoch identifier is a random number which is changed when
+        <t>The epoch ID is a random number which is changed when
           frequency transfer needs to be restarted, e.g. due to a step of the
           clock.</t>
 
@@ -837,7 +842,8 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
         Figure <xref format="counter" target="interleaved-exchange"></xref>.
         The messages in the basic and interleaved mode are indicated with B and
         I respectively. The timestamps t3' and t11' correspond to the same
-        transmissions as t3 and t11, but they may be less accurate. The first
+        transmissions as t3 and t11, but they may be less accurate (e.g. due to
+        being captured in software before the transmission). The first
         exchange is in the basic mode followed by a second exchange in the
         interleaved mode. For the third exchange, the client request is in the
         interleaved mode, but the server response is in the basic mode, because
@@ -887,8 +893,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
       <t>The polling interval can be adjusted for the network conditions and
         stability of the clock. When polling a public server on Internet, the
-        client SHOULD use at least a polling interval of 64 seconds, increasing
-        up to at least 1024 seconds.</t>
+        client SHOULD use a polling interval of at least 64 seconds, increasing
+        in normal conditions up to at least 1024 seconds to avoid excessive
+        load on the server in case the implementation is used on a very large
+        number of systems.</t>
 
       <t>Each successful measurement provides the client with an offset, delay
         and dispersion. When combined with the server's root delay and
@@ -949,7 +957,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             internally counts seconds using a type wider than 32 bits, it
             SHOULD expand the timestamps with the provided NTP era.</t>
 
-          <t>Calculates the offset, delay, and dispersion.</t>
+          <t>Calculates the offset, delay, and dispersion as specified in
+            <xref target="measurement-modes">Measurement Modes</xref>.</t>
         </list>
       </t>
 
