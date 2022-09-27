@@ -1128,16 +1128,62 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
+      <t>IANA is requested to create a new registry for NTPv5 Extension Field
+        Types with initial entries including all entries from the <xref
+        target="RFC5905">NTPv4 Extension Field Types Registry</xref> and the
+        following NTPv5-specific entries:</t>
+
+      <texttable>
+        <ttcol>Field Type</ttcol>
+        <ttcol>Meaning</ttcol>
+        <ttcol>Reference</ttcol>
+
+        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>Padding</c>
+        <c>[[this memo]]</c>
+
+        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>MAC</c>
+        <c>[[this memo]]</c>
+
+        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>Reference IDs Request</c>
+        <c>[[this memo]]</c>
+
+        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>Reference IDs Response</c>
+        <c>[[this memo]]</c>
+
+        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>Server Information</c>
+        <c>[[this memo]]</c>
+
+        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>Correction</c>
+        <c>[[this memo]]</c>
+
+        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>Reference Timestamp</c>
+        <c>[[this memo]]</c>
+
+        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>Monotonic Timestamp</c>
+        <c>[[this memo]]</c>
+      </texttable>
+
       <t>IANA is requested to allocate the following protocol in the
         <xref target="RFC8915">Network Time Security Next Protocols
           Registry</xref>:</t>
 
-      <t><list>
-        <t>Protocol ID: [[TBD]], selected by IANA from the IETF Review
-          range</t>
-        <t>Protocol Name: Network Time Protocol version 5 (NTPv5)</t>
-        <t>Reference: [[this memo]]</t>
-      </list></t>
+      <texttable>
+        <ttcol>Protocol ID</ttcol>
+        <ttcol>Protocol Name</ttcol>
+        <ttcol>Reference</ttcol>
+
+        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>Network Time Protocol version 5 (NTPv5)</c>
+        <c>[[this memo]]</c>
+      </texttable>
     </section>
 
     <section anchor="Security" title="Security Considerations">
