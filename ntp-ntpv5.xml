@@ -408,8 +408,23 @@
         server, also the Reference IDs Request and Response extension fields to
         enable detection of synchronization loops.</t>
 
+      <section title="Draft Identification Extension Field">
+        <t>Note to the editors: this section must be removed before final publication.</t>
+
+        <t>This field, with type 0xFFFF, is used to indicate which draft of the specification
+          an implementation is based upon. It MUST be included in any NTPv5 message produced
+          by an implementation based on a draft of this specification, and MUST NOT be included
+          in any NTPv5 message produced by an implementation based on the final version of
+          this specification.</t>
+
+        <t>The contents of this field MUST be the full name, including version number, of
+          the draft upon which the implementation is based, encoded as an ASCII string.</t>
+
+        <t>Note: the content of this field MUST NOT be null terminated</t>
+      </section>
+
       <section title="Padding Extension Field">
-        <t>This field is used by servers to pad the response to the same length
+        <t>This field, with type [[TBD]] (draft: 0xF501), is used by servers to pad the response to the same length
           as the request if the response does not contain all requested
           extension fields, or some have a variable length. It can have any
           length. The data field of the extension field SHOULD contain zeros
@@ -419,7 +434,7 @@
       </section>
 
       <section title="MAC Extension Field">
-        <t>This field authenticates the NTPv5 message with a symmetric key.
+        <t>This field, with type [[TBD]] (draft: 0xF502), authenticates the NTPv5 message with a symmetric key.
           Implementations SHOULD use the MAC specified in <xref
           target="RFC8573">RFC8573</xref>. The extension field MUST be the last
           extension field in the message unless an extension field is
@@ -503,7 +518,7 @@
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|             Type              |             Length            |
+| Type = [[TBD]] (draft 0xF503) |             Length            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |            Offset             |                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
@@ -523,7 +538,7 @@
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|             Type              |             Length            |
+| Type = [[TBD]] (draft 0xF504) |             Length            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 .                                                               .
 .                  Bloom filter chunk (variable)                .
@@ -548,7 +563,7 @@
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|             Type              |             Length            |
+| Type = [[TBD]] (draft 0xF505) |             Length            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 | Min. Version  | Max. Version  |            Reserved           |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -586,7 +601,7 @@
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|             Type              |             Length            |
+| Type = [[TBD]] (draft 0xF506) |             Length            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                       Origin Correction                       +
@@ -696,7 +711,7 @@
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|             Type              |             Length            |
+| Type = [[TBD]] (draft 0xF507) |             Length            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 |                      Reference Timestamp (64)                 |
@@ -735,7 +750,7 @@
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|             Type              |             Length            |
+| Type = [[TBD]] (draft 0xF508) |             Length            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                            Epoch ID                           |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
