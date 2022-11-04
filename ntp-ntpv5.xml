@@ -199,9 +199,9 @@
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|LI | VN  |Mode | Scale |Stratum|     Poll      |  Precision    |
+|LI | VN  |Mode |    Stratum    |     Poll      |  Precision    |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|     Flags     |      Era      |        Timescale Offset       |
+|FL | Timescale |      Era      |        Timescale Offset       |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                           Root Delay                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -258,8 +258,8 @@
           <t hangText="Mode"><vspace/>
             A 3-bit field containing the value 3 (request) or 4 (response).</t>
 
-          <t hangText="Scale"><vspace/>
-            A 4-bit identifier of the timescale. In requests it is the
+          <t hangText="Timescale"><vspace/>
+            A 6-bit identifier of the timescale. In requests it is the
             requested timescale. In responses it is the timescale of the
             receive and transmit timestamps. Defined values are:
 
@@ -288,8 +288,8 @@
             included in the message as a rounded log2 value in seconds. In
             requests, which don't contain any timestamps, it is always 0.</t>
 
-          <t hangText="Flags"><vspace/>
-            An 8-bit integer that can contain the following flags:
+          <t hangText="FL"><vspace/>
+            A 2-bit integer flag field that can contain the following flags:
 
             <list style="hanging">
               <t hangText="0x1: Unknown leap"><vspace/>
