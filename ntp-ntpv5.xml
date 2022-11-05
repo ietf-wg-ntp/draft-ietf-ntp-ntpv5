@@ -411,14 +411,18 @@
       <section title="Draft Identification Extension Field">
         <t>Note to the editors: this section must be removed before final publication.</t>
 
-        <t>This field, with type 0xFFFF, is used to indicate which draft of the specification
-          an implementation is based upon. It MUST be included in any NTPv5 message produced
+        <t>This field, with type 0xF5FF, is used to indicate which draft of the specification
+          an implementation is based upon. It MUST be included in NTPv5 requests produced
           by an implementation based on a draft of this specification, and MUST NOT be included
-          in any NTPv5 message produced by an implementation based on the final version of
-          this specification.</t>
+          in NTPv5 requests produced by an implementation based on the final version of
+          this specification. Server MUST use this field if and only if responding
+          to a request containing this field and the server is a draft
+          implementation.</t>
 
         <t>The contents of this field MUST be the full name, including version number, of
-          the draft upon which the implementation is based, encoded as an ASCII string.</t>
+          the draft upon which the implementation is based, encoded as an ASCII
+          string. If the server string is longer than the client string, the
+          server MUST truncate it to the length of the client string.</t>
 
         <t>Note: the content of this field MUST NOT be null terminated</t>
       </section>
