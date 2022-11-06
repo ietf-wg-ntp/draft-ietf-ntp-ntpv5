@@ -164,6 +164,12 @@
             16 seconds and the resolution is about 3.7 nanoseconds. Note that
             this is different from the 32-bit time format in NTPv4.</t>
 
+          <t hangText="time64"><vspace/>
+            A 64 bit signed fixed-point type containg values in seconds. It has 32
+            signed integer bits, and 32 fractional bits. The sign uses 2-complements
+            representation for negative numbers.
+          </t>
+
           <t hangText="timestamp64"><vspace/>
             A 64-bit unsigned fixed-point type containing a timestamp describes
             in seconds. It has 32 signed
@@ -199,9 +205,9 @@
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|LI | VN  |Mode | Scale |Stratum|     Poll      |  Precision    |
+|LI | VN  |Mode |    Stratum    |     Poll      |  Precision    |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|     Flags     |      Era      |        Timescale Offset       |
+|              Flags            |      Era      |   Timescale   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                           Root Delay                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -258,8 +264,8 @@
           <t hangText="Mode"><vspace/>
             A 3-bit field containing the value 3 (request) or 4 (response).</t>
 
-          <t hangText="Scale"><vspace/>
-            A 4-bit identifier of the timescale. In requests it is the
+          <t hangText="Timescale"><vspace/>
+            An 8-bit identifier of the timescale. In requests it is the
             requested timescale. In responses it is the timescale of the
             receive and transmit timestamps. Defined values are:
 
@@ -272,10 +278,12 @@
           </t>
 
           <t hangText="Stratum"><vspace/>
-            A 4-bit field containing the stratum of the server. Primary time
+            An 8-bit field containing the stratum of the server. Primary time
             servers have a stratum of 1, their clients have a stratum of 2, and
             so on. The value of 0 indicates an unknown or infinite stratum. In
-            requests it is always 0.</t>
+            requests it is always 0. Servers advertising a stratum above 16
+            should not be synchronized to except when the client is explicitly
+            configured to do so by the end-user.</t>
 
           <t hangText="Poll"><vspace/>
             An 8-bit signed integer containing the polling interval as a
@@ -289,7 +297,7 @@
             requests, which don't contain any timestamps, it is always 0.</t>
 
           <t hangText="Flags"><vspace/>
-            An 8-bit integer that can contain the following flags:
+            A 16-bit integer that can contain the following flags:
 
             <list style="hanging">
               <t hangText="0x1: Unknown leap"><vspace/>
@@ -308,22 +316,6 @@
           <t hangText="Era"><vspace/>
             An 8-bit unsigned NTP era number corresponding to the receive
             timestamp. In requests it is always 0.</t>
-
-          <t hangText="Timescale Offset"><vspace/>
-            A 16-bit value specific to the selected timescale, which is
-            referenced to the receive timestamp. In requests it is always
-            0.
-
-            <list style="symbols">
-              <t>In the UTC (0) and TAI (1) timescales it is the TAI-UTC offset
-                (TAI minus UTC) as a signed integer, or 0x8000 if unknown.</t>
-              <t>In the UT1 timescale (2) it is the UT1-UTC offset (UT1 minus
-                UTC) using the time16 type (0x8000 if unknown).</t>
-              <t>In the leap-smeared UTC (3), it is the current offset between
-                the leap smeared time and UTC (former minus latter) using the
-                time16 type (0x8000 if unknown).</t>
-            </list>
-          </t>
 
           <t hangText="Root Delay"><vspace/>
             A field using the time32 type. In responses it is the server's root
@@ -773,6 +765,81 @@
 
       </section>
 
+      <section title="Timescale offset request">
+        <t>A clients request for the offset between two indicated timescales.</t>
+
+        <t>The reference field MUST contain the timescale identifier of
+          the timescale with respect to which the client wants to know
+          the offset.</t>
+
+        <t>The target field MUST contain the timescale identifier of the
+          timescale for which the client wants to know an offset.</t>
+
+        <t>The reserved and placeholder fields MUST be set to 0
+          by the client, and MUST be ignored by a server.</t>
+
+        <t>A server which does not know either the reference or target
+          timescale, or which does not know the offset between them, MUST
+          ignore the timescale request.</t>
+
+        <figure align="center" anchor="timescale-offset-request-ext-field"
+            title="Format of Timescale Offset Request Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF509) |           Length = 16         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Reference   |    Target     |           Reserved            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+|                  Offset placeholder (64 bits)                 |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+      </section>
+
+      <section title="Timescale offset response">
+        <t> The offset between two given timescales.</t>
+
+        <t>The reference field MUST contain the timescale identifier of
+          the timescale with respect to which the client wants to know
+          the offset.</t>
+
+        <t>The target field MUST contain the timescale identifier of the
+          timescale for which the client wants to know an offset.</t>
+
+        <t>The offset is given such that for a given timestamp in the
+          reference timescale, the timestamp in the target timescale
+          is the reference scale timestamp plus the offset. (i.e.
+          target = reference + offset)</t>
+
+        <t>The reserved bits MUST be set to 0 by the server, and MUST
+          be ignored by the client.</t>
+
+        <t>When the offset between the target and reference timescales
+          varies over time, the provided offset MUST be the servers
+          best approximation of this offset at the time exactly halfway
+          between the receive and transmit timestamps.</t>
+
+        <figure align="center" anchor="timescale-offset-response-ext-field"
+            title="Format of Timescale Offset Response Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF50A) |           Length = 16         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Reference   |    Target     |            Reserved           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+|                        Offset (time64)                        |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+      </section>
     </section>
 
     <section title="Measurement Modes" anchor="measurement-modes">
@@ -1197,6 +1264,14 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
         <c>[[TBD]], selected by IANA from the IETF Review range</c>
         <c>Monotonic Timestamp</c>
+        <c>[[this memo]]</c>
+
+        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>Timescale Offset Request</c>
+        <c>[[this memo]]</c>
+
+        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>Timescale Offset Response</c>
         <c>[[this memo]]</c>
       </texttable>
 
