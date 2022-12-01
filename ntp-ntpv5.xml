@@ -207,7 +207,7 @@
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |LI | VN  |Mode |    Stratum    |     Poll      |  Precision    |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|              Flags            |      Era      |   Timescale   |
+|   Timescale   |      Era      |             Flags             |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                           Root Delay                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -264,19 +264,6 @@
           <t hangText="Mode"><vspace/>
             A 3-bit field containing the value 3 (request) or 4 (response).</t>
 
-          <t hangText="Timescale"><vspace/>
-            An 8-bit identifier of the timescale. In requests it is the
-            requested timescale. In responses it is the timescale of the
-            receive and transmit timestamps. Defined values are:
-
-            <list style="hanging">
-              <t>0: UTC</t>
-              <t>1: TAI</t>
-              <t>2: UT1</t>
-              <t>3: Leap-smeared UTC</t>
-            </list>
-          </t>
-
           <t hangText="Stratum"><vspace/>
             An 8-bit field containing the stratum of the server. Primary time
             servers have a stratum of 1, their clients have a stratum of 2, and
@@ -296,6 +283,23 @@
             included in the message as a rounded log2 value in seconds. In
             requests, which don't contain any timestamps, it is always 0.</t>
 
+          <t hangText="Timescale"><vspace/>
+            An 8-bit identifier of the timescale. In requests it is the
+            requested timescale. In responses it is the timescale of the
+            receive and transmit timestamps. Defined values are:
+
+            <list style="hanging">
+              <t>0: UTC</t>
+              <t>1: TAI</t>
+              <t>2: UT1</t>
+              <t>3: Leap-smeared UTC</t>
+            </list>
+          </t>
+
+          <t hangText="Era"><vspace/>
+            An 8-bit unsigned NTP era number corresponding to the receive
+            timestamp. In requests it is always 0.</t>
+
           <t hangText="Flags"><vspace/>
             A 16-bit integer that can contain the following flags:
 
@@ -312,10 +316,6 @@
                 response is in the interleaved mode.</t>
             </list>
           </t>
-
-          <t hangText="Era"><vspace/>
-            An 8-bit unsigned NTP era number corresponding to the receive
-            timestamp. In requests it is always 0.</t>
 
           <t hangText="Root Delay"><vspace/>
             A field using the time32 type. In responses it is the server's root
