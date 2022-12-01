@@ -1218,9 +1218,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       <t>Some ideas were taken from a different NTPv5 design proposed by Daniel
         Franke.</t>
 
-      <t>The author would like to thank Doug Arnold for his contributions and
-        Dan Drown, Watson Ladd, Hal Murray, Kurt Roeckx, and Ulrich Windl for
-        their suggestions and comments.</t>
+      <t>The author would like to thank Doug Arnold and David Venhoek for their
+        contributions and Dan Drown, Watson Ladd, Hal Murray, Kurt Roeckx, and
+        Ulrich Windl for their suggestions and comments.</t>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
