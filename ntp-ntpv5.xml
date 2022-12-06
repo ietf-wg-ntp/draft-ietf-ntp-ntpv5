@@ -19,7 +19,7 @@
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
 
-<rfc category="std" docName="draft-mlichvar-ntp-ntpv5-05" ipr="trust200902">
+<rfc category="std" docName="draft-mlichvar-ntp-ntpv5-06" ipr="trust200902">
   <front>
     <title>Network Time Protocol Version 5</title>
 
@@ -37,7 +37,7 @@
       </address>
     </author>
 
-    <date year="2022" month="Aug" day="25"/>
+    <date year="2022" month="Dec" day="6"/>
 
     <area>General</area>
 
