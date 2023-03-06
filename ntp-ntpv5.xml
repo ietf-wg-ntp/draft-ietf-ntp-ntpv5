@@ -1139,9 +1139,6 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
               <t>Era is set to the NTP era of the receive timestamp.</t>
 
-              <t>Timescale Offset is set to the timescale-specific offset, or
-                0x8000 if unknown.</t>
-
               <t>Server Cookie is set when the interleaved
                 mode is requested and it is supported by the server, even if
                 the response cannot be in the requested mode due to the request
