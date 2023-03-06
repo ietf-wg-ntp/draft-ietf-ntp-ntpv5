@@ -550,9 +550,12 @@
 
       <section title="Server Information Extension Field">
         <t>This field provides clients with information about which NTP
-          versions are supported by the server, as a minimum and maximum
-          version. The extension field has a fixed length of 8 octets. In
-          requests, all data fields of the extension are 0. </t>
+          versions are supported by the server, i.e. whether it can respond to
+          requests conforming to the specific version. It contains a 16-bit
+          field with flags indicating support for NTP versions in the range of
+          1 to 16, where the least significant bit corresponds to the version
+          1. The extension field has a fixed length of 8 octets. In requests,
+          all data fields of the extension are 0.</t>
 
         <figure align="center" anchor="server-information-ext-field"
             title="Format of Server Information Extension Field">
@@ -562,7 +565,7 @@
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 | Type = [[TBD]] (draft 0xF505) |             Length            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Min. Version  | Max. Version  |            Reserved           |
+|    Supported NTP versions     |            Reserved           |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
           ]]></artwork>
         </figure>
