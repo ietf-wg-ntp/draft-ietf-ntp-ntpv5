@@ -718,7 +718,7 @@
         </figure>
       </section>
 
-      <section title="Monotonic Timestamp Extension Field">
+      <section title="Monotonic Receive Timestamp Extension Field">
 
         <t>When a clock is synchronized to a time source, there is a compromise
           between time (phase) accuracy and frequency accuracy, because the
@@ -730,8 +730,8 @@
           frequency and time errors. This issue can be avoided by transferring
           time and frequency separately using different clocks.</t>
 
-        <t>The Monotonic Timestamp Extension Field contains an extra receive
-          timestamp with a 32-bit epoch ID captured by a clock which
+        <t>The Monotonic Receive Timestamp Extension Field contains an extra
+          receive timestamp with a 32-bit epoch ID captured by a clock which
           does not have corrected phase and can better transfer frequency than
           the clock which captures the receive and transmit timestamps in the
           header. The extension field has a constant length of 16 octets. In
@@ -742,7 +742,7 @@
           clock.</t>
 
         <figure align="center" anchor="monotonic-timestamp-ext-field"
-            title="Format of Monotonic Timestamp Extension Field">
+            title="Format of Monotonic Receive Timestamp Extension Field">
           <artwork><![CDATA[
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1226,7 +1226,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         <c>[[this memo]]</c>
 
         <c>[[TBD]], selected by IANA from the IETF Review range</c>
-        <c>Monotonic Timestamp</c>
+        <c>Monotonic Receive Timestamp</c>
         <c>[[this memo]]</c>
 
         <c>[[TBD]], selected by IANA from the IETF Review range</c>
