@@ -164,12 +164,6 @@
             16 seconds and the resolution is about 3.7 nanoseconds. Note that
             this is different from the 32-bit time format in NTPv4.</t>
 
-          <t hangText="time64"><vspace/>
-            A 64 bit signed fixed-point type containg values in seconds. It has 32
-            signed integer bits, and 32 fractional bits. The sign uses 2-complements
-            representation for negative numbers.
-          </t>
-
           <t hangText="timestamp64"><vspace/>
             A 64-bit unsigned fixed-point type containing a timestamp describes
             in seconds. It has 32 signed
@@ -181,9 +175,10 @@
             seconds. Timestamps in the TAI timescale are the same except they
             include leap seconds and extra 10 seconds for the original
             difference between TAI and UTC in 1972, when leap seconds were
-            introduced. One interval covered by the type is called an NTP era.
-            The era starting at the epoch is era number 0, the following era is
-            number 1, and so on.</t>
+            introduced. A value of 0 indicates an unknown or invalid timestamp.
+            One interval covered by the type is called an NTP era. The era
+            starting at the epoch is era number 0, the following era is number
+            1, and so on.</t>
         </list>
       </t>
 
@@ -771,76 +766,41 @@
 
       </section>
 
-      <section title="Timescale offset request">
-        <t>A clients request for the offset between two indicated timescales.</t>
+      <section title="Secondary Receive Timestamp Extension Field">
+        <t>This extension field provides an additional receive timestamp of the
+          client request in a selected timescale. It enables the client to get
+          the same receive timestamp in different timescales in order to
+          calculate the current offset between the timescales.</t>
 
-        <t>The reference field MUST contain the timescale identifier of
-          the timescale with respect to which the client wants to know
-          the offset.</t>
+        <t>In requests, the Timescale field selects the requested timescale.
+          The other data fields in the extension field MUST be set to 0.</t>
 
-        <t>The target field MUST contain the timescale identifier of the
-          timescale for which the client wants to know an offset.</t>
+        <t>The Timescale, Era, and Secondary Receive Timestamp fields in a
+          response have the same meaning as the Timescale, Era, and Receive
+          Timestamp fields in the header respectively.</t>
 
-        <t>The reserved and placeholder fields MUST be set to 0
-          by the client, and MUST be ignored by a server.</t>
+        <t>If the server does not support the requested timescale, it MUST
+          ignore the extension field in the request. If the server supports the
+          timescale, but does not have a reliable timestamp (e.g. due to being
+          close to a leap second), it SHOULD set the timestamp field to 0.</t>
 
-        <t>A server which does not know either the reference or target
-          timescale, or which does not know the offset between them, MUST
-          ignore the timescale request.</t>
+        <t>A request MAY contain multiple instances of this extension field,
+          but each timescale MUST be requested at most once, not counting the
+          timescale in the header. The server SHOULD include in its response
+          timestamps in all timescales it supports.</t>
 
-        <figure align="center" anchor="timescale-offset-request-ext-field"
-            title="Format of Timescale Offset Request Extension Field">
+        <figure align="center" anchor="secondary-receive-timestamp-ext-field"
+            title="Format of Secondary Receive Timestamp Extension Field">
           <artwork><![CDATA[
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF509) |           Length = 16         |
+| Type = [[TBD]] (draft 0xF509) |             Length            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Reference   |    Target     |           Reserved            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-|                  Offset placeholder (64 bits)                 |
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-      </section>
-
-      <section title="Timescale offset response">
-        <t> The offset between two given timescales.</t>
-
-        <t>The reference field MUST contain the timescale identifier of
-          the timescale with respect to which the client wants to know
-          the offset.</t>
-
-        <t>The target field MUST contain the timescale identifier of the
-          timescale for which the client wants to know an offset.</t>
-
-        <t>The offset is given such that for a given timestamp in the
-          reference timescale, the timestamp in the target timescale
-          is the reference scale timestamp plus the offset. (i.e.
-          target = reference + offset)</t>
-
-        <t>The reserved bits MUST be set to 0 by the server, and MUST
-          be ignored by the client.</t>
-
-        <t>When the offset between the target and reference timescales
-          varies over time, the provided offset MUST be the servers
-          best approximation of this offset at the time exactly halfway
-          between the receive and transmit timestamps.</t>
-
-        <figure align="center" anchor="timescale-offset-response-ext-field"
-            title="Format of Timescale Offset Response Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF50A) |           Length = 16         |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Reference   |    Target     |            Reserved           |
+|   Timescale   |      Era      |            Reserved           |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
-|                        Offset (time64)                        |
+|                Secondary Receive Timestamp (64)               |
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
           ]]></artwork>
@@ -1270,11 +1230,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         <c>[[this memo]]</c>
 
         <c>[[TBD]], selected by IANA from the IETF Review range</c>
-        <c>Timescale Offset Request</c>
-        <c>[[this memo]]</c>
-
-        <c>[[TBD]], selected by IANA from the IETF Review range</c>
-        <c>Timescale Offset Response</c>
+        <c>Secondary Receive Timestamp</c>
         <c>[[this memo]]</c>
       </texttable>
 
