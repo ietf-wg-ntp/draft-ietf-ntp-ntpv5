@@ -426,7 +426,7 @@
           length. The data field of the extension field SHOULD contain zeros
           and it MUST be ignored by the receiver.</t>
 
-        <t>This field MUST be supported on server.</t>
+        <t>This field MUST be supported on servers.</t>
       </section>
 
       <section title="MAC Extension Field">
@@ -543,8 +543,8 @@
           ]]></artwork>
         </figure>
 
-        <t>These fields MUST be supported on server which can be synchronized
-          to other NTP servers (i.e. it can be in a synchronization loop).</t>
+        <t>These fields MUST be supported on servers which can be synchronized
+          to other NTP servers (i.e. they can be in a synchronization loop).</t>
       </section>
 
       <section title="Server Information Extension Field">
@@ -566,7 +566,7 @@
           ]]></artwork>
         </figure>
 
-        <t>This field MUST be supported on server.</t>
+        <t>This field MUST be supported on servers.</t>
       </section>
 
       <section title="Correction Extension Field">
@@ -675,7 +675,9 @@
           timestamps MUST be based on the same clock. This clock does not need
           to be synchronized as long as the frequency is accurate enough such
           that resulting time difference estimation errors are acceptable to
-          the precision required by the application.</t>
+          the precision required by the application. The correction
+          field is updated before or during the transmission of the message. It
+          is a one-step transparent clock in the PTP terminology.</t>
 
         <t>If a network node updates the delay correction, it SHOULD also add
           the identification numbers of the incoming and outgoing port to the
@@ -1074,7 +1076,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
           <t>Leap indicator MUST be 3 if the clock is not synchronized or its
             maximum error cannot be estimated with the root delay and
             dispersion. Otherwise, it MUST be 0, 1, 2, depending on whether a
-            leap second is pending in the next 14 day and, if it is, whether it
+            leap second is pending in the next 14 days and, if it is, whether it
             will be inserted or deleted.</t>
           <t>Stratum SHOULD be one larger than stratum of the best
             server it uses for its own synchronization.</t>
