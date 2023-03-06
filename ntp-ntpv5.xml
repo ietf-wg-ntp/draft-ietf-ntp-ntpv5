@@ -448,8 +448,9 @@
 
         <t>As each client can be synchronized to an unlimited number of
           servers (and there can be up to 15 strata of servers), the reference
-          IDs are exchanged as a Bloom filter instead of a list to limit the
-          amount of data that needs to be exchanged.</t>
+          IDs are exchanged as a <xref target="Bloom">Bloom filter</xref>
+          instead of a list to limit the amount of data that needs to be
+          exchanged.</t>
 
         <t>The Bloom filter is an array of 4096 bits. When empty, all bits are
           zero. To add a reference ID to the filter, the 120-bit value of the
@@ -1334,6 +1335,16 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             </organization>
           </author>
           <date month="11" year="2019" />
+        </front>
+      </reference>
+
+      <reference anchor="Bloom" target="https://doi.org/10.1145/362686.362692">
+        <front>
+          <title>Space/Time Trade-Offs in Hash Coding with Allowable Errors</title>
+          <author surname="Bloom" fullname="Burton H. Bloom">
+            <organization/>
+          </author>
+          <date month="6" year="1970" />
         </front>
       </reference>
 
