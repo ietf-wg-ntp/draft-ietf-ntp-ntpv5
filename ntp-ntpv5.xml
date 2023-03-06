@@ -391,9 +391,10 @@
       <t>The rest of this section describes extension fields specified for
         NTPv5. Clients are not required to use or support any of these
         extension fields, but servers are required to support at least the
-        Padding Extension Field, and if they can be synchronized to another
-        server, also the Reference IDs Request and Response extension fields to
-        enable detection of synchronization loops.</t>
+        Padding Extension Field, Server Information Extension field, and if
+        they can be synchronized to other servers, also the Reference IDs
+        Request and Response extension fields to enable detection of
+        synchronization loops.</t>
 
       <section title="Draft Identification Extension Field">
         <t>Note to the editors: this section must be removed before final publication.</t>
