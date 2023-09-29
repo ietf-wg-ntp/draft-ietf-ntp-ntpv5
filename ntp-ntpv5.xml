@@ -1116,7 +1116,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
               <t>Transmit Timestamp is set to a value which depends on the
                 measurement mode. In the basic mode it is the server's current
-                time when the message if formed. In the interleaved mode it is
+                time when the message is formed. In the interleaved mode it is
                 the transmit timestamp of the previous response identified by
                 the server cookie in the request, captured at some point after
                 the message was formed.</t>
