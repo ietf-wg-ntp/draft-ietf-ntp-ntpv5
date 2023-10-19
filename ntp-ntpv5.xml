@@ -97,7 +97,7 @@
           <t>Resolution of the root delay and root dispersion fields is
             improved from about 15 microseconds to about 4 nanoseconds.</t>
 
-          <t>Clients don't leak information about their clock (e.g.
+          <t>Clients do not leak information about their clock (e.g.
             timestamps).</t>
         </list>
       </t>
@@ -277,7 +277,7 @@
           <t hangText="Precision"><vspace/>
             An 8-bit signed integer containing the precision of the timestamps
             included in the message as a rounded log2 value in seconds. In
-            requests, which don't contain any timestamps, it is always 0.</t>
+            requests, which do not contain any timestamps, it is always 0.</t>
 
           <t hangText="Timescale"><vspace/>
             An 8-bit identifier of the timescale. In requests it is the
