@@ -250,7 +250,8 @@
             A 2-bit field which can have the following values: 0 (normal), 1
             (leap second inserted at the end of the month), 2 (leap second
             deleted at the end of the month), 3 (not synchronized). The values
-            1 and 2 are set at most 14 days in advance before the leap second.
+            1 and 2 are set at most 14 days in advance before the leap second
+            and only if not using a leap-smeared timescale.
             In requests it is always 0.</t>
 
           <t hangText="Version Number (VN)"><vspace/>
@@ -785,6 +786,11 @@
           timescale, but does not have a reliable timestamp (e.g. due to being
           close to a leap second), it SHOULD set the timestamp field to 0.</t>
 
+        <t>The server MAY provide in this extension field timestamps in
+          timescales which it does not provide in the header, e.g. it can
+          provide UTC in addition to leap-smeared UTC to enable its clients to
+          measure the current smearing offset.</t>
+
         <t>A request MAY contain multiple instances of this extension field,
           but each timescale MUST be requested at most once, not counting the
           timescale in the header. The server SHOULD include in its response
@@ -1004,8 +1010,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             specific value, e.g. 16 seconds, and timescale equal to the
             requested timescale. If the response is in a different timescale,
             the client can switch to the provided timescale, convert the
-            timestamps if the offset between the timescales is provided or
-            known, or drop the response.</t>
+            timestamps if the offset between the timescales is known from the
+            Secondary Receive Timestamp Extension Field or other sources, or
+            ignore the response.</t>
 
           <t>Saves the server's receive and transmit timestamps. If the client
             internally counts seconds using a type wider than 32 bits, it
@@ -1022,7 +1029,17 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         contains the client's own reference ID, it SHOULD not select the server
         for synchronization to avoid a synchronization loop. If the client
         is requesting the reference IDs in multiple chunks, it SHOULD NOT
-        select the server until it received the whole set.</t>
+        select the server for synchronization until it received the whole
+        set.</t>
+
+      <t>A client which uses multiple servers MUST be able to handle servers
+        providing timestamps in different timescales. It can ignore servers not
+        using the most common or preferred timescale, or convert them to a
+        common timescale if it knows the offsets between them.</t>
+
+      <t>If the client synchronizes its clock to a leap-smeared timescale,
+        it MUST NOT apply leap seconds and it SHOULD provide the same timescale
+        to its own clients if it is a server.</t>
     </section>
 
     <section title="Server Operation">
