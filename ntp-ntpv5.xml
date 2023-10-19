@@ -831,8 +831,8 @@
       <t>The offset, delay and dispersion are calculated as:
 
         <list style="symbols">
-          <t>offset = ((T2 + T3) - (T4 + T1) + (Cd - Co)) / 2</t>
-          <t>delay = |(T4 - T1) - (T3 - T2) - (Cd + Co)|</t>
+          <t>offset = ((T2 + T3) - (T4 + T1)) / 2</t>
+          <t>delay = |(T4 - T1) - (T3 - T2)|</t>
           <t>dispersion = |T4 - T1| * DR</t>
         </list>
 
@@ -841,13 +841,39 @@
         <list style="symbols">
           <t>T1, T2, T3, T4 are the receive and transmit timestamps of a
             request and response</t>
-          <t>Co is the Origin Correction from the Correction Extension Field if
-            present in the response and has acceptable values, zero otherwise</t>
-          <t>Cd is the Delay Correction from the Correction Extension Field if
-            present in the response and has acceptable values, zero otherwise</t>
           <t>DR is the client's dispersion rate</t>
         </list>
       </t>
+
+      <t>If the Correction Extension Field is used and the corrections are
+        known for both the request and response, a corrected offset and delay
+        is calculated:
+
+        <list style="symbols">
+          <t>offset_c = offset + (Cd - Co) / 2</t>
+          <t>delay_c = delay - (Cd + Co - Drx - Dtx) * (1 - FC)|</t>
+        </list>
+
+        where
+
+        <list style="symbols">
+          <t>Co is the Origin Correction from the response to the request
+            corresponding to timestamps T1 and T2</t>
+          <t>Cd is the Delay Correction from the response corresponding to
+            timestamps T3 and T4</t>
+          <t>FC is the maximum expected frequency error of devices providing
+            the delay corrections (e.g. 100 ppm)</t>
+          <t>Drx is the time it took to receive the frame containing the
+            response corresponding to T3 and T4</t>
+          <t>Dtx is the time it took to transmit the frame containing the
+            request corresponding to T1 and T2. If unknown, it SHOULD be set to
+            Drx.</t>
+        </list>
+      </t>
+
+      <t>The corrected offset and delay MUST NOT be accepted if any of delay_c,
+        Co and Cr is negative. The uncorrected delay MUST always be used for
+        calculation of root delay.</t>
 
       <t>The client can make measurements in the basic mode, or interleaved
         mode if supported on the server. In the basic mode, the transmit
