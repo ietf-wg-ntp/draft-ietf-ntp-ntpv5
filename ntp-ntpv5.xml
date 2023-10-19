@@ -1040,6 +1040,11 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       <t>If the client synchronizes its clock to a leap-smeared timescale,
         it MUST NOT apply leap seconds and it SHOULD provide the same timescale
         to its own clients if it is a server.</t>
+
+      <t>The client SHOULD periodically (e.g. every two weeks) refresh IP
+        addresses of all servers specified by hostname to limit the amount of
+        traffic that migrated or decommissioned servers will receive from
+        long-running clients.</t>
     </section>
 
     <section title="Server Operation">
