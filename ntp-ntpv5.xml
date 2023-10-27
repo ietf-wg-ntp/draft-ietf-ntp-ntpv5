@@ -413,6 +413,15 @@
           string. If the server string is longer than the client string, the
           server MUST truncate it to the length of the client string.</t>
 
+        <t>A server SHOULD NOT respond to requests with a draft identification it does not
+          recognize, and SHOULD respond with a response according to the same draft specification
+          as given by the client.</t>
+
+        <t>A server implementing a draft of this specification MUST NOT respond to NTPv5
+          negotiation in NTPv4 unless this extension field is present. A client implementing
+          the draft SHOULD include a Draft Identificiation Extension Field during NTPv5
+          negotiation.</t>
+
         <t>Note: the content of this field MUST NOT be null terminated</t>
       </section>
 
