@@ -310,6 +310,11 @@
                 In requests a value of 1 is a request for a response in the
                 interleaved mode. In responses a value of 1 indicates the
                 response is in the interleaved mode.</t>
+              <t hangText="0x4: Status message"><vspace/>
+                In requests it is 0. In responses a value of 1 indicates that
+                the response is not a normal time-providing response, and MUST
+                be interpreted according to the clauses in Section <xref
+                format="counter" target="status-message"/></t>
             </list>
           </t>
 
@@ -352,6 +357,24 @@
         message. A message can contain optional extension fields (zero or more).
         The maximum length is not specified, but the length MUST be divisible
         by 4.</t>
+    </section>
+
+    <section title="Status messages" anchor="status-message">
+      <t>Instead of a normal time response, a server may send a status message by
+        setting the 0x4 flag in the flag field. In such messages, the timestamps,
+        delay, dispersion, precision and leap indicator header fields SHOULD be
+        sent as 0 by the server, and the client MUST ignore these fields.</t>
+
+      <t>In a status message, the server should populate the first 4 bytes of the
+        Server Cookie header with an NTP kiss of death code. Specifications for
+        such codes MAY change the interpretation of the Era, Poll, and Timescale
+        header fields.</t>
+
+      <t> Clients MUST support at least the RSTR, DENY and RATE kiss of death codes.
+        For a RSTR or DENY kiss of death code a client MUST immediately stop sending
+        further messages to the server. For a RATE kiss of death code, the client
+        MUST immediately change it message sending rate to send at most 1 message
+        every interval indicated by the Poll header field.</t>
     </section>
 
     <section title="Extension Fields">
