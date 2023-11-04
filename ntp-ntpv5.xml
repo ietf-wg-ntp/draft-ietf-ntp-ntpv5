@@ -370,11 +370,22 @@
         such codes MAY change the interpretation of the Era, Poll, and Timescale
         header fields.</t>
 
-      <t> Clients MUST support at least the RSTR, DENY and RATE kiss of death codes.
-        For a RSTR or DENY kiss of death code a client MUST immediately stop sending
-        further messages to the server. For a RATE kiss of death code, the client
-        MUST immediately change it message sending rate to send at most 1 message
-        every interval indicated by the Poll header field.</t>
+      <t>The RSTR and DENY kiss of death codes retain their meaning from NTPv4.
+        When received on an insecure connection, a client MAY interpret these as
+        hints that the server is no longer valid. For security however a client
+        on an insecure connection SHOULD wait to receive multiple RSTR or DENY
+        responses and should ensure it did not also receive any valid response
+        in the meantime. For RSTR and DENY codes received over secure connections
+        (e.g. signed by a MAC or an NTS field) the client SHOULD immediately stop
+        sending packets to the server.</t>
+
+      <t>The RATE kiss of death code also retains its meaning from NTPv4.
+        When received on an insecure connection, a client MAY interpret this
+        as a hint that the server wants it to back off its message rate. For
+        security, it SHOULD ignore such hints if it also receives a different
+        response to its request. When received on a secure connection, the
+        client MUST reduce its message rate so that it falls below one message
+        per period defined by the poll header field.</t>
     </section>
 
     <section title="Extension Fields">
