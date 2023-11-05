@@ -1192,9 +1192,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
     <section title="Network Time Security with NTPv5">
       <t>The <xref target="RFC8915">Network Time Security</xref> mechanism uses
         the NTS-KE protocol to establish keys and negotiate the next protocol.
-        NTPv5 is added as a new protocol to the Network Time Security Next
-        Protocols Registry, which can be negotiated by NTPv5 clients and
-        servers supporting NTS.</t>
+        NTPv5 can be indicated as the next protocol with identifier [[TBD]] (draft
+        use 0x8001). This can be used by clients and servers to negotiate NTPv5
+        for an NTS session.</t>
 
       <t>No new NTS-KE records are specified for NTPv5. The records that were
         specified for NTPv4 (i.e. NTPv4 New Cookie, NTPv4 Server Negotiation,
@@ -1202,6 +1202,14 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
       <t>The NTS extension fields specified for NTPv4 are compatible with
         NTPv5. No new extension fields are specified.</t>
+
+      <t>(Note to editor: remove this paragraph before publishing.) Client
+        implementations of a draft of this specification MUST provide the
+        identity of the draft implemented as data in an NTS-KE record of type
+        0x4001, which does not have the critical bit set. The draft identity
+        MUST be encoded as ascii and MUST not contain any trailing 0 bytes.
+        Servers that implement a draft MUST not accept NTPv5 as an option
+        unless they support the specific draft version identified.</t>
     </section>
 
     <section title="NTPv5 Negotiation in NTPv4">
