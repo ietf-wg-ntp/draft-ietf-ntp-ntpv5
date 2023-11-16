@@ -417,11 +417,6 @@
           recognize, and SHOULD respond with a response according to the same draft specification
           as given by the client.</t>
 
-        <t>A server implementing a draft of this specification MUST NOT respond to NTPv5
-          negotiation in NTPv4 unless this extension field is present. A client implementing
-          the draft SHOULD include a Draft Identificiation Extension Field during NTPv5
-          negotiation.</t>
-
         <t>Note: the content of this field MUST NOT be null terminated</t>
       </section>
 
@@ -1226,6 +1221,11 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         timestamp contains the value 0x4E5450354E545035 ("NTP5NTP5" in ASCII),
         it SHOULD respond with the same reference timestamp to indicate
         it supports NTPv5.</t>
+
+      <t>Note to the editor: Remove this paragraph before publication.
+        Implementations of a draft of this specification SHOULD use
+        0x4E54503544524654 ("NTP5DRFT" in ASCII) instead of
+        0x4E5450354E545035.</t>
 
       <t>An NTP client which supports both NTPv4 and NTPv5, does not use NTS,
         and is not configured to use a particular NTP version, SHOULD start
