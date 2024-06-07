@@ -264,15 +264,19 @@
             An 8-bit field containing the stratum of the server. Primary time
             servers have a stratum of 1, their clients have a stratum of 2, and
             so on. The value of 0 indicates an unknown or infinite stratum. In
-            requests it is always 0. Servers advertising a stratum above 16
-            should not be synchronized to except when the client is explicitly
-            configured to do so by the end-user.</t>
+            requests it is always 0. When 0 in a response, it indicates the
+            server was unable or unwilling to provide valid time information.
+            Servers advertising a stratum above 16 should not be synchronized
+            to except when the client is explicitly configured to do so by the
+            end-user.</t>
 
           <t hangText="Poll"><vspace/>
             An 8-bit signed integer containing the polling interval as a
             rounded log2 value in seconds. In requests it is the current
             polling interval. In responses it is the minimum allowed polling
-            interval.</t>
+            interval. This field is valid even when stratum is 0. A value of
+            127 indicates the server does not want to hear from the client
+            again.</t>
 
           <t hangText="Precision"><vspace/>
             An 8-bit signed integer containing the precision of the timestamps
@@ -310,6 +314,11 @@
                 In requests a value of 1 is a request for a response in the
                 interleaved mode. In responses a value of 1 indicates the
                 response is in the interleaved mode.</t>
+              <t hangText="0x4: Authentication NAK"><vspace/>
+                In requests it is 0. In responses a value of 1 indicates that
+                the server failed to authenticate the request. A server
+                setting this bit SHOULD also set the stratum of the message
+                to 0.</t>
             </list>
           </t>
 
