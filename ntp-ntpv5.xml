@@ -273,7 +273,7 @@
             An 8-bit signed integer containing the polling interval as a
             rounded log2 value in seconds. In requests it is the current
             polling interval. In responses it is the minimum allowed polling
-            interval. This field is valid even when stratum is 0. A value of 255 
+            interval. This field is valid even when stratum is 0. A value of 127 
             indicates the server doesn't want to hear from the client again.</t>
 
           <t hangText="Precision"><vspace/>
@@ -314,7 +314,7 @@
                 response is in the interleaved mode.</t>
               <t hangText="0x4: Authentication NAK"><vspace/>
                 In requests it is 0. In responses a value of 1 indicates that
-                the server rejected the signature on the request. A server
+                the server failed to authenticate the request. A server
                 setting this bit SHOULD also set the stratum of the message
                 to 0.</t>
             </list>
