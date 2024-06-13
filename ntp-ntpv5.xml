@@ -1221,35 +1221,51 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         unless they support the specific draft version identified.</t>
     </section>
 
-    <section title="NTPv5 Negotiation in NTPv4">
-      <t>NTPv5 messages are not compatible with NTPv4, even if they do not
-        contain any extension fields. Some widely used NTPv4 implementations are
-        known to ignore the version and interpret all requests as NTPv4. Their
-        responses to NTPv5 requests have a zero client cookie, which means they
-        fail the client's validation and are ignored.</t>
+    <section title="NTPv5 Negotiation in previous NTP versions">
+      <t>NTPv5 messages are not compatible with NTPv4 and other previous
+        versions of NTP, even if they do not contain any extension fields. Some
+        widely used server NTPv4 implementations are known to accept requests
+        indicating a higher version, interpreting them as NTPv4, and copying
+        the version number from the request to its NTPv4 response. Responses to
+        NTPv5 requests have a zero client cookie, which causes them to fail the
+        NTPv5 validation and be ignored by the client.</t>
 
       <t>The implementations are also known to not respond to requests
         with an unknown extension field, which prevents an NTPv4 extension
-        field to be specified for NTPv5 negotiation. Instead, the reference
-        timestamp field in the NTPv4 header is reused for this purpose.</t>
+        field to be specified for NTPv5 negotiation. Instead, the negotiation
+        reuses the reference timestamp field.</t>
 
-      <t>An NTP server which supports both NTPv4 and NTPv5 SHOULD check the
-        reference timestamp in all NTPv4 client requests. If the reference
-        timestamp contains the value 0x4E5450354E545035 ("NTP5NTP5" in ASCII),
-        it SHOULD respond with the same reference timestamp to indicate
-        it supports NTPv5.</t>
+      <t>An NTP server which supports NTPv5 and also NTPv4, NTPv3, NTPv2, or
+        NTPv1, SHOULD check the reference timestamp in received client-mode
+        requests of the previous NTP versions. If the reference timestamp
+        contains the value 0x4E5450354E545035 ("NTP5NTP5" in ASCII), it
+        SHOULD respond with the same reference timestamp to indicate it
+        supports NTPv5.</t>
 
       <t>Note to the editor: Remove this paragraph before publication.
         Implementations of a draft of this specification SHOULD use
         0x4E54503544524654 ("NTP5DRFT" in ASCII) instead of
         0x4E5450354E545035.</t>
 
-      <t>An NTP client which supports both NTPv4 and NTPv5, does not use NTS,
-        and is not configured to use a particular NTP version, SHOULD start
-        with NTPv4 and set the reference timestamp to 0x4e5450354e545035. If
-        the server responds with the same reference timestamp, the client
-        SHOULD switch to NTPv5. If no valid response is received for a number
-        of requests (e.g. 8), the client SHOULD switch back to NTPv4.</t>
+      <t>When NTPv5 is not expected to be widely supported on servers yet, an
+        NTP client which supports both NTPv5 and a previous NTP version, is not
+        configured to use a specific NTP version, and does not use NTS or other
+        mechanism including negotiation of the NTP version, SHOULD start with
+        the previous version and set the reference timestamp to
+        0x4e5450354e545035. If the server responds with the same reference
+        timestamp, the client SHOULD switch to NTPv5. If no valid response is
+        received for a number of requests (e.g. 2), the client SHOULD switch
+        back to the orignal NTP version and stick with it for a larger number
+        of requests (e.g. 256) before trying NTPv5 again.</t>
+
+      <t>The special value of the reference timestamp corresponds to
+        1941-08-24T01:13:25Z in NTP era 0 and 2077-09-29T07:41:41Z in NTP era
+        1. The negotiation will probably not be needed at that time anymore. If
+        NTPv5 servers and NTPv4-or-older-only clients are still in use and they
+        send a request with the special value by chance, they will get an
+        acceptable response with no side effects. If an NTPv5 client gets the
+        special value by chance from an NTPv4-or-older-only server, it will
+        switch to NTPv5 and back after missing a valid response.</t>
     </section>
 
     <section anchor="Acknowledgements" title="Acknowledgements">
