@@ -1341,6 +1341,12 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
     </section>
 
     <section anchor="Security" title="Security Considerations">
+      <t>The corrections provided by network devices in the Correction
+        Extension Field are not authenticated. Man-in-the-middle attackers can
+        modify the corrections, but only corrections smaller than the measured
+        delay are accepted by clients. The security impact is comparable to the
+        impact of delaying unmodified NTP messages, which generally cannot be
+        prevented.</t>
     </section>
   </middle>
 
