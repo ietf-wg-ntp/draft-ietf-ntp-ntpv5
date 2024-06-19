@@ -26,13 +26,6 @@
     <author fullname="Miroslav Lichvar" initials="M." surname="Lichvar">
       <organization>Red Hat</organization>
       <address>
-        <postal>
-          <street>Purkynova 115</street>
-          <city>Brno</city>
-          <region></region>
-          <code>612 00</code>
-          <country>Czech Republic</country>
-        </postal>
         <email>mlichvar@redhat.com</email>
       </address>
     </author>
