@@ -597,7 +597,7 @@
           the message at the ingress and egress ports, taking the difference to
           determine time in the TC and adding this to the Delay Correction.
           Clients can account for the accumulated Delay Correction to determine
-          a more accurate clock offset.</t>
+          a more accurate clock offset and network delay.</t>
 
         <t>The NTPv5 Delay Correction has the same format as the PTP
           correctionField to make it easier for manufacturers of switches and
@@ -669,15 +669,29 @@
           </list>
         </t>
 
-        <t>A correction capable client system SHALL transmit the request with the
-          Origin Correction, Origin ID, Delay Correction and Path ID fields
-          filled with all zeros.</t>
+        <t>An NTP client with enabled support for network corrections SHOULD
+          add the Correction Extension Field to its requests, with all fields
+          of the extension field set to zero. It MUST be the last extension
+          field in the NTP message.</t>
 
-        <t>Network nodes, such as switches and routers, that are capable of NTP
-          corrections SHALL add the difference between the beginning of
-          an NTP message retransmission and the end of the message reception to
-          the received Delay Correction value, and update this field. Note that
-          this time difference might be negative, for example in a cut-through
+        <t>A network device forwarding packets (e.g. a switch or router) with
+          enabled support for NTP corrections MUST modify only packets which
+          meet all of the following requirements:
+
+          <list style="numbers">
+            <t>It is an IPv4 or IPv6 packet (e.g. EtherType of 0x0800 or
+              0x86DD)</t>
+            <t>The IP protocol number is 17 (UDP)</t>
+            <t>The UDP source port or destination port is 123 (NTP)</t>
+            <t>The NTP version is 5</t>
+            <t>The NTP message contains the Correction Extension Field</t>
+          </list>
+        </t>
+
+        <t>The network device SHOULD add the difference between the beginning of
+          the NTP message retransmission and the end of the message reception to
+          the Delay Correction value in the Correction Extension Field. Note
+          that this time difference might be negative, e.g. in a cut-through
           switch. If the packet is transmitted at the same speed as it was
           received and the length of the packet does not change (e.g. due to
           adding or removing a VLAN tag), the beginning and end of the interval
@@ -685,29 +699,56 @@
           as it is consistent for all forwarded packets of the same length. If
           the transmission speed or length of the packet is different, the
           beginning and end of the interval SHOULD correspond to the end of the
-          reception and beginning of the transmission respectively. Both
-          timestamps MUST be based on the same clock. This clock does not need
-          to be synchronized as long as the frequency is accurate enough such
-          that resulting time difference estimation errors are acceptable to
-          the precision required by the application. The correction
-          field is updated before or during the transmission of the message. It
-          is a one-step transparent clock in the PTP terminology.</t>
+          reception and beginning of the transmission respectively.</t>
 
-        <t>If a network node updates the delay correction, it SHOULD also add
-          the identification numbers of the incoming and outgoing port to the
-          path ID. Path ID values can be used by clients to determine if the
-          ntp request and response messages are likely to have traversed the
-          same network path.</t>
+        <t>The receive timestamp of the ingress port and transmit timestamp of
+          the egress port MUST be from the same clock, or two clocks that are
+          synchronized to each other. The clocks do not need to be synchronized
+          to an external reference if their frequency is accurate enough for
+          the accuracy of measured NTP delay required by the application. The
+          correction field is updated before or during the transmission of the
+          message. It is a one-step end-to-end transparent clock in the PTP
+          terminology.</t>
 
-        <t>If a network node modified any field of the extension field, it MUST
-          update the checksum complement field in order to keep the current UDP
-          checksum valid, or update the UDP checksum itself.</t>
+        <t>The network device SHOULD have a randomly generated 16-bit ID
+          number assigned to each of its ports. When it modifies the Correction
+          Extension Field, it SHOULD update the Path ID field of the extension
+          field by adding to it the values of the incoming and outgoing port
+          ID. The Path ID values can be used by clients to determine if the NTP
+          request and response have likely traversed the same network path.</t>
 
-        <t>The server SHALL write the received Delay Correction value in the
-          origin correction field of the response message, and the received
-          path ID value in the origin ID field. The server SHALL set the Delay
-          Correction field and Path ID fields to all zeros</t>
+        <t>If the network device modified any fields of the Correction
+          Extension Field, it MUST also update the Checksum Complement field in
+          order to keep the existing UDP checksum valid, or update the UDP
+          checksum in the UDP header itself. The network device MUST NOT modify
+          any other data in the UDP payload.</t>
 
+        <t>If an NTP server supports the Correction Extension Field and
+          receives a request which contains this extension field, it SHOULD
+          include the extension field in the response. If it is included, it
+          MUST be the last extension field in the message. It MUST copy the
+          Delay Correction and Path ID from the request to the Origin
+          Correction and Origin Path ID fields in the response respectively. It
+          SHOULD set the Delay Correction and Path ID fields of the response to
+          zero.</t>
+
+        <t>The Correction Extension Field is required to be the last extension
+          field in the message to provide an indicator at a fixed offset from
+          the ending of the message reception (which might simplify hardware
+          implementation of the correction) and to avoid being covered by the
+          MAC Extension Field, or other authenticator extension fields (e.g.
+          Network Time Security). It is the exception in the requirement
+          specified for the MAC Extension Field. If the corrections were
+          covered by the authenticator fields, the network devices would need
+          to have access to the keys and have a significant additional
+          complexity in order to update the authenticator fields when they
+          modify the Correction Extension Field.</t>
+
+        <t>As the Correction Extension Field is not protected, NTP clients
+          MUST validate the corrections before their application as specified
+          in <xref target="measurement-modes">Measurement Modes</xref>. Clients
+          MUST ignore an unexpected Correction Extension Field in the response,
+          i.e. if it was not included in the request.</t>
       </section>
 
       <section title="Reference Timestamp Extension Field">
