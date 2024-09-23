@@ -68,6 +68,9 @@
 
           <t>Timestamps are clearly separated from values used as cookies.</t>
 
+          <t>Synchronized server clock is indicated in a separate flag instead
+            of the leap indicator.</t>
+
           <t>NTPv5 messages can be extended only with extension fields. The MAC
             field is wrapped in an extension field.</t>
 
@@ -240,12 +243,25 @@
 
         <list style="hanging">
           <t hangText="Leap indicator (LI)"><vspace/>
-            A 2-bit field which can have the following values: 0 (normal), 1
-            (leap second inserted at the end of the month), 2 (leap second
-            deleted at the end of the month), 3 (not synchronized). The values
-            1 and 2 are set at most 14 days in advance before the leap second
-            and only if not using a leap-smeared timescale.
-            In requests it is always 0.</t>
+            A 2-bit field indicating upcoming leap seconds. In requests it is
+            always 0. In responses it has one of the following values:
+
+            <list style="hanging">
+              <t hangText="0: Normal"><vspace/>
+                No leap second will be inserted or deleted in the next 14 days,
+                or the server is responding in a leap-smeared timescale (i.e.
+                the client is not expected to be handling leap seconds).</t>
+              <t hangText="1: Insert leap second"><vspace/>
+                A leap second will be inserted in the next 14 days at the end
+                of the current month.</t>
+              <t hangText="2: Delete leap second"><vspace/>
+                A leap second will be deleted in the next 14 days at the end of
+                the current month.</t>
+              <t hangText="3: Unknown"><vspace/>
+                The server does not have a time source or other source
+                providing information about leap seconds.</t>
+            </list>
+          </t>
 
           <t hangText="Version Number (VN)"><vspace/>
             A 3-bit field containing the value 5.</t>
@@ -297,12 +313,10 @@
             A 16-bit integer that can contain the following flags:
 
             <list style="hanging">
-              <t hangText="0x1: Unknown leap"><vspace/>
+              <t hangText="0x1: Synchronized"><vspace/>
                 In requests it is 0. In responses a value of 1 indicates the
-                server does not have a time source which provides information
-                about leap seconds and the client should interpret the Leap
-                Indicator as having only two possible values: synchronized (0)
-                and not synchronized (3).</t>
+                server's clock is synchronized and the provided timestamps
+                can be used by the client for its own synchronization.</t>
               <t hangText="0x2: Interleaved mode"><vspace/>
                 In requests a value of 1 is a request for a response in the
                 interleaved mode. In responses a value of 1 indicates the
@@ -1078,7 +1092,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             most one valid response.</t>
 
           <t>Checks whether the response is usable for synchronization of the
-            clock. Such a response has a leap indicator not equal to 3, stratum
+            clock. Such a response has the Synchronized flag set, stratum
             between 0 and 16, root delay and dispersion both smaller than a
             specific value, e.g. 16 seconds, and timescale equal to the
             requested timescale. If the response is in a different timescale,
@@ -1181,10 +1195,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
               <t>The flags are set as follows:
                 <list style="hanging">
-                  <t hangText="Unknown leap"> is set if the server does not
-                    know if a leap second is pending in the next 14 days, i.e.
-                    it has no source providing information about leap
-                    seconds.</t>
+                  <t hangText="Synchronized"> is set if the server's clock is
+                    considered to be synchronized, and the receive and transmit
+                    timestamps provided in the response are usable for
+                    synchronization of the client.</t>
                   <t hangText="Interleaved mode"> is set if the interleaved
                     mode is implemented, was requested, and a response in the
                     interleaved mode
