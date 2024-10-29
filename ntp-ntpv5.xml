@@ -519,10 +519,11 @@
 
         <t>The request extension field specifies the offset of the requested
           chunk in the filter as a number of octets. The requested length of
-          the chunk is given by the length of the extension field. The response
-          extension field MUST have the same length as the request extension
-          field. If the request contains an invalid offset, the extension field
-          MUST be ignored.</t>
+          the chunk is given by the length of data in the request extension
+          field. The response extension field MUST have the same length as the
+          request extension field. If the request contains an invalid offset
+          for the length, i.e. it is larger than 512 minus length of data in
+          the extension field, the extension field MUST be ignored.</t>
 
         <t>The client SHOULD use requests of a constant length for the
           association to avoid adding a variation to the measured NTP
