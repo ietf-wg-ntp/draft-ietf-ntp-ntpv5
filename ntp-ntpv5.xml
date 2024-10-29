@@ -88,7 +88,8 @@
             accurate transmit timestamps.</t>
 
           <t>NTPv5 works with sets of reference IDs to prevent synchronization
-            loops over multiple hosts.</t>
+            loops over multiple hosts. Reference IDs have 120 bits instead of
+            32 bits.</t>
 
           <t>Resolution of the root delay and root dispersion fields is
             improved from about 15 microseconds to about 4 nanoseconds.</t>
