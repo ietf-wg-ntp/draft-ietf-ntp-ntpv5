@@ -407,11 +407,9 @@
 
       <t>The rest of this section describes extension fields specified for
         NTPv5. Clients are not required to use or support any of these
-        extension fields, but servers are required to support at least the
-        Padding Extension Field, Server Information Extension field, and if
-        they can be synchronized to other servers, also the Reference IDs
-        Request and Response extension fields to enable detection of
-        synchronization loops.</t>
+        extension fields, but servers are required to support the following
+        extension fields: Padding, Server Information, Reference IDs Request,
+        Reference IDs Response.</t>
 
       <section title="Draft Identification Extension Field">
         <t>Note to the editors: this section must be removed before final publication.</t>
@@ -461,7 +459,8 @@
           extension fields described in this section are used to exchange sets
           of reference IDs in order to detect synchronization loops, i.e. when
           a client is synchronizing (directly or indirectly) to one of its own
-          clients.</t>
+          clients, or more generally detect presence of a specific time
+          source in the synchronization chain.</t>
 
         <t>As each client can be synchronized to an unlimited number of
           servers (and there can be up to 15 strata of servers), the reference
@@ -483,7 +482,12 @@
         <t>If the server uses a previous version of NTP for some of its
           sources, the reference IDs added to the filter are generated from
           their IP addresses as the first 120 bits of the
-          <xref target="RFC1321">MD5</xref> sum of the address.</t>
+          <xref target="RFC1321">MD5</xref> sum of the address in network
+          order. If the server uses a reference clock, the reference ID is the
+          first 120 bits of the MD5 sum of the 4-octet zero-padded ASCII
+          string from the NTP Reference Identifier Codes registry maintained by
+          IANA, or a string beginning with the uppercase letter X, which are
+          reserved for private and experimental use.</t>
 
         <t>A client checking whether the server's set of reference IDs contains
           the client's own reference ID checks whether the bits at the 10
