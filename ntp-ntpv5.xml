@@ -426,13 +426,18 @@
         <t>The contents of this field MUST be the full name, including version number, of
           the draft upon which the implementation is based, encoded as an ASCII
           string. If the server string is longer than the client string, the
-          server MUST truncate it to the length of the client string.</t>
+          server MUST NOT respond in that version to prevent traffic
+          amplification.</t>
 
-        <t>A server SHOULD NOT respond to requests with a draft identification it does not
+        <t>A server MUST NOT respond to requests with a draft identification it does not
           recognize, and SHOULD respond with a response according to the same draft specification
           as given by the client.</t>
 
-        <t>Note: the content of this field MUST NOT be null terminated</t>
+        <t>Note: the content of this field MUST NOT be null-terminated (the
+          extension field in the NTP message may need to be padded with up to 3
+          octets). When comparing the strings be compared in their full length,
+          i.e. a longer string containing a shorter string is not
+          sufficient.</t>
       </section>
 
       <section title="Padding Extension Field">
