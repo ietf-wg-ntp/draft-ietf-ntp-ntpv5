@@ -114,6 +114,13 @@
     </section>
 
     <section title="Basic Concepts">
+      <t>An NTP client is exchanging messages with one or more NTP servers,
+        each timestamping transmission and reception of every message it sends
+        and receives. The servers provide their timestamps to the client. From
+        the timestamps the client captured and received from its servers it can
+        calculate the offset and network delay of its clock relative to the
+        servers' clocks.</t>
+
       <t>The distance to the reference time sources in the hierarchy of servers
         is called stratum. Primary time servers, which are synchronized to the
         reference clocks, are stratum 1, their clients are stratum 2, and so
@@ -131,16 +138,21 @@
         instability of the clocks on the path and instability of NTP
         measurements. Each server on the path adds its own dispersion to the
         root dispersion. Different clock models can be used. In a simple model,
-        the clock can have a constant dispersion rate, e.g. 15 ppm as used in
-        NTPv4.</t>
+        the clock can have a constant dispersion rate, e.g. 15 ppm as defined
+        for NTPv4.</t>
 
       <t>The sum of the root dispersion and half of the root delay is called
-        root distance. It is the estimated maximum error of the clock, taking
-        into account asymmetry in delay and stability of clocks and
-        measurements.</t>
+        root distance. It is an estimate of the maximum time error of the
+        clock, assuming the modeled stability of the clock and a worst-case
+        asymmetry in the network delay.</t>
 
-      <t>Servers have randomly generated reference IDs to enable detection and
-        prevention of synchronization loops.</t>
+      <t>A loop can form between clients if they try to synchronize to each
+        other, directly or indirectly over other servers. A synchronization
+        loop is an undesired state in an NTP network. It creates a positive
+        feedback loop and can negatively impact stability of synchronization.
+        To enable detection and prevention of synchronization loops, servers
+        have randomly generated reference IDs, which are exchanged in NTP
+        messages.</t>
     </section>
 
     <section title="Data Types">
