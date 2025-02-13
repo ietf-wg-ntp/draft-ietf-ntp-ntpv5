@@ -5,6 +5,7 @@
 <!ENTITY RFC5905 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5905.xml">
 <!ENTITY RFC7384 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7384.xml">
 <!ENTITY RFC7821 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7821.xml">
+<!ENTITY RFC7822 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7822.xml">
 <!ENTITY RFC8174 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml">
 <!ENTITY RFC8573 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8573.xml">
 <!ENTITY RFC8915 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8915.xml">
@@ -48,10 +49,11 @@
       <t>Network Time Protocol (NTP) is a protocol which enables computers to
         synchronize their clocks over network. Time is distributed from primary
         time servers to clients, which can be servers for other clients, and so
-        on. Clients can use multiple servers simultaneously.</t>
+        on. Clients can use multiple servers simultaneously to improve
+        reliability, stability, and accuracy of synchronization.</t>
 
-      <t>NTPv5 is similar to <xref target="RFC5905">NTPv4</xref>. The main
-        differences are:
+      <t>NTPv5 is very similar to <xref target="RFC5905">NTPv4</xref>. The
+        main differences are:
 
         <list style="numbers">
           <t>The protocol specification (this document) describes only the
@@ -72,7 +74,9 @@
             of the leap indicator.</t>
 
           <t>NTPv5 messages can be extended only with extension fields. The MAC
-            field is wrapped in an extension field.</t>
+            field is wrapped in an extension field to avoid an ambiguity in
+            parsing of the NTP message, which was later addressed for NTPv4 in
+            <xref target="RFC7822">RFC 7822</xref>.</t>
 
           <t>Extension fields can be of any length, even indivisible by 4, but are
             padded to a multiple of 4 octets. Extension fields specified for
@@ -81,21 +85,21 @@
           <t>NTPv5 adds support for other timescales than UTC.</t>
 
           <t>The NTP era number is exchanged in the protocol, which extends the
-            unambiguous interval of the client from 136 years to about 35000
-            years.</t>
+            unambiguous time interval from 136 years to about 35000 years.</t>
 
-          <t>NTPv5 adds interleaved mode to provide clients with more
-            accurate transmit timestamps.</t>
+          <t>NTPv5 adds a flag to clearly identify the use of interleaved mode
+            instead of comparing timestamps or cookies.</t>
 
           <t>NTPv5 works with sets of reference IDs to prevent synchronization
-            loops over multiple hosts. Reference IDs have 120 bits instead of
-            32 bits.</t>
+            loops over multiple hosts, even if they form over other NTP sources
+            than the system peer. Reference IDs have 120 bits instead of 32
+            bits to minimize the rate of false positives.</t>
 
           <t>Resolution of the root delay and root dispersion fields is
             improved from about 15 microseconds to about 4 nanoseconds.</t>
 
           <t>Clients do not leak information about their clock (e.g.
-            timestamps).</t>
+            timestamps, estimated accuracy).</t>
         </list>
       </t>
 
@@ -1427,6 +1431,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       &RFC5905;
 
       &RFC7821;
+
+      &RFC7822;
 
       &RFC8915;
 
