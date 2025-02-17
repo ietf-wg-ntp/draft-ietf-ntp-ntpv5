@@ -375,7 +375,7 @@
       <t>The header has 48 octets, which is the minimum length of a valid NTPv5
         message. A message can contain optional extension fields (zero or more).
         The maximum length is not specified, but the length MUST be divisible
-        by 4.</t>
+        by 4 octets.</t>
     </section>
 
     <section title="Extension Fields">
