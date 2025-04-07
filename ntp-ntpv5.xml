@@ -417,7 +417,10 @@
       <t>If a request contains an extension field, the server MUST include this
         extension field in the response unless the specification of the
         extension field states otherwise, or the server does not support the
-        extension field. A client can interpret the absence of an expected
+        extension field. If the server excludes one or more extension fields in
+        the response, it MUST include a Padding extension field that compensates
+        for the excluded fields, making the request and response symmetric in
+        length. A client can interpret the absence of an expected
         extension field in a response as an indication that the server does not
         support the extension field.</t>
 
@@ -469,12 +472,16 @@
       </section>
 
       <section title="MAC Extension Field">
-        <t>This field, with type [[TBD]] (draft: 0xF502), authenticates the NTPv5 message with a symmetric key.
-          Implementations SHOULD use the MAC specified in <xref
-          target="RFC8573">RFC8573</xref>. The extension field MUST be the last
-          extension field in the message unless an extension field is
-          specifically allowed to be placed after a MAC or another
-          authenticator field.</t>
+        <t>This field, with type [[TBD]] (draft: 0xF502), authenticates the
+          NTPv5 message with a symmetric key. Implementations SHOULD use the
+          MAC specified in <xref target="RFC8573">RFC8573</xref>. The MAC MUST
+          be computed over the NTP header and all the extension fields, if
+          present, located prior to the MAC extension field. The extension
+          field MUST be the last extension field in the message unless an
+          extension field is specifically allowed to be placed after a MAC or
+          another authenticator field, such as the
+          <xref target="correction-extension-field">Correction Extension
+          Field</xref>.</t>
       </section>
 
       <section title="Reference IDs Request and Response Extension Fields">
@@ -497,8 +504,8 @@
           reference ID is split into 10 12-bit values and the bits of the array
           at the 10 positions given by the 12-bit values are set to one.</t>
 
-        <t>A server maintains a copy of the filter for each server it is using
-          as an NTP client. The filter provided by the server to clients is the
+        <t>A server maintains a copy of the filter for each server it acquires
+          time from. The filter provided by the server to clients is the
           union of the filters (using the bitwise OR operation) of the server's
           sources selected for synchronization and the server's own reference
           ID.</t>
@@ -524,7 +531,9 @@
           no longer detected in the server's filter, it SHOULD wait for a
           random number of polling intervals (e.g. between 0 and 4) before
           selecting the server again. The random delay helps with stabilization
-          of the selection in longer loops.</t>
+          of the selection in longer loops. If a recurring loop is detected,
+          it is recommended to increase the random delay in order to avoid
+          livelock scenarios.</t>
 
         <t>False positives are possible. The probability of a collision grows
           with the number of reference IDs in the filter. With 26 reference IDs
@@ -534,6 +543,20 @@
           own clients. A client which detected a synchronization loop MAY
           change its own reference ID to limit the duration of the potential
           collision.</t>
+
+        <t>Bloom filters are free from false negatives. However, there is a
+          transient period between the addition of a reference ID to a server's
+          Bloom filter and the propagation of this information through a chain
+          of clients. During this period, the new reference ID may not be
+          detected, potentially causing a temporary synchronization loop. For
+          instance, if two servers inquire each other about the list of
+          reference IDs roughly at the same time, neither will detect its
+          reference ID in the other's Bloom filter, resulting in a temporary
+          loop.</t>
+
+        <t>Generally, when a server updates the Bloom filter it distributes to
+          clients, temporary synchronization loops might occur before
+          converging to an acyclic distribution tree.</t>
 
         <t>The filter can be exchanged as a single 512-octet array, or it can
           be exchanged in smaller chunks over multiple NTP messages, making
@@ -547,6 +570,14 @@
           request extension field. If the request contains an invalid offset
           for the length, i.e. it is larger than 512 minus length of data in
           the extension field, the extension field MUST be ignored.</t>
+
+        <t>When a filter is sent to a client in multiple chunks, the server
+          might update the Bloom filter to a new value after some chunks have
+          been sent. This can cause the subsequent chunks to be inconsistent
+          with the previously sent ones. The partially updated Bloom filter
+          might cause false negative or false positive detections. This
+          transient issue is resolved once the server completes sending the
+          updated Bloom filter.</t>
 
         <t>The client SHOULD use requests of a constant length for the
           association to avoid adding a variation to the measured NTP
@@ -619,7 +650,7 @@
         <t>This field MUST be supported on servers.</t>
       </section>
 
-      <section title="Correction Extension Field">
+      <section title="Correction Extension Field" anchor="correction-extension-field">
 
         <t>Processing and queueing delays in network switches and routers may
           be a significant source of jitter and asymmetry in network delay,
@@ -689,8 +720,11 @@
                A signed fixed-point number of nanoseconds with 48 integer
                bits and 16 binary fractional bits, which represents the current
                correction of the network delay that has accumulated for this
-               packet on the path from the source to the destination. The
-               format of this field is identical to the PTP correctionField.</t>
+               packet on the path from the source to the destination. A value
+               of one in all bits, except the most significant, of the field
+               indicates that the correction is too big to be represented.
+               The format of this field is identical to the PTP
+               correctionField.</t>
 
             <t hangText="Path ID"><vspace/>
                A 16-bit identification number of the path where the delay
@@ -715,8 +749,7 @@
           meet all of the following requirements:
 
           <list style="numbers">
-            <t>It is an IPv4 or IPv6 packet (e.g. EtherType of 0x0800 or
-              0x86DD)</t>
+            <t>It is an IPv4 or IPv6 packet</t>
             <t>The IP protocol number is 17 (UDP)</t>
             <t>The UDP source port or destination port is 123 (NTP)</t>
             <t>The NTP version is 5</t>
