@@ -40,14 +40,14 @@
     <keyword>NTP</keyword>
 
     <abstract>
-      <t>This document describes the version 5 of the Network Time Protocol (NTP).</t>
+      <t>This document describes version 5 of the Network Time Protocol (NTP).</t>
     </abstract>
   </front>
 
   <middle>
     <section title="Introduction">
-      <t>Network Time Protocol (NTP) is a protocol which enables computers to
-        synchronize their clocks over network. Time is distributed from primary
+      <t>Network Time Protocol (NTP) is a protocol which enables hosts to
+        synchronize their clocks over a network. Time is distributed from primary
         time servers to clients, which can be servers for other clients, and so
         on. Clients can use multiple servers simultaneously to improve
         reliability, stability, and accuracy of synchronization.</t>
@@ -79,8 +79,8 @@
             <xref target="RFC7822">RFC 7822</xref>.</t>
 
           <t>Extension fields can be of any length, even indivisible by 4, but are
-            padded to a multiple of 4 octets. Extension fields specified for
-            NTPv4 are compatible with NTPv5.</t>
+            padded to a multiple of 4 octets. Extension fields specified for NTPv4
+            can be included in NTPv5 messages as specified for NTPv4.</t>
 
           <t>NTPv5 adds support for other timescales than UTC.</t>
 
@@ -102,6 +102,11 @@
             timestamps, estimated accuracy).</t>
         </list>
       </t>
+
+      <t>Servers that support multiple versions of NTP MUST send a response in
+        the same version as the request, to support backwards compatibility.
+        This does not preclude servers from acting as a client in one version
+        of NTP and a server in another.</t>
 
       <section title="Requirements Language">
         <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
