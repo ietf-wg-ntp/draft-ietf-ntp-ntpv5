@@ -1250,7 +1250,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             </list>
           </t>
 
-          <t>Adds the Padding Extension field if necessary to make the length
+          <t>The length of the response MUST be equal to the length of the 
+		        request. The server adds the Padding Extension field if necessary to make the length
             of the response equal to the length of the request.</t>
 
           <t>Drops the response if it is longer than the request to prevent
