@@ -1418,6 +1418,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         <c>[[TBD]], selected by IANA from the IETF Review range</c>
         <c>Secondary Receive Timestamp</c>
         <c>[[this memo]]</c>
+	      
+        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>Internal Metadata</c>
+        <c>[[this memo]]</c>
       </texttable>
 
       <t>IANA is requested to allocate the following protocol in the
