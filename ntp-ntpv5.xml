@@ -6,9 +6,11 @@
 <!ENTITY RFC7384 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7384.xml">
 <!ENTITY RFC7821 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7821.xml">
 <!ENTITY RFC7822 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7822.xml">
+<!ENTITY RFC8039 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8039.xml">
 <!ENTITY RFC8174 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml">
 <!ENTITY RFC8573 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8573.xml">
 <!ENTITY RFC8915 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8915.xml">
+<!ENTITY RFC9523 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9523.xml">
 <!ENTITY XLEAVE SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-ntp-interleaved-modes.xml">
 ]>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
@@ -1407,12 +1409,63 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
     </section>
 
     <section anchor="Security" title="Security Considerations">
-      <t>The corrections provided by network devices in the Correction
+      <t>The security considerations of time protocols in general are 
+	      discussed in <xref target="RFC7384"/>. A successful attack on the 
+	      time distribution can result in one of three outcomes: Denial of 
+	      Service (DoS), reduced accuracy, or obtaining incorrect time.
+	      NTP can be compromised through various methods, such as altering 
+	      or delaying NTP messages during transit, injecting malicious NTP 
+	      messages or replaying valid ones, or impersonating an NTP server.</t>
+		
+      <t>The MAC extension field can be used to provide integrity protection, 
+	      thus mitigating in-transit NTP message modification and malicious 
+	      packet injection.</t>
+		
+      <t>Using NTS with NTPv5 provides enhanced security properties, including 
+	      server identity verification, replay protection and secure key 
+	      establishment.</t>
+	  
+	    <t>NTPv5 was design to minimize the necessary on-the-wire data that is 
+        included in the NTPv5 header in order to limit the amount of information
+	      that is exposed to the network and minimize the potential effect of 
+	      network reconnaissance. For example, the client's transmission
+	      timestamp is not included in the NTPv5 header. Extension fields are used 
+	      for coveying optional information.</t>
+	  
+	    <t>The protocol operates in a client-server mode. Other modes of 
+	      operation, which were supported in the previous version of the protocol 
+	      have known security vulnerabilities. The symmetric and broadcast modes 
+	      are vulnerable to replay attacks. The control and private modes can be 
+	      exploited for denial-of-service traffic amplification attacks.
+	      These modes are not supported in NTPv5.</t>
+	  
+	    <t>The NTP response message has the same length as the corresponding 
+	      request message. This symmetric approach reduces the potential of 
+	      amplification attacks.</t>
+	  
+	    <t>The protocol does not inherently mitigate delay attacks. An on-path 
+	      attacker can delay NTP messages and compromise the accuracy.
+	      Delay attacks can be mitigated by acquiring time from multiple sources
+	      and selecting the sources that are most likely to be accurate. A 
+	      detailed scheme was defined in <xref target="RFC5905"/> and can be used in
+	      NTPv5. This scheme defines a selection algorithm, which identifies the 
+	      most accurate and reliable time sources from a pool of candidates. 
+	      These sources are then grouped by the clustering algorithm to minimize 
+	      the impact of outliers. Finally, the combining algorithm averages the 
+	      time data from these clustered sources to produce a final, stable time 
+	      estimate. An enhancement to the selection algorithm was proposed in 
+	      <xref target="RFC9523"/>. An alternative approach to using multiple time
+	      sources is using multiple diverse paths between the client and server
+	      <xref target="RFC8039"/>, as it is assumed that only a subset of the
+	      paths is compromised by an on-path attacker.</t>
+	  
+	    <t>The corrections provided by network devices in the Correction
         Extension Field are not authenticated. Man-in-the-middle attackers can
-        modify the corrections, but only corrections smaller than the measured
-        delay are accepted by clients. The security impact is comparable to the
-        impact of delaying unmodified NTP messages, which generally cannot be
-        prevented.</t>
+        modify the correction values. In order to mitigate such attacks, the client
+		    validates the correction values as described in <xref target="measurement-modes"/>.
+		    Thus, only corrections smaller than the measured delay are accepted by 
+		    clients. The security impact is comparable to the impact of delaying 
+		    unmodified NTP messages, as described above.</t>
     </section>
   </middle>
 
@@ -1437,7 +1490,11 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
       &RFC7822;
 
+      &RFC8039;
+
       &RFC8915;
+	  
+ 	    &RFC9523;
 
       <!-- security requirements &RFC7384; -->
 
