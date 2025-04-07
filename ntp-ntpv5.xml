@@ -114,17 +114,21 @@
     </section>
 
     <section title="Basic Concepts">
-      <t>An NTP client is exchanging messages with one or more NTP servers,
-        each timestamping transmission and reception of every message it sends
-        and receives. The servers provide their timestamps to the client. From
-        the timestamps the client captured and received from its servers it can
-        calculate the offset and network delay of its clock relative to the
-        servers' clocks.</t>
+      <t>An NTP client exchanges messages with one or more NTP servers;
+        the client sends a request and the server sends a response. Both the
+        client and server measure the time of transmission and reception of
+        every message they send and receive. The servers provide their
+        timestamps to the client. From the timestamps the client captures and
+        receives from its servers it can calculate the offset and network delay
+        of its clock relative to the servers' clocks.</t>
 
       <t>The distance to the reference time sources in the hierarchy of servers
         is called stratum. Primary time servers, which are synchronized to the
         reference clocks, are stratum 1, their clients are stratum 2, and so
         on.</t>
+
+      <t>An NTP response message includes two fields that provide an estimate
+        of the server's time error, the root delay and the root dispertion.</t>
 
       <t>Root delay measures the total delay on the path to the reference time
         source used by the primary time server. Each client on the path adds to
