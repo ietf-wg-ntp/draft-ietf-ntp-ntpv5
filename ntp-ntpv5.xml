@@ -169,14 +169,14 @@
             this is different from the 32-bit time format in NTPv4.</t>
 
           <t hangText="timestamp64"><vspace/>
-            A 64-bit unsigned fixed-point type containing a timestamp describes
+            A 64-bit unsigned fixed-point type containing a timestamp specified
             in seconds. It has 32 signed
             integer bits and 32 fractional bits. It spans an interval of about
             136 years and has a resolution of about 0.23 nanoseconds. It can be
             used in different timescales. In the UTC timescale it is the number
             of SI seconds since 1 Jan 1972 plus 2272060800 (number of seconds
             since 1 Jan 1900 assuming 86400-second days), excluding leap
-            seconds. Timestamps in the TAI timescale are the same except they
+            second adjustments. Timestamps in the TAI timescale are the same except they
             include leap seconds and extra 10 seconds for the original
             difference between TAI and UTC in 1972, when leap seconds were
             introduced. A value of 0 indicates an unknown or invalid timestamp.
@@ -194,7 +194,9 @@
 
     <section title="Message Format">
       <t>NTPv5 servers and clients exchange messages as UDP datagrams. Clients
-        send requests to servers and servers send them back responses. The
+        send requests to servers and servers send them back responses. The 
+		    server's UDP port in NTP messages is 123, as assigned by IANA. The 
+		    client's UDP port can be any number consistent with the local policy. The
         format of the UDP payload is shown in Figure <xref format="counter"
           target="message-format"/>.</t>
 
