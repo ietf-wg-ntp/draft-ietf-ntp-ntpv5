@@ -417,7 +417,7 @@
         NTPv5. Clients are not required to use or support any of these
         extension fields, but servers are required to support the following
         extension fields: Padding, Server Information, Reference IDs Request,
-        Reference IDs Response.</t>
+        Reference IDs Response, Internal Metadata.</t>
 
       <section title="Draft Identification Extension Field">
         <t>Note to the editors: this section must be removed before final publication.</t>
@@ -887,6 +887,35 @@
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 |                Secondary Receive Timestamp (64)               |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+      </section>
+
+      <section title="Internal Metadata Extension Field">
+        <t>The Internal Metadata Extension Field can be used by a client's or
+          a server's internal implementation. For example, an NTP client that
+          receives a response message can use this extension field to convey 
+		      the reception time of the message from a hardware module to a 
+		      software module. The purpose of this extension field is similar to that of the
+		      "messageTypeSpecific" field in
+		      <xref target="IEEE1588">PTP</xref></t>
+		
+		    <t>The extension field includes a single field, the MBZ (Must Be Zero)
+		      field. The length of this field is determined by the Length field. 
+		      The value of MBZ is zero both in request and in response messages.</t>
+
+        <figure align="center" anchor="internal-metadata-ext-field"
+            title="Format of Internal Metadata Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF50A) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                              MBZ                              ~
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
           ]]></artwork>
