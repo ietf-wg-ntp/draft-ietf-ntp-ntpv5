@@ -9,6 +9,7 @@
 <!ENTITY RFC8174 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml">
 <!ENTITY RFC8573 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8573.xml">
 <!ENTITY RFC8915 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8915.xml">
+<!ENTITY RFC9748 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9748.xml">
 <!ENTITY XLEAVE SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-ntp-interleaved-modes.xml">
 ]>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
@@ -461,7 +462,7 @@
           sufficient.</t>
       </section>
 
-      <section title="Padding Extension Field">
+      <section title="Padding Extension Field" anchor="padding-extension-field">
         <t>This field, with type [[TBD]] (draft: 0xF501), is used by servers to pad the response to the same length
           as the request if the response does not contain all requested
           extension fields, or some have a variable length. It can have any
@@ -471,7 +472,7 @@
         <t>This field MUST be supported on servers.</t>
       </section>
 
-      <section title="MAC Extension Field">
+      <section title="MAC Extension Field" anchor="mac-extension-field">
         <t>This field, with type [[TBD]] (draft: 0xF502), authenticates the
           NTPv5 message with a symmetric key. Implementations SHOULD use the
           MAC specified in <xref target="RFC8573">RFC8573</xref>. The MAC MUST
@@ -484,7 +485,8 @@
           Field</xref>.</t>
       </section>
 
-      <section title="Reference IDs Request and Response Extension Fields">
+      <section title="Reference IDs Request and Response Extension Fields"
+          anchor="reference-ids-extension-fields">
         <t>Each NTPv5 server has a randomly generated 120-bit reference ID
           (it will be split into 10 12-bit values). The
           extension fields described in this section are used to exchange sets
@@ -625,7 +627,8 @@
           to other NTP servers (i.e. they can be in a synchronization loop).</t>
       </section>
 
-      <section title="Server Information Extension Field">
+      <section title="Server Information Extension Field"
+          anchor="server-information-extension-field">
         <t>This field provides clients with information about which NTP
           versions are supported by the server, i.e. whether it can respond to
           requests conforming to the specific version. It contains a 16-bit
@@ -820,7 +823,8 @@
           i.e. if it was not included in the request.</t>
       </section>
 
-      <section title="Reference Timestamp Extension Field">
+      <section title="Reference Timestamp Extension Field"
+          anchor="reference-timestamp-extension-field">
         <t>This field contains the time of the last update of the clock. It
           has a fixed length of 12 octets. In requests, that timestamp is always
           0.</t>
@@ -843,7 +847,8 @@
         </figure>
       </section>
 
-      <section title="Monotonic Receive Timestamp Extension Field">
+      <section title="Monotonic Receive Timestamp Extension Field"
+          anchor="monotonic-receive-timestamp-extension-field">
 
         <t>When a clock is synchronized to a time source, there is a compromise
           between time (phase) accuracy and frequency accuracy, because the
@@ -891,7 +896,8 @@
 
       </section>
 
-      <section title="Secondary Receive Timestamp Extension Field">
+      <section title="Secondary Receive Timestamp Extension Field"
+          anchor="secondary-receive-timestamp-extension-field">
         <t>This extension field provides an additional receive timestamp of the
           client request in a selected timescale. It enables the client to get
           the same receive timestamp in different timescales in order to
@@ -1310,7 +1316,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       </t>
     </section>
 
-    <section title="Network Time Security with NTPv5">
+    <section title="Network Time Security with NTPv5" anchor="network-time-security">
       <t>The <xref target="RFC8915">Network Time Security</xref> mechanism uses
         the NTS-KE protocol to establish keys and negotiate the next protocol.
         NTPv5 can be indicated as the next protocol with identifier [[TBD]] (draft
@@ -1390,54 +1396,56 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
-      <t>IANA is requested to create a new registry for NTPv5 Extension Field
-        Types with initial entries including all entries from the <xref
-        target="RFC5905">NTPv4 Extension Field Types Registry</xref> and the
-        following NTPv5-specific entries:</t>
+      <t>IANA is requested to allocate the following entries in the <xref
+        target="RFC9748">NTP Extension Field Types Registry</xref>:</t>
 
       <texttable>
         <ttcol>Field Type</ttcol>
         <ttcol>Meaning</ttcol>
         <ttcol>Reference</ttcol>
 
-        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>[[TBD]]</c>
         <c>Padding</c>
-        <c>[[this memo]]</c>
+        <c><xref target="padding-extension-field">[[this memo]]</xref></c>
 
-        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>[[TBD]]</c>
         <c>MAC</c>
-        <c>[[this memo]]</c>
+        <c><xref target="mac-extension-field">[[this memo]]</xref></c>
 
-        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>[[TBD]]</c>
         <c>Reference IDs Request</c>
-        <c>[[this memo]]</c>
+        <c><xref target="reference-ids-extension-fields">[[this memo]]</xref></c>
 
-        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>[[TBD]]</c>
         <c>Reference IDs Response</c>
-        <c>[[this memo]]</c>
+        <c><xref target="reference-ids-extension-fields">[[this memo]]</xref></c>
 
-        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>[[TBD]]</c>
         <c>Server Information</c>
-        <c>[[this memo]]</c>
+        <c><xref target="server-information-extension-field">
+          [[this memo]]</xref></c>
 
-        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>[[TBD]]</c>
         <c>Correction</c>
-        <c>[[this memo]]</c>
+        <c><xref target="correction-extension-field">[[this memo]]</xref></c>
 
-        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>[[TBD]]</c>
         <c>Reference Timestamp</c>
-        <c>[[this memo]]</c>
+        <c><xref target="reference-timestamp-extension-field">
+          [[this memo]]</xref></c>
 
-        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>[[TBD]]</c>
         <c>Monotonic Receive Timestamp</c>
-        <c>[[this memo]]</c>
+        <c><xref target="monotonic-receive-timestamp-extension-field">
+          [[this memo]]</xref></c>
 
-        <c>[[TBD]], selected by IANA from the IETF Review range</c>
+        <c>[[TBD]]</c>
         <c>Secondary Receive Timestamp</c>
-        <c>[[this memo]]</c>
+        <c><xref target="secondary-receive-timestamp-extension-field">
+          [[this memo]]</xref></c>
       </texttable>
 
-      <t>IANA is requested to allocate the following protocol in the
+      <t>IANA is requested to allocate the following entry in the
         <xref target="RFC8915">Network Time Security Next Protocols
           Registry</xref>:</t>
 
@@ -1448,7 +1456,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
         <c>[[TBD]], selected by IANA from the IETF Review range</c>
         <c>Network Time Protocol version 5 (NTPv5)</c>
-        <c>[[this memo]]</c>
+        <c><xref target="network-time-security">[[this memo]]</xref></c>
       </texttable>
     </section>
 
@@ -1484,6 +1492,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       &RFC7822;
 
       &RFC8915;
+
+      &RFC9748;
 
       <!-- security requirements &RFC7384; -->
 
