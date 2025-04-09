@@ -472,12 +472,14 @@
         <t>This field MUST be supported on servers.</t>
       </section>
 
-      <section title="MAC Extension Field" anchor="mac-extension-field">
+      <section title="Message Authentication Code Extension Field"
+            anchor="mac-extension-field">
         <t>This field, with type [[TBD]] (draft: 0xF502), authenticates the
           NTPv5 message with a symmetric key. Implementations SHOULD use the
-          MAC specified in <xref target="RFC8573">RFC8573</xref>. The MAC MUST
-          be computed over the NTP header and all the extension fields, if
-          present, located prior to the MAC extension field. The extension
+          Message Authentication Code (MAC) specified in <xref
+          target="RFC8573">RFC8573</xref>. The MAC MUST be computed over the
+          NTP header and all the extension fields, if present, located prior to
+          the Message Authentication Extension Field. The extension
           field MUST be the last extension field in the message unless an
           extension field is specifically allowed to be placed after a MAC or
           another authenticator field, such as the
@@ -808,9 +810,10 @@
           field in the message to provide an indicator at a fixed offset from
           the ending of the message reception (which might simplify hardware
           implementation of the correction) and to avoid being covered by the
-          MAC Extension Field, or other authenticator extension fields (e.g.
-          Network Time Security). It is the exception in the requirement
-          specified for the MAC Extension Field. If the corrections were
+          Message Authentication Code Extension Field, or other
+          authenticator extension fields (e.g. Network Time Security). It is
+          the exception in the requirement specified for the Message
+          Authentication Code Extension Field. If the corrections were
           covered by the authenticator fields, the network devices would need
           to have access to the keys and have a significant additional
           complexity in order to update the authenticator fields when they
@@ -1243,7 +1246,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             specification corresponding to the protocol version.</t>
 
           <t>Drops the request if the format is not valid, mode is not 3, or
-            authentication fails with the MAC Extension Field or another
+            authentication fails with the Message Authentication Code Extension
+            Field or another
             authenticator which does not have a specified response for failed
             authentication. The server MUST ignore unknown extension
             fields.</t>
@@ -1409,7 +1413,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         <c><xref target="padding-extension-field">[[this memo]]</xref></c>
 
         <c>[[TBD]]</c>
-        <c>MAC</c>
+        <c>Message Authentication Code</c>
         <c><xref target="mac-extension-field">[[this memo]]</xref></c>
 
         <c>[[TBD]]</c>
