@@ -1422,7 +1422,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 	      packet injection.</t>
 		
       <t>Using NTS with NTPv5 provides enhanced security properties, including 
-	      server identity verification, replay protection and secure key 
+	      server identity verification, improved replay protection and secure key 
 	      establishment.</t>
 	  
 	    <t>NTPv5 was design to minimize the necessary on-the-wire data that is 
@@ -1445,7 +1445,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 	  
 	    <t>The protocol does not inherently mitigate delay attacks. An on-path 
 	      attacker can delay NTP messages and compromise the accuracy.
-	      Delay attacks can be mitigated by acquiring time from multiple sources
+	      Delay attacks can be mitigated by limiting the maximum acceptable delay.
+	      In each request-response exchange the client computes the delay and can
+	      discard the response if the delay exceeds a maximum expected value.
+	      A more fine-grained mitigation approach is acquiring time from multiple sources
 	      and selecting the sources that are most likely to be accurate. A 
 	      detailed scheme was defined in <xref target="RFC5905"/> and can be used in
 	      NTPv5. This scheme defines a selection algorithm, which identifies the 
@@ -1494,9 +1497,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
       &RFC8915;
 	  
- 	    &RFC9523;
+      &RFC9523;
 
-      <!-- security requirements &RFC7384; -->
+      &RFC7384;
 
       &XLEAVE;
 
