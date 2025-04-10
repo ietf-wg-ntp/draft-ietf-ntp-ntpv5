@@ -1238,17 +1238,29 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
         <list style="symbols">
           <t>Leap indicator MUST be 3 if the clock is not synchronized or its
-            maximum error cannot be estimated with the root delay and
+            maximum error cannot be estimated by root delay and
             dispersion. Otherwise, it MUST be 0, 1, 2, depending on whether a
             leap second is pending in the next 14 days and, if it is, whether it
             will be inserted or deleted.</t>
-          <t>Stratum SHOULD be one larger than stratum of the best
-            server it uses for its own synchronization.</t>
-          <t>Root delay SHOULD be the best server's root delay in addition to
-            the measured delay to the server.</t>
-          <t>Root dispersion SHOULD be the best server's root dispersion in
-            addition to an estimate of the maximum drift of its own clock since
-            the last update of the clock.</t>
+          <t>Stratum SHOULD be 1 if the server is synchronized to a local
+            reference clock, or be one larger than the stratum of the NTP
+            server it selected as best for synchronization. It MUST be greater
+            than the minimum stratum of all servers selected for
+            synchronization, as they provided in their last accepted response,
+            or 0 to indicate infinity.</t>
+          <t>Root delay MUST be an estimate of the double of the maximum error
+            of the server's clock due to asymmetries in the network delay and
+            other delays (e.g. timestamping) on the path to the primary time
+            source. For a server that is synchronized to other NTP servers, one
+            possibility is to set it to the latest measured delay to the server
+            it considers best plus the root delay provided in that
+            response.</t>
+          <t>Root dispersion MUST be an estimate of the maximum error of the
+            server's clock from other causes than those covered by root delay,
+            e.g. instability of the clock and measurements by which it is
+            synchronized. If the server is synchronized to other NTP servers,
+            it MUST include root dispersion from one of the servers'
+            responses.</t>
         </list>
       </t>
 
