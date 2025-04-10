@@ -463,11 +463,18 @@
       </section>
 
       <section title="Padding Extension Field" anchor="padding-extension-field">
-        <t>This field, with type [[TBD]] (draft: 0xF501), is used by servers to pad the response to the same length
-          as the request if the response does not contain all requested
-          extension fields, or some have a variable length. It can have any
-          length. The data field of the extension field SHOULD contain zeros
-          and it MUST be ignored by the receiver.</t>
+        <t>This field, with type [[TBD]] (draft: 0xF501), can have any length.
+          The data field within this extension field SHOULD contain zeros
+          and it MUST be ignored by the receiver.
+          Servers can use this extension field to pad the response to match the 
+          length of the request if the response does not contain all requested
+          extension fields, or some have a variable length. If the request message
+          includes a padding extension, the server can increase its length if necessary.
+          If the request message does not include a padding extension, the server can add it to the response.
+          Clients can include the padding extension in the request message,
+          allowing the extension to be used for internal purposes. For instance, an NTP client
+          receiving a response message can use this extension field to transfer 
+		      the reception time from a hardware module to a software module.</t>
 
         <t>This field MUST be supported on servers.</t>
       </section>
@@ -1305,7 +1312,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
           </t>
 
           <t>The length of the response MUST be equal to the length of the
-            request. The server adds the Padding Extension field if necessary
+            request. The server adds the Padding Extension field or increases its length if necessary
             to make the length of the response equal to the length of the
             request.</t>
 
