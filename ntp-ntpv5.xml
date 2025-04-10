@@ -32,6 +32,13 @@
       </address>
     </author>
 
+    <author fullname="Tal Mizrahi" initials="T." surname="Mizrahi">
+      <organization>Huawei</organization>
+      <address>
+        <email>tal.mizrahi.phd@gmail.com</email>
+      </address>
+    </author>
+    
     <date year="2025" month="Feb" day="13"/>
 
     <area>General</area>
