@@ -64,12 +64,95 @@
 
   <middle>
     <section title="Introduction">
-      <t>Network Time Protocol (NTP) is a protocol which enables hosts to
-        synchronize their clocks over a network. Time is distributed from primary
-        time servers to clients, which can be servers for other clients, and so
-        on. Clients can use multiple servers simultaneously to improve
-        reliability, stability, and accuracy of synchronization.</t>
+      <t>The Network Time Protocol (NTP) is a widely used protocol that
+        enables hosts to synchronize their clocks over packet-switched,
+        variable-latency data networks. Time is distributed hierarchically,
+        beginning with primary time servers, often synchronized to Coordinated
+        Universal Time (UTC) via external sources such as GNSS, and propagating
+        through a network of clients. These clients may themselves act as
+        servers for downstream systems, forming a time distribution tree. To
+        enhance reliability, stability, and accuracy, clients can query
+        multiple servers concurrently and apply local algorithms to select and
+        combine time sources.</t>
 
+      <t>This document specifies version 5 of the protocol (NTPv5), which
+        defines only the on-the-wire protocol used for time exchange. It does
+        not cover client-side algorithms such as source selection, filtering of
+        time measurements, or clock discipline. These aspects are considered
+        out of scope.</t>
+
+      <t>NTPv5 adopts a simplified client-server model as its sole operational
+        mode. For security and robustness, legacy modes from previous versions,
+        such as symmetric active, symmetric passive, broadcast, control, and
+        private modes, have been removed. Only client and server modes are
+        retained in this version.</t>
+
+      <t>To support optional features and future extensibility, NTPv5 makes use
+        of extension fields. This document defines several such fields, which
+        may be included in protocol messages to convey additional information
+        beyond the core header.</t>
+
+      <t>NTPv5 supports secure operation through two possible mechanisms
+        originally defined for NTPv4. The first is the <xref
+        target="RFC8573">NTP Message Authentication Code (MAC)</xref>
+        mechanism, which provides basic message integrity. The second is <xref
+        target="RFC8915">Network Time Security (NTS)</xref>, which offers
+        stronger security guarantees, including server authentication, replay
+        protection, and secure key establishment.</t>
+
+      <t>This specification also introduces two features aimed at improving
+        synchronization accuracy. The Correction Extension Field allows clients
+        and servers to communicate variable delays introduced by intermediate
+        network devices such as switches and routers. Additionally, Interleaved
+        Mode enables more precise timestamping in implementations in which
+        precise transmit timestamps are only available after message
+        transmission.</t>
+
+      <t>Backward compatibility is supported through version negotiation. A
+        server that implements multiple protocol versions responds using the
+        same version as the client's request, provided that version is
+        supported.</t>
+    </section>
+
+    <section title="Conventions">
+      <section title="Terminology">
+        <t>Abbreviations used in this document:</t>
+
+        <t><list hangIndent="11" style="hanging">
+          <t hangText="MAC">Message Authentication Code</t>
+
+          <t hangText="NTP">Network Time Protocol</t>
+
+          <t hangText="NTS">Network Time Security</t>
+
+          <t hangText="NTS-KE">Network Time Security Key Establishment</t>
+
+          <t hangText="ppm">parts per million</t>
+
+          <t hangText="PTP">Precision Time Protocol</t>
+
+          <t hangText="SI">International System of Units</t>
+
+          <t hangText="TAI">International Atomic Time</t>
+
+          <t hangText="TC">Transparent Clock</t>
+
+          <t hangText="UT1">Universal Time 1</t>
+
+          <t hangText="UTC">Coordinated Universal Time</t>
+        </list></t>
+      </section>
+      <section title="Requirements Language">
+        <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+          NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
+          "MAY", and "OPTIONAL" in this document are to be interpreted as
+          described in BCP 14 <xref target="RFC2119"/>
+          <xref target="RFC8174"/> when, and only when, they appear in all
+          capitals, as shown here.</t>
+      </section>
+    </section>
+
+    <section title="Main Differences between NTPv5 and NTPv4">
       <t>NTPv5 is very similar to <xref target="RFC5905">NTPv4</xref>. The
         main differences are:
 
@@ -85,6 +168,11 @@
             The control and private modes can be exploited for
             denial-of-service traffic amplification attacks. Only the client
             and server modes remain in NTPv5.</t>
+
+          <t>The NTPv5 message format differs from that of NTPv4. However,
+            the Version Number field remains at the same offset in both formats,
+            enabling protocol implementations to distinguish between
+            the two versions.</t>
 
           <t>Timestamps are clearly separated from values used as cookies.</t>
 
@@ -120,20 +208,6 @@
             timestamps, estimated accuracy).</t>
         </list>
       </t>
-
-      <t>Servers that support multiple versions of NTP MUST send a response in
-        the same version as the request, to support backwards compatibility.
-        This does not preclude servers from acting as a client in one version
-        of NTP and a server in another.</t>
-
-      <section title="Requirements Language">
-        <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
-          NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
-          "MAY", and "OPTIONAL" in this document are to be interpreted as
-          described in BCP 14 <xref target="RFC2119"/>
-          <xref target="RFC8174"/> when, and only when, they appear in all
-          capitals, as shown here.</t>
-      </section>
     </section>
 
     <section title="Basic Concepts">
@@ -1383,6 +1457,11 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
     </section>
 
     <section title="NTPv5 Negotiation in previous NTP versions">
+      <t>Servers that support multiple versions of NTP MUST send a response in
+        the same version as the request, to support backwards compatibility.
+        This does not preclude servers from acting as a client in one version
+        of NTP and a server in another.</t>
+
       <t>NTPv5 messages are not compatible with NTPv4 and other previous
         versions of NTP, even if they do not contain any extension fields. Some
         widely used server NTPv4 implementations are known to accept requests
