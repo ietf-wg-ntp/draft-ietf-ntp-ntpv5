@@ -98,8 +98,8 @@
         Field allows clients and servers to communicate variable delays 
         introduced by intermediate network devices such as switches and 
         routers. Additionally, Interleaved Mode enables more precise 
-        capture of transmit timestamps that are only available after 
-        message transmission.</t>
+        timestamping in implementations in which precise transmit 
+        timestamps are only available after message transmission.</t>
 
       <t>Backward compatibility is supported through version 
         negotiation. A server that implements multiple protocol 
