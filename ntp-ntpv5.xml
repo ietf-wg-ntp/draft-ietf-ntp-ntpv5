@@ -9,6 +9,7 @@
 <!ENTITY RFC8039 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8039.xml">
 <!ENTITY RFC8174 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml">
 <!ENTITY RFC8573 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8573.xml">
+<!ENTITY RFC8877 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8877.xml">
 <!ENTITY RFC8915 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8915.xml">
 <!ENTITY RFC9523 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9523.xml">
 <!ENTITY RFC9748 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9748.xml">
@@ -129,49 +130,149 @@
     </section>
 
     <section title="Basic Concepts">
+     <section anchor="ntp-exchange-sec" title="The NTP Message Exchange">
       <t>An NTP client exchanges messages with one or more NTP servers;
         the client sends a request and the server sends a response. Both the
         client and server measure the time of transmission and reception of
         every message they send and receive. The servers provide their
-        timestamps to the client. From the timestamps the client captures and
-        receives from its servers it can calculate the offset and network delay
-        of its clock relative to the servers' clocks.</t>
+        timestamps to the client.</t>
+		
+      <t>The NTP message exchange is illustrated in 
+	    <xref target="basic-concept-figure"/>, depicting four timestamp 
+        values:</t>
+		
+        <list style="numbers">
+          <t>T1 - client's transmit timestamp of the request</t>
+          <t>T2 - server's receive timestamp of the request</t>
+          <t>T3 - server's transmit timestamp of the response</t>
+          <t>T4 - client's receive timestamp of the response</t>
+        </list>
 
-      <t>The distance to the reference time sources in the hierarchy of servers
-        is called stratum. Primary time servers, which are synchronized to the
-        reference clocks, are stratum 1, their clients are stratum 2, and so
-        on.</t>
+      <figure align="center" anchor="basic-concept-figure"
+          title="NTP message exchange">
+        <artwork><![CDATA[
+          Server         T2   T3       
+             ------------+----+--------
+                        /      \       
+               request /        \ response       ---> time
+                      /          \      
+             --------+------------+-----
+          Client     T1           T4    
+        ]]></artwork>
+      </figure>
 
-      <t>An NTP response message includes two fields that provide an estimate
-        of the server's time error, the root delay and the root dispertion.</t>
+      <t>The timestamps T1 and T4 are recorded locally by the client and are 
+	    not transmitted over the network. In contrast, the server includes 
+	    timestamps T2 and T3 in its response to the client. As a result, by 
+	    the end of the exchange, the client has access to all four timestamps, 
+	    commonly referred to as a sample.</t>
+	  
+	  <t>The client can use the set of four timestamps to estimate both the 
+	    clock offset relative to the server and the network delay.
+		  The offset of the server clock relative to the client clock can be
+	    calculated using Eq. (1), and the two-way delay between the client
+		  and server can be estimated using Eq. (2).</t>
 
-      <t>Root delay measures the total delay on the path to the reference time
-        source used by the primary time server. Each client on the path adds to
-        the root delay the NTP delay measured to the server it considers best
-        for synchronization. The delay includes network delays and any delays
-        between timestamping of NTP messages and their actual reception and
-        transmission. Half of the root delay estimates the maximum error of the
-        clock due to asymmetries in the delay.</t>
+        <artwork><![CDATA[
+(1)  offset = ((T2 + T3) - (T4 + T1)) / 2
+(2)  delay  = |(T4 - T1) - (T3 - T2)|
+        ]]></artwork>
 
-      <t>Root dispersion estimates the maximum error of the clock due to the
-        instability of the clocks on the path and instability of NTP
-        measurements. Each server on the path adds its own dispersion to the
-        root dispersion. Different clock models can be used. In a simple model,
-        the clock can have a constant dispersion rate, e.g. 15 ppm as defined
-        for NTPv4.</t>
+      <t>The offset and delay estimates given in the two equations above are 
+	    based on a single timestamp sample. In practice, a client typically 
+		  maintains ongoing estimates of offset and delay by aggregating 
+		  multiple samples collected over several message exchanges.</t>
+     </section>
 
-      <t>The sum of the root dispersion and half of the root delay is called
-        root distance. It is an estimate of the maximum time error of the
-        clock, assuming the modeled stability of the clock and a worst-case
-        asymmetry in the network delay.</t>
+     <section title="Hierarchical Time Distribution">
+      <t>NTP supports a hierarchical time distribution scheme. This hierarchy 
+        is defined by stratum levels, which indicate the distance from the 
+        reference time source. Stratum 1 servers are directly synchronized with 
+        an external reference clock. Servers that synchronize with stratum 1 
+        servers are classified as stratum 2, and the hierarchy continues in 
+        this manner.</t>
 
-      <t>A loop can form between clients if they try to synchronize to each
-        other, directly or indirectly over other servers. A synchronization
-        loop is an undesired state in an NTP network. It creates a positive
-        feedback loop and can negatively impact stability of synchronization.
-        To enable detection and prevention of synchronization loops, servers
-        have randomly generated reference IDs, which are exchanged in NTP
-        messages.</t>
+      <t>An NTP response message contains two fields, root delay and root
+        dispersion, which together provide an estimate of the server's 
+		    time error accumulated along the synchronization path.</t>
+
+      <t>Root delay represents the cumulative delay along the path to the 
+	    reference time source used by the primary time server. Each server 
+		  in the synchronization chain adds its own delay estimate
+		  based on the server it deems most accurate. This estimate includes 
+		  both the measured two-way delay towards the server and any processing 
+		  delays between the timestamping and actual sending or receiving of NTP 
+		  messages. To estimate the potential error caused by asymmetric 
+		  delays, half of the root delay is typically used as a bound on the 
+		  clock's maximum error.</t>
+
+      <t>Root dispersion provides an estimate, in time units, of the maximum 
+	    potential error in the clock due to both the instability of clocks 
+		  along the synchronization path and the variability in NTP measurements. 
+		  Each server in the chain contributes its own dispersion value to the 
+		  cumulative root dispersion. The method for estimating dispersion can 
+		  vary between implementations and often depends on the underlying clock 
+		  model. In a simple model, dispersion may be calculated using a constant 
+		  Dispersion Rate (DR), as shown in Equation (3). The constant DR 
+		  represents a relative frequency error, typically within the range 
+		  (0, 1). For instance, a DR value of 0.000015 (15 ppm) is suggested 
+		  in <xref target="RFC5905"/>.</t>		
+
+        <artwork><![CDATA[
+(3)  dispersion = |T4 - T1| * DR
+        ]]></artwork>
+
+	  <t>The root distance is defined as the sum of the root dispersion and 
+		  half of the root delay. It represents an estimate of the maximum 
+		  possible time error of the clock, accounting for the assumed clock 
+		  stability and the worst-case scenario of asymmetric network delays.
+		  Although root distance is not transmitted in NTP messages, it can 
+		  be computed and used by the client to assess the accuracy of time 
+		  sources.</t>
+
+    <t>A synchronization loop can occur when clients attempt to synchronize 
+	    with each other—either directly or indirectly through other servers. 
+	    Such loops are undesirable in an NTP network, as they create positive 
+		  feedback cycles that can degrade synchronization stability. To help 
+		  detect and prevent these loops, servers use randomly generated 
+		  reference IDs, which are exchanged in NTP messages as described in 
+		  <xref target="reference-ids-extension-fields"/>.</t>
+    </section>
+
+    <section title="Leap Seconds">
+
+      <t>An NTPv5 server can distribute time using one of four timescales: 
+	      UTC, TAI, UT1, or leap-smeared UTC. The specific timescale in use is 
+		    indicated by the Timescale field in the NTP message. Of these options, 
+		    UTC and leap-smeared UTC are subject to leap second adjustments.</t>
+
+      <t>A leap second is a one-second adjustment occasionally applied to UTC 
+	      to maintain alignment with solar time. This adjustment can be either 
+		    positive, by inserting an extra second, or negative, by removing one. 
+		    To date, only positive leap seconds have been introduced. Therefore, 
+		    the following discussion focuses on the more common case of a positive 
+		    leap second, though the behavior of a negative leap second can be 
+		    inferred.</t>
+		
+	  <t>When time is distributed using the UTC timescale, a system clock may 
+	    handle a positive leap second in one of two ways: it may either roll 
+		  back by one second at the end of the leap second, or it may pause, 
+		  holding the same time, for the duration of the leap second, as 
+		  outlined in <xref target="RFC8877"/>. As a result, any NTP message 
+		  exchange that occurs outside of a leap second will yield timestamps 
+		  that reflect server's clock according to the actual UTC time.</t>
+
+    <t>When using the leap-smeared timescale, the system clock is gradually 
+	    slowed down during the leap second and surrounding time intervals, 
+		  allowing the time to smoothly adjust until it aligns with the correct 
+		  value. This adjustment period, known as a leap smear, can span from 
+		  a few seconds to several hours before, during, and/or after the 
+		  scheduled leap second.</t>
+
+    <t>The Leap Indicator (LI) field in an NTP message signals that a leap 
+	    second is scheduled to occur within the next 14 days.</t>
+		
+     </section>
     </section>
 
     <section title="Data Types">
@@ -968,33 +1069,9 @@
 
     <section title="Measurement Modes" anchor="measurement-modes">
 
-      <t>An NTPv5 client needs four timestamps to measure the offset and delay
-        of its clock relative to the server's clock:
-
-        <list style="numbers">
-          <t>T1 - client's transmit timestamp of a request</t>
-          <t>T2 - server's receive timestamp of the request</t>
-          <t>T3 - server's transmit timestamp of a response</t>
-          <t>T4 - client's receive timestamp of the response</t>
-        </list>
-      </t>
-
-      <t>The offset, delay and dispersion are calculated as:
-
-        <list style="symbols">
-          <t>offset = ((T2 + T3) - (T4 + T1)) / 2</t>
-          <t>delay = |(T4 - T1) - (T3 - T2)|</t>
-          <t>dispersion = |T4 - T1| * DR</t>
-        </list>
-
-        where
-
-        <list style="symbols">
-          <t>T1, T2, T3, T4 are the receive and transmit timestamps of a
-            request and response</t>
-          <t>DR is the client's dispersion rate</t>
-        </list>
-      </t>
+	    <t>At the end of an NTP message exchange, the client has access to four 
+	      timestamps, which it can use to estimate the clock offset and the 
+		    network delay, as described in <xref target="ntp-exchange-sec"/>.</t>
 
       <t>If the Correction Extension Field is used and the corrections are
         known for both the request and response, a corrected offset and delay
@@ -1570,8 +1647,6 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
       &RFC8573;
 
-      <!-- packet timestamps &RFC8877; -->
-
     </references>
 
     <references title="Informative References">
@@ -1584,6 +1659,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       &RFC7822;
 
       &RFC8039;
+
+      &RFC8877;
 
       &RFC8915;
 
