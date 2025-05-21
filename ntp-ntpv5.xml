@@ -120,6 +120,8 @@
           
             <t hangText="NTS-KE">Network Time Security Key Establishment</t>
           
+            <t hangText="ppm">parts per million</t>
+          
             <t hangText="PTP">Precision Time Protocol</t>
           
             <t hangText="SI">International System of Units</t>
