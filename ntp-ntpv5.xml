@@ -1675,7 +1675,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         server identity verification, improved replay protection, and secure
         key establishment.</t>
 
-      <t>NTPv5 was design to minimize the necessary on-the-wire data that is
+      <t>NTPv5 was designed to minimize the necessary on-the-wire data that is
         included in the NTPv5 header in order to limit the amount of
         information that is exposed to the network and minimize the potential
         effect of network reconnaissance. For example, the client's
