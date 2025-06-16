@@ -490,12 +490,11 @@
             end-user.</t>
 
           <t hangText="Poll"><vspace/>
-            An 8-bit signed integer containing the polling interval as a
-            rounded log2 value in seconds. In requests it is the current
-            polling interval. In responses it is the minimum allowed polling
-            interval. This field is valid even when stratum is 0. A value of
-            127 indicates the server does not want to hear from the client
-            again.</t>
+            An 8-bit signed integer containing the minimum allowed polling
+            interval as a log2 value in seconds. In requests it is always 0. In
+            responses it is the server's value that the client is expected to
+            follow. This field is valid even when stratum is 0. A value of 127
+            indicates the server does not want to hear from the client again.</t>
 
           <t hangText="Precision"><vspace/>
             An 8-bit signed integer containing the precision of the timestamps
@@ -1316,9 +1315,6 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
               <t>Scale is set to the timescale in which the client wants to
                 operate.</t>
-
-              <t>Poll is set to the rounded log2 value of the current client's
-                polling interval in seconds.</t>
 
               <t>Flags are set according to the requested mode. The interleaved
                 mode flag requests the server to save the transmit timestamp of
