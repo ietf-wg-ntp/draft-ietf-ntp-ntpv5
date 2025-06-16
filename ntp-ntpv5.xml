@@ -13,7 +13,7 @@
 <!ENTITY RFC8915 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8915.xml">
 <!ENTITY RFC9523 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9523.xml">
 <!ENTITY RFC9748 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9748.xml">
-<!ENTITY XLEAVE SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-ntp-interleaved-modes.xml">
+<!ENTITY RFC9769 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9769.xml">
 ]>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 <?rfc strict="yes"?>
@@ -101,13 +101,10 @@
         stronger security guarantees, including server authentication, replay
         protection, and secure key establishment.</t>
 
-      <t>This specification also introduces two features aimed at improving
+      <t>This specification also introduces a feature aimed at improving
         synchronization accuracy. The Correction Extension Field allows clients
         and servers to communicate variable delays introduced by intermediate
-        network devices such as switches and routers. Additionally, Interleaved
-        Mode enables more precise timestamping in implementations in which
-        precise transmit timestamps are only available after message
-        transmission.</t>
+        network devices such as switches and routers.</t>
 
       <t>Backward compatibility is supported through version negotiation. A
         server that implements multiple protocol versions responds using the
@@ -195,7 +192,9 @@
             unambiguous time interval from 136 years to about 35000 years.</t>
 
           <t>NTPv5 adds a flag to clearly identify the use of interleaved mode
-            instead of comparing timestamps or cookies.</t>
+            instead of comparing timestamps or cookies. The server's receive
+            timestamps do not need to be unique in order to support the
+            interleaved mode.</t>
 
           <t>NTPv5 works with sets of reference IDs to prevent synchronization
             loops over multiple hosts, even if they form over other NTP sources
@@ -1226,11 +1225,17 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
         </list>
       </t>
 
-      <t>For NTPv4, the interleaved mode is described in <xref
-        target="I-D.ietf-ntp-interleaved-modes">NTP Interleaved Modes</xref>.
-        The difference between the NTPv5 and NTPv4 interleaved modes is that in
-        NTPv5 it is enabled with a flag and the previous transmit timestamp on
-        the server is identified by the server cookie instead of the receive
+      <t>The NTPv4 interleaved client-server mode is described in <xref
+        target="RFC9769">RFC 9769</xref>. The difference between NTPv5 and
+        NTPv4 is that in NTPv5 the interleaved mode is enabled explicitly by a
+        flag and the previous transmit timestamp on the server is identified by
+        the server cookie instead of the receive timestamp, which avoids the
+        requirements for receive timestamps to be unique and not equal to
+        transmit timestamps. Therefore, the NTPv5 interleaved mode is easier to
+        implement. A server implementation that should support both NTPv4 and
+        NTPv5 does not need to process interleaved requests and save timestamps
+        separately for the different NTP versions. It can reuse the NTPv4
+        support in NTPv5 by setting the server cookie to the (unique) receive
         timestamp.</t>
 
       <t>An example of an NTPv5 exchange using the interleaved mode is shown in
@@ -1754,7 +1759,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
       &RFC9748;
 
-      &XLEAVE;
+      &RFC9769;
 
       <reference anchor="IEEE1588" target="https://www.ieee.org">
         <front>
