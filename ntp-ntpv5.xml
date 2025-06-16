@@ -1481,7 +1481,14 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
                 having an unknown or zero server cookie. The cookie
                 identifies a more accurate transmit timestamp of the response,
                 which can be retrieved by the client later with another
-                request. The cookie generation is implementation-specific.</t>
+                request. The cookie MUST be unique in a sufficiently long
+                interval to prevent a client from accepting a transmit
+                timestamp that does not correspond to the previous response it
+                received. The cookie generation is implementation-specific. For
+                example, it can be a counter incremented on each received
+                request, a randomly generated value, a timestamp, or an
+                encrypted counter or timestamp making the value
+                unpredictable.</t>
 
               <t>Client Cookie is set to the Client Cookie from the
                 request.</t>
