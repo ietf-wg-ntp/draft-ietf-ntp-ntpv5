@@ -1452,6 +1452,14 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
               <t>Version is set to 5.</t>
 
+              <t>Poll is set to the minimum allowed polling interval of the
+                client (e.g. specified in the server configuration, using the
+                same value for all clients).</t>
+
+              <t>Precision is set to the expected precision of the receive and
+                transmit timestamps included in the response (e.g. estimated on
+                the start of the server or specified in its configuration).</t>
+
               <t>Timescale is set to the client's requested timescale if it is
                 supported by the server. If not, the server SHOULD respond in
                 any timescale it supports.</t>
