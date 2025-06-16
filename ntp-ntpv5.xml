@@ -494,7 +494,8 @@
             interval as a log2 value in seconds. In requests it is always 0. In
             responses it is the server's value that the client is expected to
             follow. This field is valid even when stratum is 0. A value of 127
-            indicates the server does not want to hear from the client again.</t>
+            indicates the server does not want to hear from the client again,
+            similarly to the KoD DENY code in NTPv4.</t>
 
           <t hangText="Precision"><vspace/>
             An 8-bit signed integer containing the precision of the timestamps
