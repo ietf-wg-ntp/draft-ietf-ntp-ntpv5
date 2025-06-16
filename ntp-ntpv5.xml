@@ -1314,7 +1314,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
               <t>Mode is set to 3.</t>
 
-              <t>Scale is set to the timescale in which the client wants to
+              <t>Timescale is set to the timescale in which the client wants to
                 operate.</t>
 
               <t>Flags are set according to the requested mode. The interleaved
@@ -1452,7 +1452,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
               <t>Version is set to 5.</t>
 
-              <t>Scale is set to the client's requested timescale if it is
+              <t>Timescale is set to the client's requested timescale if it is
                 supported by the server. If not, the server SHOULD respond in
                 any timescale it supports.</t>
 
