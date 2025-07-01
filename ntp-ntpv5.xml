@@ -1306,6 +1306,14 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         the load on the server if a large number of identical clients is
         (re)started at the same time.</t>
 
+      <t>The client SHOULD follow the minimum allowed polling interval provided
+        by the server in the poll field of the last valid response, but only up
+        to a reasonable maximum value to limit the impact of misconfigurations,
+        bugs, and potential denial-of-service attacks where the client would
+        accept a spoofed response. For example, the client could limit the
+        accepted minimum interval to 2^15 (about 9 hours) if authentication is
+        disabled, or 2^18 (about 3 days) if authentication is enabled.</t>
+
       <t>Each successful measurement provides the client with an offset, delay
         and dispersion. When combined with the server's root delay and
         dispersion, it gives the client an estimate of the maximum error.</t>
