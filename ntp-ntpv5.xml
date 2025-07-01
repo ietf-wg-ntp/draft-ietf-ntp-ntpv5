@@ -1296,10 +1296,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
       <t>The polling interval can be adjusted for the network conditions and
         stability of the clock. When polling a public server on Internet, the
-        client SHOULD use a polling interval of at least 64 seconds, increasing
-        in normal conditions up to at least 1024 seconds to avoid excessive
-        load on the server in case the implementation is used on a very large
-        number of systems.</t>
+        client SHOULD use a polling interval of at least 2^6 (64) seconds,
+        increasing in normal conditions up to at least 2^10 (1024) seconds to
+        avoid excessive load on the server in case the implementation is used
+        on a very large number of systems.</t>
 
       <t>Each successful measurement provides the client with an offset, delay
         and dispersion. When combined with the server's root delay and
