@@ -1301,6 +1301,11 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         avoid excessive load on the server in case the implementation is used
         on a very large number of systems.</t>
 
+      <t>The polling interval SHOULD contain a small random part (e.g. up to 2%
+        of the target interval in a uniform distribution) in order to spread
+        the load on the server if a large number of identical clients is
+        (re)started at the same time.</t>
+
       <t>Each successful measurement provides the client with an offset, delay
         and dispersion. When combined with the server's root delay and
         dispersion, it gives the client an estimate of the maximum error.</t>
