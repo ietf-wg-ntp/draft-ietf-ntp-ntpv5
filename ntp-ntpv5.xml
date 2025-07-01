@@ -1290,7 +1290,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         compare measurements from different servers to select and combine the
         best servers for synchronization. It can adjust its clock in order to
         minimize its offset and keep the clock synchronized. These algorithms
-        are not specified in this document.</t>
+        are not specified in this document. The client MAY use the <xref
+        target="RFC5905">NTPv4</xref> algorithms, or any more or less advanced
+        algorithms optimized for the same or different conditions.</t>
 
       <t>The polling interval can be adjusted for the network conditions and
         stability of the clock. When polling a public server on Internet, the
