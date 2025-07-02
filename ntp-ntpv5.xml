@@ -1299,7 +1299,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         client SHOULD use a polling interval of at least 2^6 (64) seconds,
         increasing in normal conditions up to at least 2^10 (1024) seconds to
         avoid excessive load on the server in case the implementation is used
-        on a very large number of systems.</t>
+        on a very large number of systems. On start, the client MAY send a
+        burst of up to 8 requests using a poll interval of only 2^1 (2) seconds
+        in order to make the initial correction of the clock sooner.</t>
 
       <t>The polling interval SHOULD contain a small random part (e.g. up to 2%
         of the target interval in a uniform distribution) in order to spread
