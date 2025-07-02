@@ -486,7 +486,7 @@
             requests it is always 0. When 0 in a response, it indicates the
             server was unable or unwilling to provide valid time information.
             Servers advertising a stratum above 16 should not be synchronized
-            to except when the client is explicitly configured to do so by the
+            to, except when the client is explicitly configured to do so by the
             end-user.</t>
 
           <t hangText="Poll"><vspace/>
@@ -643,8 +643,8 @@
           amplification.</t>
 
         <t>A server MUST NOT respond to requests with a draft identification it does not
-          recognize, and SHOULD respond with a response according to the same draft specification
-          as given by the client.</t>
+          recognize. If it responds, it SHOULD respond according to the same
+          draft specification as given by the client.</t>
 
         <t>Note: the content of this field MUST NOT be null-terminated (the
           extension field in the NTP message may need to be padded with up to 3
@@ -730,9 +730,10 @@
           positions corresponding to the 12-bit values from the reference ID
           are all set to one.</t>
 
-        <t>When a client which serves time to other clients detects a
-          synchronization loop with one of its servers, it SHOULD stop using
-          the server for synchronization. When the client's reference ID is
+        <t>When a client that also serves time to other clients as an NTPv5
+          server detects its reference ID in a server's set of reference IDs,
+          it SHOULD assume it is in a synchronization loop, and stop using
+          that server for synchronization. When the client's reference ID is
           no longer detected in the server's filter, it SHOULD wait for a
           random number of polling intervals (e.g. between 0 and 4) before
           selecting the server again. The random delay helps with stabilization
@@ -1127,7 +1128,7 @@
         <t>A request MAY contain multiple instances of this extension field,
           but each timescale MUST be requested at most once, not counting the
           timescale in the header. The server SHOULD include in its response
-          timestamps in all timescales it supports.</t>
+          timestamps in all requested timescales it supports.</t>
 
         <figure align="center" anchor="secondary-receive-timestamp-ext-field"
             title="Format of Secondary Receive Timestamp Extension Field">
