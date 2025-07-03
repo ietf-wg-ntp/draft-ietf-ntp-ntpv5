@@ -150,7 +150,7 @@
       </section>
     </section>
 
-    <section title="Main Differences between NTPv5 and NTPv4">
+    <section title="Main Differences Between NTPv5 and NTPv4">
       <t>NTPv5 is very similar to <xref target="RFC5905">NTPv4</xref>. The
         main differences are:
 
@@ -186,7 +186,7 @@
             padded to a multiple of 4 octets. Extension fields specified for NTPv4
             can be included in NTPv5 messages as specified for NTPv4.</t>
 
-          <t>NTPv5 adds support for other timescales than UTC.</t>
+          <t>NTPv5 adds support for timescales other than UTC.</t>
 
           <t>The NTP era number is exchanged in the protocol, which extends the
             unambiguous time interval from 136 years to about 35000 years.</t>
@@ -1234,7 +1234,7 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
         the server cookie instead of the receive timestamp, which avoids the
         requirements for receive timestamps to be unique and not equal to
         transmit timestamps. Therefore, the NTPv5 interleaved mode is easier to
-        implement. A server implementation that should support both NTPv4 and
+        implement. A server implementation that supports both NTPv4 and
         NTPv5 does not need to process interleaved requests and save timestamps
         separately for the different NTP versions. It can reuse the NTPv4
         support in NTPv5 by setting the server cookie to the (unique) receive
@@ -1295,27 +1295,29 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         target="RFC5905">NTPv4</xref> algorithms, or any more or less advanced
         algorithms optimized for the same or different conditions.</t>
 
+      <t>The client SHOULD respect the minimum allowed polling interval
+        provided by the server in the poll field of the last valid response,
+        but only up to a reasonable maximum value to limit the impact of
+        misconfigurations, bugs, and potential denial-of-service attacks where
+        the client would accept a spoofed response. For example, the client
+        could limit the accepted minimum interval to 2^15 (about 9 hours) if
+        authentication is disabled, or 2^18 (about 3 days) if authentication is
+        enabled.</t>
+
       <t>The polling interval can be adjusted for the network conditions and
         stability of the clock. When polling a public server on Internet, the
         client SHOULD use a polling interval of at least 2^6 (64) seconds,
         increasing in normal conditions up to at least 2^10 (1024) seconds to
         avoid excessive load on the server in case the implementation is used
-        on a very large number of systems. On start, the client MAY send a
-        burst of up to 8 requests using a poll interval of only 2^1 (2) seconds
-        in order to make the initial correction of the clock sooner.</t>
+        on a very large number of systems. On start, the client MAY temporarily
+        ignore the server's minimum polling interval and send a burst of up to
+        8 requests using an interval of only 2^1 (2) seconds in order to
+        make the initial correction of the clock sooner.</t>
 
       <t>The polling interval SHOULD contain a small random part (e.g. up to 2%
         of the target interval in a uniform distribution) in order to spread
-        the load on the server if a large number of identical clients is
+        the load on the server if a large number of identical clients are
         (re)started at the same time.</t>
-
-      <t>The client SHOULD follow the minimum allowed polling interval provided
-        by the server in the poll field of the last valid response, but only up
-        to a reasonable maximum value to limit the impact of misconfigurations,
-        bugs, and potential denial-of-service attacks where the client would
-        accept a spoofed response. For example, the client could limit the
-        accepted minimum interval to 2^15 (about 9 hours) if authentication is
-        disabled, or 2^18 (about 3 days) if authentication is enabled.</t>
 
       <t>Each successful measurement provides the client with an offset, delay
         and dispersion. When combined with the server's root delay and
@@ -1571,7 +1573,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         unless they support the specific draft version identified.</t>
     </section>
 
-    <section title="NTPv5 Negotiation in previous NTP versions">
+    <section title="NTPv5 Negotiation in Previous NTP Versions">
       <t>Servers that support multiple versions of NTP MUST send a response in
         the same version as the request, to support backwards compatibility.
         This does not preclude servers from acting as a client in one version
@@ -1628,8 +1630,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         Franke.</t>
 
       <t>The author would like to thank Doug Arnold and David Venhoek for their
-        contributions and Dan Drown, Watson Ladd, Hal Murray, Kurt Roeckx, and
-        Ulrich Windl for their suggestions and comments.</t>
+        contributions and Dan Drown, Richard Laager, Watson Ladd, Hal Murray,
+        Kurt Roeckx, and Ulrich Windl for their suggestions and comments.</t>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
