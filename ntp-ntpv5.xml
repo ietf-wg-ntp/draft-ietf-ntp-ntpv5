@@ -213,10 +213,10 @@
     <section title="Basic Concepts">
       <section anchor="ntp-exchange-sec" title="The NTP Message Exchange">
         <t>An NTP client exchanges messages with one or more NTP servers;
-          the client sends a request and the server sends a response. Both the
-          client and server measure the time of transmission and reception of
-          every message they send and receive. The servers provide their
-          timestamps to the client.</t>
+          the client sends a request to each server and the servers send their
+          responses back to the client. Both the client and servers measure the
+          time of transmission and reception of every message they send and
+          receive. The servers provide their timestamps to the client.</t>
 
         <t>The NTP message exchange is illustrated in <xref
           target="basic-concept-figure"/>, depicting four timestamp
@@ -230,7 +230,7 @@
         </list>
 
         <figure align="center" anchor="basic-concept-figure"
-          title="NTP message exchange">
+          title="NTP message exchange between client and server">
             <artwork><![CDATA[
           Server         T2   T3
              ------------+----+--------
@@ -309,8 +309,8 @@
           possible time error of the clock, accounting for the assumed clock
           stability and the worst-case scenario of asymmetric network delays.
           Although root distance is not transmitted in NTP messages, it can be
-          computed and used by the client to assess the accuracy of time
-          sources.</t>
+          computed and used by the client to assess the accuracy of each of its
+          servers.</t>
 
         <t>A synchronization loop can occur when clients attempt to synchronize
           with each other--either directly or indirectly through other servers.
@@ -346,9 +346,9 @@
         <t>When using the leap-smeared timescale, the system clock is gradually
           slowed down during the leap second and surrounding time intervals,
           allowing the time to smoothly adjust until it aligns with the correct
-          value. This adjustment period, known as a leap smear, can span from a
-          few seconds to several hours before, during, and/or after the scheduled
-          leap second.</t>
+          value. This adjustment period, known as a leap smear period, can span
+          from a few seconds to several hours before, during, and/or after the
+          scheduled leap second.</t>
 
         <t>The Leap Indicator (LI) field in an NTP message signals that a leap
           second is scheduled to occur within the next 14 days.</t>
@@ -356,9 +356,9 @@
     </section>
 
     <section title="Data Types">
-      <t>NTPv5 uses few different data types. They are all in the network
-        order. Beside signed and unsigned integers, it has also the following
-        fixed-point types:
+      <t>NTPv5 uses several data types, all represented in network byte
+        order. In addition to signed and unsigned integers, it also has
+        the following fixed-point types:
 
         <list style="hanging">
           <t hangText="time32"><vspace/>
@@ -388,8 +388,8 @@
 
       <t>Some fields use a logarithmic scale, where an 8-bit signed integer
         represents the rounded log2 value of seconds. For example, a log2 value
-        of 4 is 2^4 (2 to the power of 4, 16) seconds, or a log2 value of -2
-        is 2^-2 (0.25 seconds).</t>
+        of 4 represents 2^4 (2 to the power of 4, 16) seconds, or a log2 value
+        of -2 represents 2^-2 (0.25 seconds).</t>
     </section>
 
     <section title="Message Format">
@@ -1183,7 +1183,7 @@
 
       <t>The corrected offset and delay MUST NOT be accepted if any of delay_c,
         Co and Cr is negative. The uncorrected delay MUST always be used for
-        calculation of root delay.</t>
+        calculation of the root delay.</t>
 
       <t>The client can make measurements in the basic mode, or interleaved
         mode if supported on the server. In the basic mode, the transmit
@@ -1396,8 +1396,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         common timescale if it knows the offsets between them.</t>
 
       <t>If the client synchronizes its clock to a leap-smeared timescale,
-        it MUST NOT apply leap seconds and it SHOULD provide the same timescale
-        to its own clients if it is a server.</t>
+        it MUST NOT apply leap seconds and it SHOULD provide the leap-smeared
+        timescale to its own clients if it is a server.</t>
 
       <t>The client SHOULD periodically (e.g. every two weeks) refresh IP
         addresses of all servers specified by hostname to limit the duration
@@ -1421,11 +1421,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         dispersion:
 
         <list style="symbols">
-          <t>Leap indicator MUST be 3 if the clock is not synchronized or its
-            maximum error cannot be estimated by root delay and
-            dispersion. Otherwise, it MUST be 0, 1, 2, depending on whether a
-            leap second is pending in the next 14 days and, if it is, whether it
-            will be inserted or deleted.</t>
+          <t>Leap indicator MUST be 0, 1, 2, or 3 if, within the next 14 days,
+            no leap second will be applied, a leap second will be inserted, a
+            leap second will be deleted, or the server has no information about
+            leap seconds respectively.</t>
           <t>Stratum SHOULD be 1 if the server is synchronized to a local
             reference clock, or be one larger than the stratum of the NTP
             server it selected as best for synchronization. It MUST be greater
@@ -1625,15 +1624,6 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         switch to NTPv5 and back after missing a valid response.</t>
     </section>
 
-    <section anchor="Acknowledgements" title="Acknowledgements">
-      <t>Some ideas were taken from a different NTPv5 design proposed by Daniel
-        Franke.</t>
-
-      <t>The author would like to thank Doug Arnold and David Venhoek for their
-        contributions and Dan Drown, Richard Laager, Watson Ladd, Hal Murray,
-        Kurt Roeckx, and Ulrich Windl for their suggestions and comments.</t>
-    </section>
-
     <section anchor="IANA" title="IANA Considerations">
       <t>IANA is requested to allocate the following entries in the <xref
         target="RFC9748">NTP Extension Field Types Registry</xref>:</t>
@@ -1762,6 +1752,17 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         comparable to the impact of delaying unmodified NTP messages, as
         described above.</t>
     </section>
+
+    <section anchor="Acknowledgements" title="Acknowledgements">
+      <t>Some ideas were taken from a different NTPv5 design proposed by Daniel
+        Franke.</t>
+
+      <t>The author would like to thank Doug Arnold and David Venhoek for their
+        contributions and Dan Drown, Richard Laager, Watson Ladd, Hal Murray,
+        Kurt Roeckx, Dieter Sibold, and Ulrich Windl for their suggestions and
+        comments.</t>
+    </section>
+
   </middle>
 
   <back>
