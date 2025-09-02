@@ -1698,13 +1698,18 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         messages during transit, injecting malicious NTP messages or replaying
         valid ones, or impersonating an NTP server.</t>
 
-      <t>The Message Authentication Code Extension Field can be used to provide
-        integrity protection, thus mitigating in-transit NTP message
+      <t>The Message Authentication Code (MAC) Extension Field can be used to
+        provide integrity protection, thus mitigating in-transit NTP message
         modification and malicious packet injection.</t>
 
       <t>Using NTS with NTPv5 provides enhanced security properties, including
         server identity verification, improved replay protection, and secure
         key establishment.</t>
+
+      <t>Downgrading attacks that could lead to an adversary disabling or 
+        removing encryption or authentication are not possible in NTPv5, since 
+        the security mechanism, either MAC or NTS, is determined by 
+        configuration, and not by negotiation.</t>
 
       <t>NTPv5 was designed to minimize the necessary on-the-wire data that is
         included in the NTPv5 header in order to limit the amount of
