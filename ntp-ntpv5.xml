@@ -1470,7 +1470,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             the fields in the header as follows:
 
             <list style="symbols">
-              <t>Leap Indicator, Stratum, Root delay, and Root dispersion, are
+              <t>Leap Indicator, Stratum, Root Delay, and Root Dispersion, are
                 set to the current server's values.</t>
 
               <t>Version is set to 5.</t>
