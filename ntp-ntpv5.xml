@@ -1799,7 +1799,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         a subset of the paths is compromised by an on-path attacker.</t>
 
       <t>The corrections provided by network devices in the Correction
-        Extension Field are not authenticated. Man-in-the-middle attackers can
+        Extension Field are not authenticated. On-path attackers can
         modify the correction values. In order to mitigate such attacks, the
         client validates the correction values as described in <xref
         target="measurement-modes"/>. Thus, only corrections smaller than the
