@@ -485,7 +485,7 @@
             so on. The value of 0 indicates an unknown or infinite stratum. In
             requests it is always 0. When 0 in a response, it indicates the
             server was unable or unwilling to provide valid time information.
-            Servers advertising a stratum above 16 should not be synchronized
+            Servers advertising a stratum above 15 should not be synchronized
             to, except when the client is explicitly configured to do so by the
             end-user.</t>
 
@@ -1412,8 +1412,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
           <t>Checks whether the response is usable for synchronization of the
             clock. Such a response has the Synchronized flag set, stratum
-            between 0 and 16, root delay and dispersion both smaller than a
-            specific value, e.g. 16 seconds, and timescale equal to the
+            not equal to 0 and not larger than 15 (or a different maximum value
+            that the client is configured to accept), root delay and dispersion
+            both smaller than
+            a specific value (e.g. 16 seconds), and timescale equal to the
             requested timescale. If the response is in a different timescale,
             the client can switch to the provided timescale, convert the
             timestamps if the offset between the timescales is known from the
