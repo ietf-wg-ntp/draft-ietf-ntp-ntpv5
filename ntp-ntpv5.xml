@@ -536,7 +536,7 @@
                 In requests it is 0. In responses a value of 1 indicates the
                 server's clock is synchronized and the provided timestamps
                 can be used by the client for its own synchronization.</t>
-              <t hangText="0x2: Interleaved mode"><vspace/>
+              <t hangText="0x2: Interleaved Mode"><vspace/>
                 In requests a value of 1 is a request for a response in the
                 interleaved mode. In responses a value of 1 indicates the
                 response is in the interleaved mode.</t>
@@ -1543,7 +1543,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
                     considered to be synchronized, and the receive and transmit
                     timestamps provided in the response are usable for
                     synchronization of the client.</t>
-                  <t hangText="Interleaved mode"> is set if the interleaved
+                  <t hangText="Interleaved Mode"> is set if the interleaved
                     mode is implemented, was requested, and a response in the
                     interleaved mode
                     is possible (i.e. a transmit timestamp is associated with
