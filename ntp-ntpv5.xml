@@ -1429,6 +1429,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
               <t>Mode is 4.</t>
 
+              <t>Flags are all known and no flag is set that was not also set
+                in the request.</t>
+
               <t>Client cookie is equal to the client cookie from the request.</t>
 
               <t>Authentication checks pass if enabled for the server.</t>
@@ -1554,7 +1557,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             specification corresponding to the protocol version.</t>
 
           <t>Drops the request if the format is not valid, or the mode is not
-            3. The server MUST ignore unknown extension fields.</t>
+            3. The server MUST ignore unknown flags and extension fields.</t>
 
           <t>Server forms a response with requested extension fields and sets
             the fields in the header as follows:
@@ -1632,7 +1635,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
           <t>Drops the response if it ends up longer than the request (e.g. due
             to a bug in handling of a specific extension field) to prevent
-            traffic amplification.</t>
+            traffic amplification, or it has a flag set in the header that was
+            not set in the request (i.e. the client does not support or is not
+            interested in receiving this response).</t>
 
           <t>Sends the response.</t>
 
