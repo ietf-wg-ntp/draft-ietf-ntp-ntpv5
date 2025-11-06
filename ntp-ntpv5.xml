@@ -174,7 +174,7 @@
 
           <t>Timestamps are clearly separated from values used as cookies.</t>
 
-          <t>Synchronized server clock is indicated in a separate flag instead
+          <t>Unsynchronized server clock is indicated in a separate flag instead
             of the leap indicator.</t>
 
           <t>NTPv5 messages can be extended only with extension fields. The MAC
@@ -532,10 +532,10 @@
             A 16-bit integer that can contain the following flags:
 
             <list style="hanging">
-              <t hangText="0x1: Synchronized"><vspace/>
+              <t hangText="0x1: Unsynchronized"><vspace/>
                 In requests it is 0. In responses a value of 1 indicates the
-                server's clock is synchronized and the provided timestamps
-                can be used by the client for its own synchronization.</t>
+                server's clock is not synchronized and the provided timestamps
+                should not be used by the client for synchronization.</t>
               <t hangText="0x2: Interleaved Mode"><vspace/>
                 In requests a value of 1 is a request for a response in the
                 interleaved mode. In responses a value of 1 indicates the
@@ -1411,7 +1411,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             most one valid response.</t>
 
           <t>Checks whether the response is usable for synchronization of the
-            clock. Such a response has the Synchronized flag set, stratum
+            clock. Such a response has the Unsynchronized flag not set, stratum
             not equal to 0 and not larger than 15 (or a different maximum value
             that the client is configured to accept), root delay and dispersion
             both smaller than
@@ -1539,10 +1539,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
               <t>The flags are set as follows:
                 <list style="hanging">
-                  <t hangText="Synchronized"> is set if the server's clock is
-                    considered to be synchronized, and the receive and transmit
-                    timestamps provided in the response are usable for
-                    synchronization of the client.</t>
+                  <t hangText="Unsynchronized"> is set if the server's clock is
+                    not considered to be synchronized, i.e. the receive and
+                    transmit timestamps provided in the response are unusable
+                    for synchronization of the client.</t>
                   <t hangText="Interleaved Mode"> is set if the interleaved
                     mode is implemented, was requested, and a response in the
                     interleaved mode
