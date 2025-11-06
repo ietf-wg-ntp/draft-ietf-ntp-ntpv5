@@ -533,18 +533,21 @@
 
             <list style="hanging">
               <t hangText="0x1: Unsynchronized"><vspace/>
-                In requests it is 0. In responses a value of 1 indicates the
-                server's clock is not synchronized and the provided timestamps
-                should not be used by the client for synchronization.</t>
+                In requests a value of 1 indicates that the client wants
+                to receive a response even when the server's clock is not
+                synchronized, or for other reasons its timestamps in the
+                response should not be used for synchronization. In responses
+                a value of 1 indicates that this is the case.</t>
               <t hangText="0x2: Interleaved Mode"><vspace/>
                 In requests a value of 1 is a request for a response in the
                 interleaved mode. In responses a value of 1 indicates the
                 response is in the interleaved mode.</t>
               <t hangText="0x4: Authentication NAK"><vspace/>
-                In requests it is 0. In responses a value of 1 indicates that
-                the server failed to authenticate the request. A server
-                setting this bit SHOULD also set the stratum of the message
-                to 0.</t>
+                In requests a value of 1 indicates that the client wants to
+                receive a response even when the server fails to authenticate
+                the request. In responses a value of 1 indicates that this is
+                the case. A server setting this bit SHOULD also set the stratum
+                of the message to 0.</t>
             </list>
           </t>
 
@@ -720,9 +723,10 @@
           response, if there is one, MUST include the Message Authentication
           Code Extension Field using the same key as was used in the request.
           If the MAC in the request is not valid, or the key is unknown, the
-          server MUST either drop the request, or respond with a message that
+          server MUST either drop the request, or if the Authentication NAK
+          flag is set in the header of the request, respond with a message that
           does not contain the Message Authentication Code Extension Field and
-          has the Authentication NAK flag set in the header.</t>
+          has the same flag set in the header.</t>
 
         <t>A client configured to use a symmetric key for a given server MUST
           add the Message Authentication Code Extension Field to all requests
