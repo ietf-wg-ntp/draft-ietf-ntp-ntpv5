@@ -1509,12 +1509,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             MUST either drop the request, or handle it according to the
             specification corresponding to the protocol version.</t>
 
-          <t>Drops the request if the format is not valid, mode is not 3, or
-            authentication fails with the Message Authentication Code Extension
-            Field or another
-            authenticator which does not have a specified response for failed
-            authentication. The server MUST ignore unknown extension
-            fields.</t>
+          <t>Drops the request if the format is not valid, or the mode is not
+            3. The server MUST ignore unknown extension fields.</t>
 
           <t>Server forms a response with requested extension fields and sets
             the fields in the header as follows:
@@ -1548,6 +1544,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
                     interleaved mode
                     is possible (i.e. a transmit timestamp is associated with
                     the server cookie).</t>
+                  <t hangText="Authentication NAK"> is set if the server failed
+                    to authenticate the request.</t>
                 </list>
               </t>
 
