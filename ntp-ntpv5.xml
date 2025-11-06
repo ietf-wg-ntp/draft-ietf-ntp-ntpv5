@@ -1410,7 +1410,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
           <t>Waits for a valid response from the server and captures a receive
             timestamp. A valid response has version 5, mode 4, client cookie
-            equal to the cookie from the request, and passes authentication if
+            equal to the cookie from the request, does not have any unknown
+            flags set in the header, and passes authentication if
             enabled. The client MUST ignore all invalid responses and accept at
             most one valid response.</t>
 
@@ -1513,8 +1514,11 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             MUST either drop the request, or handle it according to the
             specification corresponding to the protocol version.</t>
 
-          <t>Drops the request if the format is not valid, or the mode is not
-            3. The server MUST ignore unknown extension fields.</t>
+          <t>Drops the request if the format is not valid, the mode is not
+            3, or the response would have a flag set in the header that is not
+            set in the request (e.g. the client is not interested in responses
+            from an unsynchronized server). The server MUST ignore unknown
+            flags and extension fields.</t>
 
           <t>Server forms a response with requested extension fields and sets
             the fields in the header as follows:
@@ -1590,8 +1594,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             its length if necessary to make the length of the response equal to
             the length of the request.</t>
 
-          <t>Drops the response if it is longer than the request to prevent
-            traffic amplification.</t>
+          <t>Drops the response if it for some unexpected reason turned out to
+            be longer than the request (to prevent traffic amplification), or
+            it has a flag set in the header that was not set in the request
+            (clients are not required to support any flags).</t>
 
           <t>Sends the response.</t>
 
