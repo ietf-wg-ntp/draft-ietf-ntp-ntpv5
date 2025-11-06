@@ -886,12 +886,10 @@
       <section title="Server Information Extension Field"
           anchor="server-information-extension-field">
         <t>This field provides clients with information about which NTP
-          versions are supported by the server, i.e. whether it can respond to
-          requests conforming to the specific version. It contains a 16-bit
-          field with flags indicating support for NTP versions in the range of
-          1 to 16, where the least significant bit corresponds to the version
-          1. The extension field has a fixed length of 8 octets. In requests,
-          all data fields of the extension are 0.</t>
+          versions and flags are supported by the server. The extension field
+          has a fixed length of 8 octets. The format is shown in Figure <xref
+          format="counter" target="server-information-ext-field"/>. In
+          requests, all data fields of the extension field contain 0.</t>
 
         <figure align="center" anchor="server-information-ext-field"
             title="Format of Server Information Extension Field">
@@ -901,10 +899,21 @@
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 | Type = [[TBD]] (draft 0xF505) |             Length            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|    Supported NTP versions     |            Reserved           |
+|      Supported Versions       |        Supported Flags        |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
           ]]></artwork>
         </figure>
+
+        <t>The Supported Versions field indicates support for NTP versions
+          in the range of 1 to 16, where the least significant bit corresponds
+          to the version 1.</t>
+
+        <t>The Supported Flags indicates supported flags in the NTP version of
+          the message that includes this extension field. In an NTPv5 message
+          this field maps to the Flags field in the header. NTPv5 servers are
+          not required to support any flags (i.e. they can respond only with
+          messages that have no flags set). NTPv4 and earlier versions of the
+          protocol do not support any flags.</t>
 
         <t>This field MUST be supported on servers.</t>
       </section>
