@@ -370,7 +370,7 @@
 
           <t hangText="timestamp64"><vspace/>
             A 64-bit unsigned fixed-point type containing a timestamp specified
-            in seconds. It has 32 signed
+            in seconds. It has 32 unsigned
             integer bits and 32 fractional bits. It spans an interval of about
             136 years and has a resolution of about 0.23 nanoseconds. It can be
             used in different timescales. In the UTC timescale it is the number
