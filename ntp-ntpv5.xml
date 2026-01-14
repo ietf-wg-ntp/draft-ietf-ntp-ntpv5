@@ -174,7 +174,7 @@
 
           <t>Timestamps are clearly separated from values used as cookies.</t>
 
-          <t>Synchronized server clock is indicated in a separate flag instead
+          <t>Unsynchronized server clock is indicated in a separate flag instead
             of the leap indicator.</t>
 
           <t>NTPv5 messages can be extended only with extension fields. The MAC
@@ -533,19 +533,22 @@
             A 16-bit integer that can contain the following flags:
 
             <list style="hanging">
-              <t hangText="0x1: Synchronized"><vspace/>
-                In requests it is 0. In responses a value of 1 indicates the
-                server's clock is synchronized and the provided timestamps
-                can be used by the client for its own synchronization.</t>
+              <t hangText="0x1: Unsynchronized"><vspace/>
+                In requests a value of 1 indicates that the client wants
+                to receive a response even when the server's clock is not
+                synchronized, or for other reasons its timestamps in the
+                response should not be used for synchronization. In responses
+                a value of 1 indicates that this is the case.</t>
               <t hangText="0x2: Interleaved Mode"><vspace/>
                 In requests a value of 1 is a request for a response in the
                 interleaved mode. In responses a value of 1 indicates the
                 response is in the interleaved mode.</t>
               <t hangText="0x4: Authentication NAK"><vspace/>
-                In requests it is 0. In responses a value of 1 indicates that
-                the server failed to authenticate the request. A server
-                setting this bit SHOULD also set the stratum of the message
-                to 0.</t>
+                In requests a value of 1 indicates that the client wants to
+                receive a response even when the server fails to authenticate
+                the request. In responses a value of 1 indicates that this is
+                the case. A server setting this bit SHOULD also set the stratum
+                of the message to 0.</t>
             </list>
           </t>
 
@@ -724,9 +727,10 @@
           response, if there is one, MUST include the Message Authentication
           Code Extension Field using the same key as was used in the request.
           If the MAC in the request is not valid, or the key is unknown, the
-          server MUST either drop the request, or respond with a message that
+          server MUST either drop the request, or if the Authentication NAK
+          flag is set in the header of the request, respond with a message that
           does not contain the Message Authentication Code Extension Field and
-          has the Authentication NAK flag set in the header.</t>
+          has the same flag set in the header.</t>
 
         <t>A client configured to use a symmetric key for a given server MUST
           add the Message Authentication Code Extension Field to all requests
@@ -886,12 +890,10 @@
       <section title="Server Information Extension Field"
           anchor="server-information-extension-field">
         <t>This field provides clients with information about which NTP
-          versions are supported by the server, i.e. whether it can respond to
-          requests conforming to the specific version. It contains a 16-bit
-          field with flags indicating support for NTP versions in the range of
-          1 to 16, where the least significant bit corresponds to the version
-          1. The extension field has a fixed length of 8 octets. In requests,
-          all data fields of the extension are 0.</t>
+          versions and flags are supported by the server. The extension field
+          has a fixed length of 8 octets. The format is shown in Figure <xref
+          format="counter" target="server-information-ext-field"/>. In
+          requests, all data fields of the extension field contain 0.</t>
 
         <figure align="center" anchor="server-information-ext-field"
             title="Format of Server Information Extension Field">
@@ -901,10 +903,21 @@
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 | Type = [[TBD]] (draft 0xF505) |             Length            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|    Supported NTP versions     |            Reserved           |
+|      Supported Versions       |        Supported Flags        |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
           ]]></artwork>
         </figure>
+
+        <t>The Supported Versions field indicates support for NTP versions
+          in the range of 1 to 16, where the least significant bit corresponds
+          to the version 1.</t>
+
+        <t>The Supported Flags indicates supported flags in the NTP version of
+          the message that includes this extension field. In an NTPv5 message
+          this field maps to the Flags field in the header. NTPv5 servers are
+          not required to support any flags (i.e. they can respond only with
+          messages that have no flags set). NTPv4 and earlier versions of the
+          protocol do not support any flags.</t>
 
         <t>This field MUST be supported on servers.</t>
       </section>
@@ -1410,12 +1423,13 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
           <t>Waits for a valid response from the server and captures a receive
             timestamp. A valid response has version 5, mode 4, client cookie
-            equal to the cookie from the request, and passes authentication if
+            equal to the cookie from the request, does not have any unknown
+            flags set in the header, and passes authentication if
             enabled. The client MUST ignore all invalid responses and accept at
             most one valid response.</t>
 
           <t>Checks whether the response is usable for synchronization of the
-            clock. Such a response has the Synchronized flag set, stratum
+            clock. Such a response has the Unsynchronized flag not set, stratum
             not equal to 0 and not larger than 15 (or a different maximum value
             that the client is configured to accept), root delay and dispersion
             both smaller than
@@ -1513,12 +1527,11 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             MUST either drop the request, or handle it according to the
             specification corresponding to the protocol version.</t>
 
-          <t>Drops the request if the format is not valid, mode is not 3, or
-            authentication fails with the Message Authentication Code Extension
-            Field or another
-            authenticator which does not have a specified response for failed
-            authentication. The server MUST ignore unknown extension
-            fields.</t>
+          <t>Drops the request if the format is not valid, the mode is not
+            3, or the response would have a flag set in the header that is not
+            set in the request (e.g. the client is not interested in responses
+            from an unsynchronized server). The server MUST ignore unknown
+            flags and extension fields.</t>
 
           <t>Server forms a response with requested extension fields and sets
             the fields in the header as follows:
@@ -1543,15 +1556,17 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
               <t>The flags are set as follows:
                 <list style="hanging">
-                  <t hangText="Synchronized"> is set if the server's clock is
-                    considered to be synchronized, and the receive and transmit
-                    timestamps provided in the response are usable for
-                    synchronization of the client.</t>
+                  <t hangText="Unsynchronized"> is set if the server's clock is
+                    not considered to be synchronized, i.e. the receive and
+                    transmit timestamps provided in the response are unusable
+                    for synchronization of the client.</t>
                   <t hangText="Interleaved Mode"> is set if the interleaved
                     mode is implemented, was requested, and a response in the
                     interleaved mode
                     is possible (i.e. a transmit timestamp is associated with
                     the server cookie).</t>
+                  <t hangText="Authentication NAK"> is set if the server failed
+                    to authenticate the request.</t>
                 </list>
               </t>
 
@@ -1592,8 +1607,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             its length if necessary to make the length of the response equal to
             the length of the request.</t>
 
-          <t>Drops the response if it is longer than the request to prevent
-            traffic amplification.</t>
+          <t>Drops the response if it for some unexpected reason turned out to
+            be longer than the request (to prevent traffic amplification), or
+            it has a flag set in the header that was not set in the request
+            (clients are not required to support any flags).</t>
 
           <t>Sends the response.</t>
 
