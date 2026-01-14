@@ -380,10 +380,10 @@
             Timestamps in the TAI timescale are the same except they include
             leap seconds and an extra 10-second offset for the original
             difference between TAI and UTC in 1972, when leap seconds were
-            introduced. A value of 0 indicates an unknown or invalid timestamp.
-            One interval covered by the type is called an NTP era. The era
-            starting at the epoch is era number 0, the following era is number
-            1, and so on.</t>
+            introduced. One interval covered by the type is called an NTP era.
+            The era starting at the epoch is era number 0, the following era is
+            number 1, and so on. A timestamp that has a value of 0 indicates
+            an unknown or invalid timestamp (in any NTP era).</t>
         </list>
       </t>
 
