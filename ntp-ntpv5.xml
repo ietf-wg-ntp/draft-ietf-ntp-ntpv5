@@ -373,11 +373,12 @@
             in seconds. It has 32 unsigned
             integer bits and 32 fractional bits. It spans an interval of about
             136 years and has a resolution of about 0.23 nanoseconds. It can be
-            used in different timescales. In the UTC timescale it is the number
-            of SI seconds since 1 Jan 1972 plus 2272060800 (number of seconds
-            since 1 Jan 1900 assuming 86400-second days), excluding leap
-            second adjustments. Timestamps in the TAI timescale are the same except they
-            include leap seconds and extra 10 seconds for the original
+            used in different timescales. In the UTC timescale, the timestamp
+            is the value 2272060800 added to the number of SI seconds since
+            1 Jan 1972, excluding leap second adjustments. The value 2272060800
+            is the assumed number of seconds between 1 Jan 1900 and 1 Jan 1972.
+            Timestamps in the TAI timescale are the same except they include
+            leap seconds and an extra 10-second offset for the original
             difference between TAI and UTC in 1972, when leap seconds were
             introduced. A value of 0 indicates an unknown or invalid timestamp.
             One interval covered by the type is called an NTP era. The era
@@ -1814,8 +1815,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
       <t>The author would like to thank Doug Arnold and David Venhoek for their
         contributions and Dan Drown, Richard Laager, Watson Ladd, Hal Murray,
-        Kurt Roeckx, Dieter Sibold, and Ulrich Windl for their suggestions and
-        comments.</t>
+        Kurt Roeckx, Dieter Sibold, Brett Vickers, and Ulrich Windl for their
+        suggestions and comments.</t>
     </section>
 
   </middle>
