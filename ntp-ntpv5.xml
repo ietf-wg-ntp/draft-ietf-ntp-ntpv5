@@ -605,7 +605,10 @@
         16-bit length. The length is in octets and it includes the header. The
         minimum length is 4, i.e. an extension field does not have to contain
         any data. If the length is not divisible by 4, the extension field is
-        padded with zeros to the smallest multiple of 4 octets.</t>
+        padded with zeros to the smallest multiple of 4 octets in order to
+        align the next extension field in the message. The length excludes this
+        message-level padding, but includes any potential padding specified as
+        a part of the specific extension field.</t>
 
       <t>If a request contains an extension field, the server MUST include this
         extension field in the response unless the specification of the
