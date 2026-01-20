@@ -684,36 +684,6 @@
         timestamps, which it can use to estimate the clock offset and the
         network delay, as described in <xref target="ntp-exchange-sec"/>.</t>
 
-      <t>If the Correction Extension Field is used and the corrections are
-        known for both the request and response, a corrected offset and delay
-        is calculated:
-
-        <list style="symbols">
-          <t>offset_c = offset + (Cd - Co) / 2</t>
-          <t>delay_c = delay - (Cd + Co - Drx - Dtx) * (1 - FC)|</t>
-        </list>
-
-        where
-
-        <list style="symbols">
-          <t>Co is the Origin Correction from the response to the request
-            corresponding to timestamps T1 and T2</t>
-          <t>Cd is the Delay Correction from the response corresponding to
-            timestamps T3 and T4</t>
-          <t>FC is the maximum expected frequency error of devices providing
-            the delay corrections (e.g. 100 ppm)</t>
-          <t>Drx is the time it took to receive the frame containing the
-            response corresponding to T3 and T4</t>
-          <t>Dtx is the time it took to transmit the frame containing the
-            request corresponding to T1 and T2. If unknown, it SHOULD be set to
-            Drx.</t>
-        </list>
-      </t>
-
-      <t>The corrected offset and delay MUST NOT be accepted if any of delay_c,
-        Co and Cr is negative. The uncorrected delay MUST always be used for
-        calculation of the root delay.</t>
-
       <t>The client can make measurements in the basic mode, or interleaved
         mode if supported on the server. In the basic mode, the transmit
         timestamp in the server response corresponds to the message which
@@ -1574,6 +1544,36 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
           in <xref target="measurement-modes">Measurement Modes</xref>. Clients
           MUST ignore an unexpected Correction Extension Field in the response,
           i.e. if it was not included in the request.</t>
+
+        <t>If the Correction Extension Field is used and the corrections are
+          known for both the request and response, a corrected offset and delay
+          is calculated:
+
+          <list style="symbols">
+            <t>offset_c = offset + (Cd - Co) / 2</t>
+            <t>delay_c = delay - (Cd + Co - Drx - Dtx) * (1 - FC)|</t>
+          </list>
+
+          where
+
+          <list style="symbols">
+            <t>Co is the Origin Correction from the response to the request
+              corresponding to timestamps T1 and T2</t>
+            <t>Cd is the Delay Correction from the response corresponding to
+              timestamps T3 and T4</t>
+            <t>FC is the maximum expected frequency error of devices providing
+              the delay corrections (e.g. 100 ppm)</t>
+            <t>Drx is the time it took to receive the frame containing the
+              response corresponding to T3 and T4</t>
+            <t>Dtx is the time it took to transmit the frame containing the
+              request corresponding to T1 and T2. If unknown, it SHOULD be set to
+              Drx.</t>
+          </list>
+        </t>
+
+        <t>The corrected offset and delay MUST NOT be accepted if any of delay_c,
+          Co and Cr is negative. The uncorrected delay MUST always be used for
+          calculation of the root delay.</t>
       </section>
 
       <section title="Reference Timestamp Extension Field"
