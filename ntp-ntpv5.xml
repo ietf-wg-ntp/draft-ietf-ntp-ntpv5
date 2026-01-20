@@ -755,62 +755,6 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
           <t>(t9, t10, t11, t12)</t>
         </list>
       </t>
-
-      <t>The NTPv4 interleaved client-server mode is described in <xref
-        target="RFC9769">RFC 9769</xref>. The difference between NTPv5 and
-        NTPv4 is that in NTPv5 the interleaved mode is enabled explicitly by a
-        flag and the previous transmit timestamp on the server is identified by
-        the server cookie instead of the receive timestamp, which avoids the
-        requirements for receive timestamps to be unique and not equal to
-        transmit timestamps. Therefore, the NTPv5 interleaved mode is easier to
-        implement. A server implementation that supports both NTPv4 and
-        NTPv5 does not need to process interleaved requests and save timestamps
-        separately for the different NTP versions. It can reuse the NTPv4
-        support in NTPv5 by setting the server cookie to the (unique) receive
-        timestamp.</t>
-
-      <t>An example of an NTPv5 exchange using the interleaved mode is shown in
-        Figure <xref format="counter" target="interleaved-exchange"></xref>.
-        The messages in the basic and interleaved mode are indicated with B and
-        I respectively. The timestamps t3' and t11' correspond to the same
-        transmissions as t3 and t11, but they may be less accurate (e.g. due to
-        being captured in software before the transmission). The first
-        exchange is in the basic mode followed by a second exchange in the
-        interleaved mode. For the third exchange, the client request is in the
-        interleaved mode, but the server response is in the basic mode, because
-        the server no longer had the timestamp t7 (e.g. it was dropped to save
-        timestamps for other clients using the interleaved mode).</t>
-
-      <figure align="center" anchor="interleaved-exchange"
-          title="Cookies and timestamps in interleaved mode">
-        <artwork><![CDATA[
-Server   t2   t3               t6   t7              t10  t11
-    -----+----+----------------+----+----------------+----+-----
-        /      \              /      \              /      \
-Client /        \            /        \            /        \
-    --+----------+----------+----------+----------+----------+--
-      t1         t4         t5         t8         t9        t12
-
-Mode: B         B           I         I           I         B
-    +----+    +----+      +----+    +----+      +----+    +----+
-SC  | 0  |    | s1 |      | s1 |    | s2 |      | s2 |    | s3 |
-CC  | c1 |    | c1 |      | c2 |    | c2 |      | c3 |    | c3 |
-Rx  | 0  |    | t2 |      | 0  |    | t6 |      | 0  |    |t10 |
-Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
-    +----+    +----+      +----+    +----+      +----+    +----+
-        ]]></artwork>
-      </figure>
-
-      <t>From the three exchanges in this example, the client would use the
-        following sets of timestamps:
-
-        <list style="symbols">
-          <t>(t1, t2, t3', t4)</t>
-          <t>(t1, t2, t3, t4) or (t5, t6, t3, t4)</t>
-          <t>(t9, t10, t11', t12)</t>
-        </list>
-      </t>
-
     </section>
 
     <section title="Client Operation">
@@ -1405,6 +1349,60 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         Implementations MAY choose to ignore these features.</t>
 
       <section title="Interleaved mode" anchor="interleaved-mode">
+        <t>The NTPv4 interleaved client-server mode is described in <xref
+          target="RFC9769">RFC 9769</xref>. The difference between NTPv5 and
+          NTPv4 is that in NTPv5 the interleaved mode is enabled explicitly by a
+          flag and the previous transmit timestamp on the server is identified by
+          the server cookie instead of the receive timestamp, which avoids the
+          requirements for receive timestamps to be unique and not equal to
+          transmit timestamps. Therefore, the NTPv5 interleaved mode is easier to
+          implement. A server implementation that supports both NTPv4 and
+          NTPv5 does not need to process interleaved requests and save timestamps
+          separately for the different NTP versions. It can reuse the NTPv4
+          support in NTPv5 by setting the server cookie to the (unique) receive
+          timestamp.</t>
+
+        <t>An example of an NTPv5 exchange using the interleaved mode is shown in
+          Figure <xref format="counter" target="interleaved-exchange"></xref>.
+          The messages in the basic and interleaved mode are indicated with B and
+          I respectively. The timestamps t3' and t11' correspond to the same
+          transmissions as t3 and t11, but they may be less accurate (e.g. due to
+          being captured in software before the transmission). The first
+          exchange is in the basic mode followed by a second exchange in the
+          interleaved mode. For the third exchange, the client request is in the
+          interleaved mode, but the server response is in the basic mode, because
+          the server no longer had the timestamp t7 (e.g. it was dropped to save
+          timestamps for other clients using the interleaved mode).</t>
+
+        <figure align="center" anchor="interleaved-exchange"
+            title="Cookies and timestamps in interleaved mode">
+          <artwork><![CDATA[
+  Server   t2   t3               t6   t7              t10  t11
+      -----+----+----------------+----+----------------+----+-----
+          /      \              /      \              /      \
+  Client /        \            /        \            /        \
+      --+----------+----------+----------+----------+----------+--
+        t1         t4         t5         t8         t9        t12
+
+  Mode: B         B           I         I           I         B
+      +----+    +----+      +----+    +----+      +----+    +----+
+  SC  | 0  |    | s1 |      | s1 |    | s2 |      | s2 |    | s3 |
+  CC  | c1 |    | c1 |      | c2 |    | c2 |      | c3 |    | c3 |
+  Rx  | 0  |    | t2 |      | 0  |    | t6 |      | 0  |    |t10 |
+  Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
+      +----+    +----+      +----+    +----+      +----+    +----+
+          ]]></artwork>
+        </figure>
+
+        <t>From the three exchanges in this example, the client would use the
+          following sets of timestamps:
+
+          <list style="symbols">
+            <t>(t1, t2, t3', t4)</t>
+            <t>(t1, t2, t3, t4) or (t5, t6, t3, t4)</t>
+            <t>(t9, t10, t11', t12)</t>
+          </list>
+        </t>
       </section>
 
       <section title="Correction Extension Field" anchor="correction-extension-field">
