@@ -620,6 +620,11 @@
         extension field in a response as an indication that the server does not
         support the extension field.</t>
 
+      <t>If a request contains an extension field unknown to the server, the
+        server MUST ignore the contents of the extension field, and MUST respond
+        to the message as if the extension field in question was a Padding
+        extension field.</t>
+
       <t>Extension fields specified for NTPv4 can be included in NTPv5 messages
         as specified for NTPv4.</t>
 
@@ -628,6 +633,25 @@
         extension fields, but servers are required to support the following
         extension fields: Padding, Server Information, Reference IDs Request,
         Reference IDs Response.</t>
+
+      <section title="Extension field greasing" anchor="greasing">
+        <t>Clients SHOULD occasionally send requests with extension fields unknown
+          to the server. This is to stimulate servers to properly handle unknown
+          extension fields.For this purpose, the extension field types 0x0103, 0x0109,
+          0x0303, 0x0403, 0x0601, 0x06FF, 0x2002, 0x8000, 0x81FE, 0x8301, 0x8403,
+          0xC101, 0xC109, 0xC20A, 0xC901, and 0xEFFF are reserved for greasing and will
+          never be assigned to actual extension field types. There is intentionally no
+          logical pattern in these codepoints, to discourage special checks for these types.</t>
+        
+        <t>When sending a grease extension field, the client MUST choose a random type from
+          extension field types reserved for greasing. It then MUST choose a random length from an
+          implementation-defined range, and generate random data as the body for the extension
+          field. It then MUST pad the extension field as normal.</t>
+        
+        <t>Servers MUST NOT implement special handling for the grease extension fields.
+          Instead reception of these extension fields MUST be handled through the normal
+          ignoring of unknown extension fields.</t>
+      </section>
 
       <section title="Draft Identification Extension Field">
         <t>Note to the editors: this section must be removed before final publication.</t>
@@ -1726,6 +1750,70 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         <c>Secondary Receive Timestamp</c>
         <c><xref target="secondary-receive-timestamp-extension-field">
           [[this memo]]</xref></c>
+
+        <c>0x0103</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0x0109</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0x0303</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0x0403</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0x0601</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0x06FF</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0x2002</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0x8000</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0x81FE</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0x8301</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0x8403</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0xC101</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0xC109</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0xC20A</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0xC901</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
+
+        <c>0xEFFF</c>
+        <c>Reserved for greasing extension fields</c>
+        <c><xref target="greasing">[[this memo]]</xref></c>
       </texttable>
 
       <t>IANA is requested to allocate the following entry in the
