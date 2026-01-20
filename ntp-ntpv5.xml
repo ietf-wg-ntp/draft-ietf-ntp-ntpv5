@@ -1404,6 +1404,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       <t>The following features are optional for both clients and servers.
         Implementations MAY choose to ignore these features.</t>
 
+      <section title="Interleaved mode" anchor="interleaved-mode">
+      </section>
+
       <section title="Correction Extension Field" anchor="correction-extension-field">
 
         <t>Processing and queueing delays in network switches and routers may
