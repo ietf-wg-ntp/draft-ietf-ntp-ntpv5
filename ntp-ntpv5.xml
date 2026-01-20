@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="US-ASCII"?>
 <!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
-<!ENTITY RFC1321 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.1321.xml">
 <!ENTITY RFC2119 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml">
 <!ENTITY RFC5905 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5905.xml">
 <!ENTITY RFC7384 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7384.xml">
@@ -196,9 +195,9 @@
             timestamps do not need to be unique in order to support the
             interleaved mode.</t>
 
-          <t>NTPv5 works with sets of reference IDs to prevent synchronization
+          <t>NTPv5 works with lists of reference IDs to prevent synchronization
             loops over multiple hosts, even if they form over other NTP sources
-            than the system peer. Reference IDs have 120 bits instead of 32
+            than the system peer. Reference IDs have 56 bits instead of 32
             bits to minimize the rate of false positives.</t>
 
           <t>Resolution of the root delay and root dispersion fields is
@@ -748,100 +747,128 @@
 
       <section title="Reference IDs Request and Response Extension Fields"
           anchor="reference-ids-extension-fields">
-        <t>Each NTPv5 server has a randomly generated 120-bit reference ID
-          (it will be split into 10 12-bit values). The
-          extension fields described in this section are used to exchange sets
-          of reference IDs in order to detect synchronization loops, i.e. when
-          a client is synchronizing (directly or indirectly) to one of its own
-          clients, or more generally detect presence of a specific time
+        <t>Each NTPv5 server has a randomly generated non-zero 56-bit reference
+          ID. The extension fields described in this section are used to exchange
+          lists of reference IDs in order to detect synchronization loops, i.e.
+          when a client is synchronizing (directly or indirectly) to one of its
+          own clients, or more generally detect presence of a specific time
           source in the synchronization chain.</t>
 
-        <t>As each client can be synchronized to an unlimited number of
-          servers (and there can be up to 15 strata of servers), the reference
-          IDs are exchanged as a <xref target="Bloom">Bloom filter</xref>
-          instead of a list to limit the amount of data that needs to be
-          exchanged.</t>
+        <t>The reference IDs in the list are paired with 8-bit unsigned values
+          encoding the share of the source in the server's clock. The encoding
+          of the shares uses a fractional logarithmic scale. The encoded value
+          is -16 * log2(s) rounded up and clamped to the 8-bit range. The
+          decoded value is 2^(-v/16). For example, a share of 100% is encoded
+          as 0, 96% as 1, 90% as 3, and 50% as 16 (exactly). The minimum share
+          is about 0.0016%, encoded as 255.</t>
 
-        <t>The Bloom filter is an array of 4096 bits. When empty, all bits are
-          zero. To add a reference ID to the filter, the 120-bit value of the
-          reference ID is split into 10 12-bit values and the bits of the array
-          at the 10 positions given by the 12-bit values are set to one.</t>
+        <t>The length of the list is fixed to 32 items (i.e. 2048 bits in
+          total) to simplify its processing, limit the amount of required
+          memory, and limit the length of the extension fields. Unused entries
+          have the minimum share encoded as 255 and zero reference ID.</t>
 
-        <t>A server maintains a copy of the filter for each server it acquires
-          time from. The filter provided by the server to clients is the
-          union of the filters (using the bitwise OR operation) of the server's
-          sources selected for synchronization and the server's own reference
-          ID.</t>
+        <t>The first reference ID in the list is special. It is the server's
+          own reference ID with a share of 100% (encoded as 0). The rest of
+          reference IDs in the list are the server's direct and indirect NTPv5
+          sources sorted by their share in decreasing order. The sum of their
+          shares can reach up to another 100% (slightly more than that if some
+          shares had to be clamped to the maximum encoded value of 255).</t>
 
-        <t>If the server uses a previous version of NTP for some of its
-          sources, the reference IDs added to the filter are generated from
-          their IP addresses as the first 120 bits of the
-          <xref target="RFC1321">MD5</xref> sum of the address in network
-          order. If the server uses a reference clock, the reference ID is the
-          first 120 bits of the MD5 sum of the 4-octet zero-padded ASCII
-          string from the NTP Reference Identifier Codes registry maintained by
-          IANA, or a string beginning with the uppercase letter X, which are
-          reserved for private and experimental use.</t>
+        <t>A server maintains a copy of the list for each NTPv5 server it
+          acquires time from. The list provided by the server in its responses
+          to clients is combined from these copies as follows:
 
-        <t>A client checking whether the server's set of reference IDs contains
-          the client's own reference ID checks whether the bits at the 10
-          positions corresponding to the 12-bit values from the reference ID
-          are all set to one.</t>
+          <list style="numbers">
+            <t>The server determines a weight for each source that contributes
+              to its clock, where the weights SHOULD be proportional to the
+              impact each time source has on the phase of the clock of the
+              server. These weights MUST be normalized so they add up to
+              approximately one, rounding down where needed.</t>
+
+            <t>The server MUST take the entries from the list of each of the
+              NTPv5 time sources, multiply their decoded shares by 0.5 and
+              the weight of the time source, and combine them into a single
+              (longer) list. Duplicate entries are eliminated by adding up
+              their decoded shares.</t>
+
+            <t>The resulting list of the previous step is sorted in decreasing
+              order (largest share first), and truncated to 31 reference IDs.
+              This list combined with the server's own entry as specified above
+              forms the completed list.</t>
+          </list>
+        </t>
+
+        <t>If the server uses reference clocks or a previous version of NTP for
+          some of its sources, or other time synchronization protocols, these
+          sources have no reference IDs and shares included in the list. The
+          previous versions of NTP provided the clients only with a single
+          reference ID, i.e. they could detect loops formed only over two
+          hosts. Two clients polling each other need to be both using NTPv5, or
+          some previous versions, in order to detect the loop. With the <xref
+          target="negotiation">NTPv5 negotiation</xref> that is expected to be
+          the usual case.</t>
 
         <t>When a client that also serves time to other clients as an NTPv5
-          server detects its reference ID in a server's set of reference IDs,
+          server detects its reference ID in a server's list of reference IDs,
           it SHOULD assume it is in a synchronization loop, and stop using
-          that server for synchronization. When the client's reference ID is
-          no longer detected in the server's filter, it SHOULD wait for a
+          that server for its own synchronization to avoid a positive feedback
+          loop and instability. The client MAY have an implementation-specific
+          or configured maximum acceptable value allowing synchronization over
+          loops with an insignificant share. When the client's reference ID is
+          no longer detected in the server's list, it SHOULD wait for a
           random number of polling intervals (e.g. between 0 and 4) before
           selecting the server again. The random interval helps with
           stabilization of the selection in longer loops. If a recurring loop
           is detected, it is recommended to increase the random interval in
           order to avoid livelock scenarios.</t>
 
-        <t>False positives are possible. The probability of a collision grows
-          with the number of reference IDs in the filter. With 26 reference IDs
-          it is about 1e-12. With 118 IDs it is about 1e-6. The client MAY avoid
-          selecting a server which has too many bits set in the filter (e.g.
-          more than half) to reduce the probability of the collision for its
-          own clients. A client which detected a synchronization loop MAY
-          change its own reference ID to limit the duration of the potential
-          collision.</t>
+        <t>False positives are possible, but very unlikely. The probability of a
+          collision for a client synchronizing to 10 servers, each providing 32
+          reference IDs, is about 1e-13.</t>
 
-        <t>Bloom filters are free from false negatives. However, there is a
+        <t>Due to the limited length of the list, false negatives are expected
+          for loops over a larger number of servers and/or loops over
+          lower-share paths. If the loop forms over servers that have the
+          largest share in their client's clock update, their stratum will
+          reach the maximum acceptable value and the loop will stop. If the
+          loop forms over lower-share paths (which do not increment the
+          stratum), the impact on stability of the clocks in the loop will be
+          reduced and likely insignificant.</t>
+
+        <t>There is a
           transient period between the addition of a reference ID to a server's
-          Bloom filter and the propagation of this information through a chain
+          list and the propagation of this information through a chain
           of clients. During this period, the new reference ID may not be
           detected, potentially causing a temporary synchronization loop. For
           instance, if two servers inquire each other about the list of
           reference IDs roughly at the same time, neither will detect its
-          reference ID in the other's Bloom filter, resulting in a temporary
+          reference ID in the other's list, resulting in a temporary
           loop.</t>
 
-        <t>Generally, when a server updates the Bloom filter it distributes to
+        <t>Generally, when a server updates the list it distributes to
           clients, temporary synchronization loops might occur before
           converging to an acyclic distribution tree.</t>
 
-        <t>The filter can be exchanged as a single 512-octet array, or it can
-          be exchanged in smaller chunks over multiple NTP messages, making
-          them shorter, but delaying the detection of the synchronization
-          loop.</t>
+        <t>The list can be exchanged as a single 256-octet payload, or smaller
+          fragments over multiple NTP messages, which delays the detection of the
+          synchronization loop.</t>
 
-        <t>The request extension field specifies the offset of the requested
-          chunk in the filter as a number of octets. The requested length of
-          the chunk is given by the length of data in the request extension
-          field. The response extension field MUST have the same length as the
-          request extension field. If the request contains an invalid offset
-          for the length, i.e. it is larger than 512 minus length of data in
-          the extension field, the extension field MUST be ignored.</t>
+        <t>The request extension field specifies the index of the first
+          requested reference ID in the server's list, starting at 0. The
+          requested length of the fragment is given by the length of data in the
+          request extension field. The length of data MUST be at least 8 octets
+          and be divisible by 8 octets. The response extension field MUST have
+          the same length as the received request extension field. If the
+          request contains an invalid index for the given length, the extension
+          field MUST be ignored.</t>
 
-        <t>When a filter is sent to a client in multiple chunks, the server
-          might update the Bloom filter to a new value after some chunks have
-          been sent. This can cause the subsequent chunks to be inconsistent
-          with the previously sent ones. The partially updated Bloom filter
-          might cause false negative or false positive detections. This
+        <t>When a list is sent to a client in multiple fragments, the server
+          might update or reorder the list after some fragments have
+          been sent. This can cause the subsequent fragments to be inconsistent
+          with the previously sent ones. The partially updated list
+          might cause false negatives. This
           transient issue is resolved once the server completes sending the
-          updated Bloom filter.</t>
+          updated list.</t>
 
         <t>The client SHOULD use requests of a constant length for the
           association to avoid adding a variation to the measured NTP
@@ -858,8 +885,8 @@
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 | Type = [[TBD]] (draft 0xF503) |             Length            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|            Offset             |                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
+|     Index     |                                               |
++-+-+-+-+-+-+-+-+                                               +
 .                                                               .
 .                        Padding (variable)                     .
 .                                                               .
@@ -878,9 +905,17 @@
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 | Type = [[TBD]] (draft 0xF504) |             Length            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Share I+0   |                                               |
++-+-+-+-+-+-+-+-+     Reference ID I+0 (56)                     +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 .                                                               .
-.                  Bloom filter chunk (variable)                .
 .                                                               .
+.                                                               .
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Share I+N-1  |                                               |
++-+-+-+-+-+-+-+-+    Reference ID I+N-1 (56)                    +
+|                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
           ]]></artwork>
         </figure>
@@ -1487,12 +1522,13 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
       <t>A client which operates as a server for other clients MUST include the
         Reference IDs Request Extension Field in its requests in order to track
-        reference IDs of its sources. If the server's set of reference IDs
+        reference IDs of its sources. If the server's list of reference IDs
         contains the client's own reference ID, it SHOULD not select the server
         for synchronization to avoid a synchronization loop. If the client
-        is requesting the reference IDs in multiple chunks, it SHOULD NOT
-        select the server for synchronization until it received the whole
-        set.</t>
+        is requesting the reference IDs in multiple fragments, it SHOULD NOT
+        select the server for synchronization until it has the whole list (up
+        to the first zero reference ID if the list does not have all 32
+        entries used).</t>
 
       <t>A client which uses multiple servers MUST be able to handle servers
         providing timestamps in different timescales. It can ignore servers not
@@ -1553,7 +1589,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         </list>
       </t>
 
-      <t>The server has a randomly generated 120-bit reference ID. It MUST
+      <t>The server has a randomly generated non-zero 56-bit reference ID. It MUST
         track reference IDs of its servers in order to be able to respond with
         a Reference IDs Response Extension Field.</t>
 
@@ -1679,7 +1715,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         unless they support the specific draft version identified.</t>
     </section>
 
-    <section title="NTPv5 Negotiation in Previous NTP Versions">
+    <section title="NTPv5 Negotiation in Previous NTP Versions" anchor="negotiation">
       <t>Servers that support multiple versions of NTP MUST send a response in
         the same version as the request, to support backwards compatibility.
         This does not preclude servers from acting as a client in one version
@@ -1911,8 +1947,6 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
   <back>
     <references title="Normative References">
-      &RFC1321;
-
       &RFC2119;
 
       &RFC8174;
@@ -1955,16 +1989,6 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             </organization>
           </author>
           <date month="11" year="2019" />
-        </front>
-      </reference>
-
-      <reference anchor="Bloom" target="https://doi.org/10.1145/362686.362692">
-        <front>
-          <title>Space/Time Trade-Offs in Hash Coding with Allowable Errors</title>
-          <author surname="Bloom" fullname="Burton H. Bloom">
-            <organization/>
-          </author>
-          <date month="6" year="1970" />
         </front>
       </reference>
 
