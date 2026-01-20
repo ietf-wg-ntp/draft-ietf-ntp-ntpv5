@@ -678,20 +678,16 @@
       </section>
     </section>
 
-    <section title="Measurement Modes" anchor="measurement-modes">
+    <section title="Time measurements" anchor="measurements">
+      <t>The client can make measurements in the basic mode, or another mode
+        such as interleaved mode described in <xref target="interleaved-mode"/>.
+        In basic mode, the transmit and receive timestamp can be extracted 
+        immediately from the response packet.</t>
 
-      <t>At the end of an NTP message exchange, the client has access to four
-        timestamps, which it can use to estimate the clock offset and the
-        network delay, as described in <xref target="ntp-exchange-sec"/>.</t>
-
-      <t>The client can make measurements in the basic mode, or interleaved
-        mode if supported on the server. In the basic mode, the transmit
-        timestamp in the server response corresponds to the message which
-        contains the timestamp itself. In the interleaved mode it corresponds
-        to a previous response identified by the server cookie. The
-        interleaved mode enables the server to provide the client with a more
-        accurate transmit timestamp which is available only after the
-        response was formed or sent.</t>
+      <t>To correlate the response to its corresponding request, the client
+        uses the client cookie, which is identical between request and 
+        response. In basic mode, the server cookie has no purpose and can be
+        safely ignored.</t>
 
       <t>An example of cookies and timestamps in an NTPv5 exchange using the
         basic mode is shown in Figure <xref format="counter"
@@ -725,6 +721,11 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
           <t>(t9, t10, t11, t12)</t>
         </list>
       </t>
+
+      <t>At the end of each NTP request-response interaction, the client has
+        access to four timestamps, which it can use to estimate the clock
+        offset and the network delay, as described in 
+        <xref target="ntp-exchange-sec"/>.</t>
     </section>
 
     <section title="Client Operation">
