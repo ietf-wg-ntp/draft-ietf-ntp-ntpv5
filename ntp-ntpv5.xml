@@ -1340,14 +1340,36 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
         Implementations MAY choose to ignore these features.</t>
 
       <section title="Interleaved mode" anchor="interleaved-mode">
-        <t>The NTPv4 interleaved client-server mode is described in <xref
-          target="RFC9769">RFC 9769</xref>. The difference between NTPv5 and
-          NTPv4 is that in NTPv5 the interleaved mode is enabled explicitly by a
-          flag and the previous transmit timestamp on the server is identified by
-          the server cookie instead of the receive timestamp, which avoids the
-          requirements for receive timestamps to be unique and not equal to
-          transmit timestamps. Therefore, the NTPv5 interleaved mode is easier to
-          implement. A server implementation that supports both NTPv4 and
+        <t>Interleaved mode is an alternate measurement mode that allows the server
+          to provide a more precise send timestamp on the response. It achieves
+          this by sending the transmit timestamp in the response to the next
+          request instead of immediately.</t>
+
+        <t>Servers capable of interleaved mode SHALL provide a cookie value in every
+          response in the server cookie field. This cookie can be used by the client
+          to request the precise transmit timestamp for the response by sending a
+          subsequent request with the Interleaved mode flag enabled and the server
+          cookie copied from the response.</t>
+        
+        <t>The server, on receiving a request with the interleaved mode flag enabled,
+          checks whether it still has the precise transmit timestamp for the response
+          indicated by the cookie. If it has that timestamp, it SHALL enable the
+          interleaved mode flag in the response, and the transmit timestamp in the
+          response SHALL be the precise transmit timestamp of the response referenced
+          by the server cookie in the request, instead of the transmit timestamp 
+          of the current response. If the server no longer has the precise transmit
+          timestamp for the requested response, it SHALL leave the interleaved mode
+          flag unset and the transmit timestamp SHALL be an estimate for when the
+          current response is sent.</t>
+
+        <t>Note that the above process has some differences to the interleaved
+          client-server mode specified for NTPv4 in <xref target="RFC9769">RFC 9769</xref>.
+          The difference between NTPv5 and NTPv4 is that in NTPv5 the interleaved mode
+          is enabled explicitly by a flag and the previous transmit timestamp on the
+          server is identified by the server cookie instead of the receive timestamp,
+          which avoids the requirements for receive timestamps to be unique and not 
+          equal to transmit timestamps. Therefore, the NTPv5 interleaved mode is
+          easier to implement. A server implementation that supports both NTPv4 and
           NTPv5 does not need to process interleaved requests and save timestamps
           separately for the different NTP versions. It can reuse the NTPv4
           support in NTPv5 by setting the server cookie to the (unique) receive
