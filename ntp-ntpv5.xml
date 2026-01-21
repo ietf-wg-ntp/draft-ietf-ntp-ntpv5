@@ -677,30 +677,6 @@
         <t>This field MUST be supported on servers.</t>
       </section>
 
-      <section title="Reference Timestamp Extension Field"
-          anchor="reference-timestamp-extension-field">
-        <t>This field contains the time of the last update of the clock. It
-          has a fixed length of 12 octets. In requests, that timestamp is always
-          0.</t>
-
-        <t>(Is this really needed? It was mostly unused in NTPv4.)</t>
-
-        <figure align="center" anchor="reference-timestamp-ext-field"
-            title="Format of Reference Timestamp Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF507) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-|                      Reference Timestamp (64)                 |
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-      </section>
-
       <section title="Monotonic Receive Timestamp Extension Field"
           anchor="monotonic-receive-timestamp-extension-field">
 
@@ -1693,6 +1669,30 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
           in <xref target="measurement-modes">Measurement Modes</xref>. Clients
           MUST ignore an unexpected Correction Extension Field in the response,
           i.e. if it was not included in the request.</t>
+      </section>
+
+      <section title="Reference Timestamp Extension Field"
+          anchor="reference-timestamp-extension-field">
+        <t>This field contains the time of the last update of the clock. It
+          has a fixed length of 12 octets. In requests, that timestamp is always
+          0.</t>
+
+        <t>(Is this really needed? It was mostly unused in NTPv4.)</t>
+
+        <figure align="center" anchor="reference-timestamp-ext-field"
+            title="Format of Reference Timestamp Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF507) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+|                      Reference Timestamp (64)                 |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
       </section>
     </section>
 
