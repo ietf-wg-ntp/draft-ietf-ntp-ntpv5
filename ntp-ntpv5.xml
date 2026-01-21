@@ -677,69 +677,6 @@
         <t>This field MUST be supported on servers.</t>
       </section>
 
-      <section title="Message Authentication Code Extension Field"
-            anchor="mac-extension-field">
-        <t>This field, with type [[TBD]] (draft: 0xF502), authenticates the
-          NTPv5 message with a symmetric key known to the client and server.
-          Implementations SHOULD use an
-          AES-CMAC key to compute the Messace Authentication Code (MAC), as
-          recommended in <xref target="RFC8573">RFC8573</xref>. The MAC MUST be
-          computed over the NTP header and all the extension fields (including
-          padding of fields whose length is not divisble by 4), if present,
-          located prior to
-          the Message Authentication Code Extension Field.  The extension
-          field MUST be the last extension field in the message unless an
-          extension field is specifically allowed to be placed after a MAC or
-          another authenticator field, such as the
-          <xref target="correction-extension-field">Correction Extension
-          Field</xref>.</t>
-
-        <t>The format of the Message Authentication Code Extension Field is
-          shown in Figure <xref format="counter" target="mac-ext-field"/>.</t>
-
-        <figure align="center" anchor="mac-ext-field"
-            title="Format of Messace Authentication Code Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF502) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                            Key ID                             |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-.                                                               .
-.                        MAC (variable)                         .
-.                                                               .
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-
-        <t>The Key ID is a 32-bit number identifying the key that was used to
-          compute the MAC stored in the MAC field. The MAC field MUST contain
-          the whole generated MAC. The length depends on the key, e.g. the
-          recommended AES-CMAC with an AES-128 key generates 128-bit MACs.</t>
-
-        <t>If a server receives a client request that contains the Message
-          Authentication Code Extension Field and the MAC is valid, the
-          response, if there is one, MUST include the Message Authentication
-          Code Extension Field using the same key as was used in the request.
-          If the MAC in the request is not valid, or the key is unknown, the
-          server MUST either drop the request, or respond with a message that
-          does not contain the Message Authentication Code Extension Field and
-          has the Authentication NAK flag set in the header.</t>
-
-        <t>A client configured to use a symmetric key for a given server MUST
-          add the Message Authentication Code Extension Field to all requests
-          sent to the server. The client MUST accept for synchronization only
-          responses that contains a valid MAC using the expected key and the
-          MAC is at the expected location in the message (normally the last
-          extension field).</t>
-
-        <t>Each client/server pair SHOULD be configured with a different
-          symmetric key to prevent other clients and servers from performing
-          on-path attacks on the client.</t>
-      </section>
-
       <section title="Reference IDs Request and Response Extension Fields"
           anchor="reference-ids-extension-fields">
         <t>Each NTPv5 server has a randomly generated 120-bit reference ID
@@ -1684,6 +1621,68 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         client out-of-band. And Network Time Security, which uses existing PKI
         infrastructure to verify the identity of the server on the client.</t>
 
+      <section title="Message Authentication Code Extension Field"
+            anchor="mac-extension-field">
+        <t>This field, with type [[TBD]] (draft: 0xF502), authenticates the
+          NTPv5 message with a symmetric key known to the client and server.
+          Implementations SHOULD use an
+          AES-CMAC key to compute the Messace Authentication Code (MAC), as
+          recommended in <xref target="RFC8573">RFC8573</xref>. The MAC MUST be
+          computed over the NTP header and all the extension fields (including
+          padding of fields whose length is not divisble by 4), if present,
+          located prior to
+          the Message Authentication Code Extension Field.  The extension
+          field MUST be the last extension field in the message unless an
+          extension field is specifically allowed to be placed after a MAC or
+          another authenticator field, such as the
+          <xref target="correction-extension-field">Correction Extension
+          Field</xref>.</t>
+
+        <t>The format of the Message Authentication Code Extension Field is
+          shown in Figure <xref format="counter" target="mac-ext-field"/>.</t>
+
+        <figure align="center" anchor="mac-ext-field"
+            title="Format of Messace Authentication Code Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF502) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Key ID                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+.                                                               .
+.                        MAC (variable)                         .
+.                                                               .
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>The Key ID is a 32-bit number identifying the key that was used to
+          compute the MAC stored in the MAC field. The MAC field MUST contain
+          the whole generated MAC. The length depends on the key, e.g. the
+          recommended AES-CMAC with an AES-128 key generates 128-bit MACs.</t>
+
+        <t>If a server receives a client request that contains the Message
+          Authentication Code Extension Field and the MAC is valid, the
+          response, if there is one, MUST include the Message Authentication
+          Code Extension Field using the same key as was used in the request.
+          If the MAC in the request is not valid, or the key is unknown, the
+          server MUST either drop the request, or respond with a message that
+          does not contain the Message Authentication Code Extension Field and
+          has the Authentication NAK flag set in the header.</t>
+
+        <t>A client configured to use a symmetric key for a given server MUST
+          add the Message Authentication Code Extension Field to all requests
+          sent to the server. The client MUST accept for synchronization only
+          responses that contains a valid MAC using the expected key and the
+          MAC is at the expected location in the message (normally the last
+          extension field).</t>
+
+        <t>Each client/server pair SHOULD be configured with a different
+          symmetric key to prevent other clients and servers from performing
+          on-path attacks on the client.</t>
+      </section>
     </section>
 
     <section title="NTPv5 extensions mandatory for servers">
