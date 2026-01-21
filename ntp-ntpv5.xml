@@ -210,7 +210,7 @@
       </t>
     </section>
 
-    <section title="Basic Concepts">
+    <section title="Basic Concepts" anchor="basic-concepts">
       <section anchor="ntp-exchange-sec" title="The NTP Message Exchange">
         <t>An NTP client exchanges messages with one or more NTP servers;
           the client sends a request to each server and the servers send their
@@ -571,8 +571,7 @@
             0. In responses it is the server's time denoting the beginning of
             the transmission of a
             response to the client. Which response it refers to depends
-            on the selected mode (basic or interleaved). See <xref
-            target="measurement-modes">Measurement Modes</xref> for detail.</t>
+            on the selected mode (basic or interleaved).</t>
         </list>
       </t>
 
@@ -676,575 +675,18 @@
 
         <t>This field MUST be supported on servers.</t>
       </section>
-
-      <section title="Message Authentication Code Extension Field"
-            anchor="mac-extension-field">
-        <t>This field, with type [[TBD]] (draft: 0xF502), authenticates the
-          NTPv5 message with a symmetric key known to the client and server.
-          Implementations SHOULD use an
-          AES-CMAC key to compute the Messace Authentication Code (MAC), as
-          recommended in <xref target="RFC8573">RFC8573</xref>. The MAC MUST be
-          computed over the NTP header and all the extension fields (including
-          padding of fields whose length is not divisble by 4), if present,
-          located prior to
-          the Message Authentication Code Extension Field.  The extension
-          field MUST be the last extension field in the message unless an
-          extension field is specifically allowed to be placed after a MAC or
-          another authenticator field, such as the
-          <xref target="correction-extension-field">Correction Extension
-          Field</xref>.</t>
-
-        <t>The format of the Message Authentication Code Extension Field is
-          shown in Figure <xref format="counter" target="mac-ext-field"/>.</t>
-
-        <figure align="center" anchor="mac-ext-field"
-            title="Format of Messace Authentication Code Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF502) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                            Key ID                             |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-.                                                               .
-.                        MAC (variable)                         .
-.                                                               .
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-
-        <t>The Key ID is a 32-bit number identifying the key that was used to
-          compute the MAC stored in the MAC field. The MAC field MUST contain
-          the whole generated MAC. The length depends on the key, e.g. the
-          recommended AES-CMAC with an AES-128 key generates 128-bit MACs.</t>
-
-        <t>If a server receives a client request that contains the Message
-          Authentication Code Extension Field and the MAC is valid, the
-          response, if there is one, MUST include the Message Authentication
-          Code Extension Field using the same key as was used in the request.
-          If the MAC in the request is not valid, or the key is unknown, the
-          server MUST either drop the request, or respond with a message that
-          does not contain the Message Authentication Code Extension Field and
-          has the Authentication NAK flag set in the header.</t>
-
-        <t>A client configured to use a symmetric key for a given server MUST
-          add the Message Authentication Code Extension Field to all requests
-          sent to the server. The client MUST accept for synchronization only
-          responses that contains a valid MAC using the expected key and the
-          MAC is at the expected location in the message (normally the last
-          extension field).</t>
-
-        <t>Each client/server pair SHOULD be configured with a different
-          symmetric key to prevent other clients and servers from performing
-          on-path attacks on the client.</t>
-      </section>
-
-      <section title="Reference IDs Request and Response Extension Fields"
-          anchor="reference-ids-extension-fields">
-        <t>Each NTPv5 server has a randomly generated 120-bit reference ID
-          (it will be split into 10 12-bit values). The
-          extension fields described in this section are used to exchange sets
-          of reference IDs in order to detect synchronization loops, i.e. when
-          a client is synchronizing (directly or indirectly) to one of its own
-          clients, or more generally detect presence of a specific time
-          source in the synchronization chain.</t>
-
-        <t>As each client can be synchronized to an unlimited number of
-          servers (and there can be up to 15 strata of servers), the reference
-          IDs are exchanged as a <xref target="Bloom">Bloom filter</xref>
-          instead of a list to limit the amount of data that needs to be
-          exchanged.</t>
-
-        <t>The Bloom filter is an array of 4096 bits. When empty, all bits are
-          zero. To add a reference ID to the filter, the 120-bit value of the
-          reference ID is split into 10 12-bit values and the bits of the array
-          at the 10 positions given by the 12-bit values are set to one.</t>
-
-        <t>A server maintains a copy of the filter for each server it acquires
-          time from. The filter provided by the server to clients is the
-          union of the filters (using the bitwise OR operation) of the server's
-          sources selected for synchronization and the server's own reference
-          ID.</t>
-
-        <t>If the server uses a previous version of NTP for some of its
-          sources, the reference IDs added to the filter are generated from
-          their IP addresses as the first 120 bits of the
-          <xref target="RFC1321">MD5</xref> sum of the address in network
-          order. If the server uses a reference clock, the reference ID is the
-          first 120 bits of the MD5 sum of the 4-octet zero-padded ASCII
-          string from the NTP Reference Identifier Codes registry maintained by
-          IANA, or a string beginning with the uppercase letter X, which are
-          reserved for private and experimental use.</t>
-
-        <t>A client checking whether the server's set of reference IDs contains
-          the client's own reference ID checks whether the bits at the 10
-          positions corresponding to the 12-bit values from the reference ID
-          are all set to one.</t>
-
-        <t>When a client that also serves time to other clients as an NTPv5
-          server detects its reference ID in a server's set of reference IDs,
-          it SHOULD assume it is in a synchronization loop, and stop using
-          that server for synchronization. When the client's reference ID is
-          no longer detected in the server's filter, it SHOULD wait for a
-          random number of polling intervals (e.g. between 0 and 4) before
-          selecting the server again. The random delay helps with stabilization
-          of the selection in longer loops. If a recurring loop is detected,
-          it is recommended to increase the random delay in order to avoid
-          livelock scenarios.</t>
-
-        <t>False positives are possible. The probability of a collision grows
-          with the number of reference IDs in the filter. With 26 reference IDs
-          it is about 1e-12. With 118 IDs it is about 1e-6. The client MAY avoid
-          selecting a server which has too many bits set in the filter (e.g.
-          more than half) to reduce the probability of the collision for its
-          own clients. A client which detected a synchronization loop MAY
-          change its own reference ID to limit the duration of the potential
-          collision.</t>
-
-        <t>Bloom filters are free from false negatives. However, there is a
-          transient period between the addition of a reference ID to a server's
-          Bloom filter and the propagation of this information through a chain
-          of clients. During this period, the new reference ID may not be
-          detected, potentially causing a temporary synchronization loop. For
-          instance, if two servers inquire each other about the list of
-          reference IDs roughly at the same time, neither will detect its
-          reference ID in the other's Bloom filter, resulting in a temporary
-          loop.</t>
-
-        <t>Generally, when a server updates the Bloom filter it distributes to
-          clients, temporary synchronization loops might occur before
-          converging to an acyclic distribution tree.</t>
-
-        <t>The filter can be exchanged as a single 512-octet array, or it can
-          be exchanged in smaller chunks over multiple NTP messages, making
-          them shorter, but delaying the detection of the synchronization
-          loop.</t>
-
-        <t>The request extension field specifies the offset of the requested
-          chunk in the filter as a number of octets. The requested length of
-          the chunk is given by the length of data in the request extension
-          field. The response extension field MUST have the same length as the
-          request extension field. If the request contains an invalid offset
-          for the length, i.e. it is larger than 512 minus length of data in
-          the extension field, the extension field MUST be ignored.</t>
-
-        <t>When a filter is sent to a client in multiple chunks, the server
-          might update the Bloom filter to a new value after some chunks have
-          been sent. This can cause the subsequent chunks to be inconsistent
-          with the previously sent ones. The partially updated Bloom filter
-          might cause false negative or false positive detections. This
-          transient issue is resolved once the server completes sending the
-          updated Bloom filter.</t>
-
-        <t>The client SHOULD use requests of a constant length for the
-          association to avoid adding a variation to the measured NTP
-          delay.</t>
-
-        <t>The format of the Reference IDs Request is shown in Figure <xref
-          format="counter" target="reference-ids-req-ext-field"/>.</t>
-
-        <figure align="center" anchor="reference-ids-req-ext-field"
-            title="Format of Reference IDs Request Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF503) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|            Offset             |                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
-.                                                               .
-.                        Padding (variable)                     .
-.                                                               .
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-
-        <t>The format of the Reference IDs Response is shown in Figure <xref
-          format="counter" target="reference-ids-res-ext-field"/>.</t>
-
-        <figure align="center" anchor="reference-ids-res-ext-field"
-            title="Format of Reference IDs Response Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF504) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-.                                                               .
-.                  Bloom filter chunk (variable)                .
-.                                                               .
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-
-        <t>These fields MUST be supported on servers which can be synchronized
-          to other NTP servers (i.e. they can be in a synchronization loop).</t>
-      </section>
-
-      <section title="Server Information Extension Field"
-          anchor="server-information-extension-field">
-        <t>This field provides clients with information about which NTP
-          versions are supported by the server, i.e. whether it can respond to
-          requests conforming to the specific version. It contains a 16-bit
-          field with flags indicating support for NTP versions in the range of
-          1 to 16, where the least significant bit corresponds to the version
-          1. The extension field has a fixed length of 8 octets. In requests,
-          all data fields of the extension are 0.</t>
-
-        <figure align="center" anchor="server-information-ext-field"
-            title="Format of Server Information Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF505) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|    Supported NTP versions     |            Reserved           |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-
-        <t>This field MUST be supported on servers.</t>
-      </section>
-
-      <section title="Correction Extension Field" anchor="correction-extension-field">
-
-        <t>Processing and queueing delays in network switches and routers may
-          be a significant source of jitter and asymmetry in network delay,
-          which has a negative impact on accuracy and stability of clocks
-          synchronized by NTP. A solution to this problem is defined in the
-          <xref target="IEEE1588">Precision Time Protocol (PTP)</xref>, which
-          is a different protocol for synchronization of clocks in networks. In
-          PTP a special type of switch or router, called a Transparent Clock
-          (TC), updates a correction field in PTP messages to account for the
-          time messages spend in the TC. This is accomplished by timestamping
-          the message at the ingress and egress ports, taking the difference to
-          determine time in the TC and adding this to the Delay Correction.
-          Clients can account for the accumulated Delay Correction to determine
-          a more accurate clock offset and network delay.</t>
-
-        <t>The NTPv5 Delay Correction has the same format as the PTP
-          correctionField to make it easier for manufacturers of switches and
-          routers to implement NTP corrections. The format of the Correction
-          Extension Field is shown in Figure <xref format="counter"
-          target="correction-ext-field"/>.</t>
-
-        <figure align="center" anchor="correction-ext-field"
-                title="Format of Correction Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF506) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                       Origin Correction                       +
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|        Origin Path ID         |            Reserved           |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                       Delay Correction                        +
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|       Delay Path ID           |     Checksum Complement       |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-
-        <t>
-          <list style="hanging">
-            <t hangText="Field Type"><vspace/>
-               The type which identifies the Correction extension field (value
-               TBD).</t>
-
-            <t hangText="Length"><vspace/>
-               The length of the extension field, which is 28 octets.</t>
-
-            <t hangText="Origin Correction"><vspace/>
-               A field which contains a copy of the accumulated delay
-               correction from the request packet in the NTP exchange.</t>
-
-            <t hangText="Origin Path ID"><vspace/>
-               A field which contains a copy of the final path ID from the
-               request packet in the NTP exchange.</t>
-
-            <t hangText="Reserved"><vspace/>
-               16 bit reserved for future specification by the IETF.
-               Transmit with all zeros.</t>
-
-            <t hangText="Delay Correction"><vspace/>
-               A signed fixed-point number of nanoseconds with 48 integer
-               bits and 16 binary fractional bits, which represents the current
-               correction of the network delay that has accumulated for this
-               packet on the path from the source to the destination. A value
-               of one in all bits, except the most significant, of the field
-               indicates that the correction is too big to be represented.
-               The format of this field is identical to the PTP
-               correctionField.</t>
-
-            <t hangText="Path ID"><vspace/>
-               A 16-bit identification number of the path where the delay
-               correction was updated.</t>
-
-            <t hangText="Checksum Complement"><vspace/>
-               A field which can be modified in order to keep the UDP
-               checksum of the packet valid. This allows the UDP checksum
-               to be transmitted before the Correction Field is received and
-               modified. The same field is described in <xref
-               target="RFC7821">RFC 7821</xref>.</t>
-          </list>
-        </t>
-
-        <t>An NTP client with enabled support for network corrections SHOULD
-          add the Correction Extension Field to its requests, with all fields
-          of the extension field set to zero. It MUST be the last extension
-          field in the NTP message.</t>
-
-        <t>A network device forwarding packets (e.g. a switch or router) with
-          enabled support for NTP corrections MUST modify only packets which
-          meet all of the following requirements:
-
-          <list style="numbers">
-            <t>It is an IPv4 or IPv6 packet</t>
-            <t>The IP protocol number is 17 (UDP)</t>
-            <t>The UDP source port or destination port is 123 (NTP)</t>
-            <t>The NTP version is 5</t>
-            <t>The NTP message contains the Correction Extension Field</t>
-          </list>
-        </t>
-
-        <t>The network device SHOULD add the difference between the beginning of
-          the NTP message retransmission and the end of the message reception to
-          the Delay Correction value in the Correction Extension Field. Note
-          that this time difference might be negative, e.g. in a cut-through
-          switch. If the packet is transmitted at the same speed as it was
-          received and the length of the packet does not change (e.g. due to
-          adding or removing a VLAN tag), the beginning and end of the interval
-          may correspond to any point of the reception and transmission as long
-          as it is consistent for all forwarded packets of the same length. If
-          the transmission speed or length of the packet is different, the
-          beginning and end of the interval SHOULD correspond to the end of the
-          reception and beginning of the transmission respectively.</t>
-
-        <t>The receive timestamp of the ingress port and transmit timestamp of
-          the egress port MUST be from the same clock, or two clocks that are
-          synchronized to each other. The clocks do not need to be synchronized
-          to an external reference if their frequency is accurate enough for
-          the accuracy of measured NTP delay required by the application. The
-          correction field is updated before or during the transmission of the
-          message. It is a one-step end-to-end transparent clock in the PTP
-          terminology.</t>
-
-        <t>The network device SHOULD have a randomly generated 16-bit ID
-          number assigned to each of its ports. When it modifies the Correction
-          Extension Field, it SHOULD update the Path ID field of the extension
-          field by adding to it the values of the incoming and outgoing port
-          ID. The Path ID values can be used by clients to determine if the NTP
-          request and response have likely traversed the same network path.</t>
-
-        <t>If the network device modified any fields of the Correction
-          Extension Field, it MUST also update the Checksum Complement field in
-          order to keep the existing UDP checksum valid, or update the UDP
-          checksum in the UDP header itself. The network device MUST NOT modify
-          any other data in the UDP payload.</t>
-
-        <t>If an NTP server supports the Correction Extension Field and
-          receives a request which contains this extension field, it SHOULD
-          include the extension field in the response. If it is included, it
-          MUST be the last extension field in the message. It MUST copy the
-          Delay Correction and Path ID from the request to the Origin
-          Correction and Origin Path ID fields in the response respectively. It
-          SHOULD set the Delay Correction and Path ID fields of the response to
-          zero.</t>
-
-        <t>The Correction Extension Field is required to be the last extension
-          field in the message to provide an indicator at a fixed offset from
-          the ending of the message reception (which might simplify hardware
-          implementation of the correction) and to avoid being covered by the
-          Message Authentication Code Extension Field, or other
-          authenticator extension fields (e.g. Network Time Security). It is
-          the exception in the requirement specified for the Message
-          Authentication Code Extension Field. If the corrections were
-          covered by the authenticator fields, the network devices would need
-          to have access to the keys and have a significant additional
-          complexity in order to update the authenticator fields when they
-          modify the Correction Extension Field.</t>
-
-        <t>As the Correction Extension Field is not protected, NTP clients
-          MUST validate the corrections before their application as specified
-          in <xref target="measurement-modes">Measurement Modes</xref>. Clients
-          MUST ignore an unexpected Correction Extension Field in the response,
-          i.e. if it was not included in the request.</t>
-      </section>
-
-      <section title="Reference Timestamp Extension Field"
-          anchor="reference-timestamp-extension-field">
-        <t>This field contains the time of the last update of the clock. It
-          has a fixed length of 12 octets. In requests, that timestamp is always
-          0.</t>
-
-        <t>(Is this really needed? It was mostly unused in NTPv4.)</t>
-
-        <figure align="center" anchor="reference-timestamp-ext-field"
-            title="Format of Reference Timestamp Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF507) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-|                      Reference Timestamp (64)                 |
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-      </section>
-
-      <section title="Monotonic Receive Timestamp Extension Field"
-          anchor="monotonic-receive-timestamp-extension-field">
-
-        <t>When a clock is synchronized to a time source, there is a compromise
-          between time (phase) accuracy and frequency accuracy, because the
-          frequency of the clock has to be adjusted to correct time errors that
-          accumulate due to the frequency error (e.g. caused by changes in the
-          temperature of the crystal). Faster corrections of time can minimize
-          the time error, but increase the frequency error, which transfers to
-          clients using that clock as a time source and increases their
-          frequency and time errors. This issue can be avoided by transferring
-          time and frequency separately using different clocks.</t>
-
-        <t>The Monotonic Receive Timestamp Extension Field contains an extra
-          receive timestamp with a 32-bit epoch ID captured by a clock which
-          does not have corrected phase and can better transfer frequency than
-          the clock which captures the receive and transmit timestamps in the
-          header. The extension field has a constant length of 16 octets. In
-          requests, the counter and timestamp are always 0.</t>
-
-        <t>The epoch ID is a random number which is changed when
-          frequency transfer needs to be restarted, e.g. due to a step of the
-          clock.</t>
-
-        <figure align="center" anchor="monotonic-timestamp-ext-field"
-            title="Format of Monotonic Receive Timestamp Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF508) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                            Epoch ID                           |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-|                  Monotonic Receive Timestamp (64)             |
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-
-        <t>The client can determine the frequency-transfer offset from the
-          time-transfer offset and difference between the two receive
-          timestamps in the response. It can use the frequency-transfer offset
-          to better control the frequency of its clock, avoiding the frequency
-          error in the server's time-transfer clock.</t>
-
-      </section>
-
-      <section title="Secondary Receive Timestamp Extension Field"
-          anchor="secondary-receive-timestamp-extension-field">
-        <t>This extension field provides an additional receive timestamp of the
-          client request in a selected timescale. It enables the client to get
-          the same receive timestamp in different timescales in order to
-          calculate the current offset between the timescales.</t>
-
-        <t>In requests, the Timescale field selects the requested timescale.
-          The other data fields in the extension field MUST be set to 0.</t>
-
-        <t>The Timescale, Era, and Secondary Receive Timestamp fields in a
-          response have the same meaning as the Timescale, Era, and Receive
-          Timestamp fields in the header respectively.</t>
-
-        <t>If the server does not support the requested timescale, it MUST
-          ignore the extension field in the request. If the server supports the
-          timescale, but does not have a reliable timestamp (e.g. due to being
-          close to a leap second), it SHOULD set the timestamp field to 0.</t>
-
-        <t>The server MAY provide in this extension field timestamps in
-          timescales which it does not provide in the header, e.g. it can
-          provide UTC in addition to leap-smeared UTC to enable its clients to
-          measure the current smearing offset.</t>
-
-        <t>A request MAY contain multiple instances of this extension field,
-          but each timescale MUST be requested at most once, not counting the
-          timescale in the header. The server SHOULD include in its response
-          timestamps in all requested timescales it supports.</t>
-
-        <figure align="center" anchor="secondary-receive-timestamp-ext-field"
-            title="Format of Secondary Receive Timestamp Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF509) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Timescale   |      Era      |            Reserved           |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-|                Secondary Receive Timestamp (64)               |
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-      </section>
     </section>
 
-    <section title="Measurement Modes" anchor="measurement-modes">
+    <section title="Time measurements" anchor="measurements">
+      <t>The client can make measurements in the basic mode, or another mode
+        such as interleaved mode described in <xref target="interleaved-mode"/>.
+        In basic mode, the transmit and receive timestamp can be extracted 
+        immediately from the response packet.</t>
 
-      <t>At the end of an NTP message exchange, the client has access to four
-        timestamps, which it can use to estimate the clock offset and the
-        network delay, as described in <xref target="ntp-exchange-sec"/>.</t>
-
-      <t>If the Correction Extension Field is used and the corrections are
-        known for both the request and response, a corrected offset and delay
-        is calculated:
-
-        <list style="symbols">
-          <t>offset_c = offset + (Cd - Co) / 2</t>
-          <t>delay_c = delay - (Cd + Co - Drx - Dtx) * (1 - FC)|</t>
-        </list>
-
-        where
-
-        <list style="symbols">
-          <t>Co is the Origin Correction from the response to the request
-            corresponding to timestamps T1 and T2</t>
-          <t>Cd is the Delay Correction from the response corresponding to
-            timestamps T3 and T4</t>
-          <t>FC is the maximum expected frequency error of devices providing
-            the delay corrections (e.g. 100 ppm)</t>
-          <t>Drx is the time it took to receive the frame containing the
-            response corresponding to T3 and T4</t>
-          <t>Dtx is the time it took to transmit the frame containing the
-            request corresponding to T1 and T2. If unknown, it SHOULD be set to
-            Drx.</t>
-        </list>
-      </t>
-
-      <t>The corrected offset and delay MUST NOT be accepted if any of delay_c,
-        Co and Cr is negative. The uncorrected delay MUST always be used for
-        calculation of the root delay.</t>
-
-      <t>The client can make measurements in the basic mode, or interleaved
-        mode if supported on the server. In the basic mode, the transmit
-        timestamp in the server response corresponds to the message which
-        contains the timestamp itself. In the interleaved mode it corresponds
-        to a previous response identified by the server cookie. The
-        interleaved mode enables the server to provide the client with a more
-        accurate transmit timestamp which is available only after the
-        response was formed or sent.</t>
+      <t>To correlate the response to its corresponding request, the client
+        uses the client cookie, which is identical between request and 
+        response. In basic mode, the server cookie has no purpose and can be
+        safely ignored.</t>
 
       <t>An example of cookies and timestamps in an NTPv5 exchange using the
         basic mode is shown in Figure <xref format="counter"
@@ -1279,61 +721,10 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
         </list>
       </t>
 
-      <t>The NTPv4 interleaved client-server mode is described in <xref
-        target="RFC9769">RFC 9769</xref>. The difference between NTPv5 and
-        NTPv4 is that in NTPv5 the interleaved mode is enabled explicitly by a
-        flag and the previous transmit timestamp on the server is identified by
-        the server cookie instead of the receive timestamp, which avoids the
-        requirements for receive timestamps to be unique and not equal to
-        transmit timestamps. Therefore, the NTPv5 interleaved mode is easier to
-        implement. A server implementation that supports both NTPv4 and
-        NTPv5 does not need to process interleaved requests and save timestamps
-        separately for the different NTP versions. It can reuse the NTPv4
-        support in NTPv5 by setting the server cookie to the (unique) receive
-        timestamp.</t>
-
-      <t>An example of an NTPv5 exchange using the interleaved mode is shown in
-        Figure <xref format="counter" target="interleaved-exchange"></xref>.
-        The messages in the basic and interleaved mode are indicated with B and
-        I respectively. The timestamps t3' and t11' correspond to the same
-        transmissions as t3 and t11, but they may be less accurate (e.g. due to
-        being captured in software before the transmission). The first
-        exchange is in the basic mode followed by a second exchange in the
-        interleaved mode. For the third exchange, the client request is in the
-        interleaved mode, but the server response is in the basic mode, because
-        the server no longer had the timestamp t7 (e.g. it was dropped to save
-        timestamps for other clients using the interleaved mode).</t>
-
-      <figure align="center" anchor="interleaved-exchange"
-          title="Cookies and timestamps in interleaved mode">
-        <artwork><![CDATA[
-Server   t2   t3               t6   t7              t10  t11
-    -----+----+----------------+----+----------------+----+-----
-        /      \              /      \              /      \
-Client /        \            /        \            /        \
-    --+----------+----------+----------+----------+----------+--
-      t1         t4         t5         t8         t9        t12
-
-Mode: B         B           I         I           I         B
-    +----+    +----+      +----+    +----+      +----+    +----+
-SC  | 0  |    | s1 |      | s1 |    | s2 |      | s2 |    | s3 |
-CC  | c1 |    | c1 |      | c2 |    | c2 |      | c3 |    | c3 |
-Rx  | 0  |    | t2 |      | 0  |    | t6 |      | 0  |    |t10 |
-Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
-    +----+    +----+      +----+    +----+      +----+    +----+
-        ]]></artwork>
-      </figure>
-
-      <t>From the three exchanges in this example, the client would use the
-        following sets of timestamps:
-
-        <list style="symbols">
-          <t>(t1, t2, t3', t4)</t>
-          <t>(t1, t2, t3, t4) or (t5, t6, t3, t4)</t>
-          <t>(t9, t10, t11', t12)</t>
-        </list>
-      </t>
-
+      <t>At the end of each NTP request-response interaction, the client has
+        access to four timestamps, which it can use to estimate the clock
+        offset and the network delay, as described in 
+        <xref target="ntp-exchange-sec"/>.</t>
     </section>
 
     <section title="Client Operation">
@@ -1431,7 +822,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             SHOULD expand the timestamps with the provided NTP era.</t>
 
           <t>Calculates the offset, delay, and dispersion as specified in
-            <xref target="measurement-modes">Measurement Modes</xref>.</t>
+            <xref target="basic-concepts">the basic concepts</xref>.</t>
         </list>
       </t>
 
@@ -1603,29 +994,6 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       </t>
     </section>
 
-    <section title="Network Time Security with NTPv5" anchor="network-time-security">
-      <t>The <xref target="RFC8915">Network Time Security</xref> mechanism uses
-        the NTS-KE protocol to establish keys and negotiate the next protocol.
-        NTPv5 can be indicated as the next protocol with identifier [[TBD]] (draft
-        use 0x8001). This can be used by clients and servers to negotiate NTPv5
-        for an NTS session.</t>
-
-      <t>No new NTS-KE records are specified for NTPv5. The records that were
-        specified for NTPv4 (i.e. NTPv4 New Cookie, NTPv4 Server Negotiation,
-        and NTPv4 Port Negotiation) are reused for NTPv5.</t>
-
-      <t>The NTS extension fields specified for NTPv4 are compatible with
-        NTPv5. No new extension fields are specified.</t>
-
-      <t>(Note to editor: remove this paragraph before publishing.) Client
-        implementations of a draft of this specification MUST provide the
-        identity of the draft implemented as data in an NTS-KE record of type
-        0x4001, which does not have the critical bit set. The draft identity
-        MUST be encoded as ascii and MUST not contain any trailing 0 bytes.
-        Servers that implement a draft MUST not accept NTPv5 as an option
-        unless they support the specific draft version identified.</t>
-    </section>
-
     <section title="NTPv5 Negotiation in Previous NTP Versions">
       <t>Servers that support multiple versions of NTP MUST send a response in
         the same version as the request, to support backwards compatibility.
@@ -1678,6 +1046,709 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         switch to NTPv5 and back after missing a valid response.</t>
     </section>
 
+    <section title="Security for NTPv5">
+      <t>This document defines two approaches for securing NTPv5 traffic. MAC
+        authentication, based on symmetric keys shared between the server and
+        client out-of-band. And Network Time Security, which uses existing PKI
+        infrastructure to verify the identity of the server on the client.</t>
+
+      <section title="Network Time Security with NTPv5" anchor="network-time-security">
+        <t>The <xref target="RFC8915">Network Time Security</xref> mechanism uses
+          the NTS-KE protocol to establish keys and negotiate the next protocol.
+          NTPv5 can be indicated as the next protocol with identifier [[TBD]] (draft
+          use 0x8001). This can be used by clients and servers to negotiate NTPv5
+          for an NTS session.</t>
+
+        <t>No new NTS-KE records are specified for NTPv5. The records that were
+          specified for NTPv4 (i.e. NTPv4 New Cookie, NTPv4 Server Negotiation,
+          and NTPv4 Port Negotiation) are reused for NTPv5.</t>
+
+        <t>The NTS extension fields specified for NTPv4 are compatible with
+          NTPv5. No new extension fields are specified.</t>
+
+        <t>(Note to editor: remove this paragraph before publishing.) Client
+          implementations of a draft of this specification MUST provide the
+          identity of the draft implemented as data in an NTS-KE record of type
+          0x4001, which does not have the critical bit set. The draft identity
+          MUST be encoded as ascii and MUST not contain any trailing 0 bytes.
+          Servers that implement a draft MUST not accept NTPv5 as an option
+          unless they support the specific draft version identified.</t>
+      </section>
+
+      <section title="Message Authentication Code based Security"
+            anchor="mac-extension-field">
+        <t>Message Authentication Code (MAC) based security authenticates
+          the NTPv5 message with a symmetric key known to the client and server.
+          This symmetric key is used to compute a MAC for every message exchanged
+          between the client and the server. This MAC is transmitted in a
+          Message Authentication extension field.</t>
+
+        <t>The format of the Message Authentication Code Extension Field is
+          shown in Figure <xref format="counter" target="mac-ext-field"/>.</t>
+
+        <figure align="center" anchor="mac-ext-field"
+            title="Format of Messace Authentication Code Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF502) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Key ID                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+.                                                               .
+.                        MAC (variable)                         .
+.                                                               .
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>The Key ID is a 32-bit number identifying the key that was used to
+          compute the MAC stored in the MAC field. The MAC field MUST contain
+          the whole generated MAC. The length depends on the key, e.g. the
+          recommended AES-CMAC with an AES-128 key generates 128-bit MACs.</t>
+
+        <t>Implementations SHOULD support AES-CMAC as the MAC primitve, as
+          recommended in <xref target="RFC8573">RFC8573</xref>. The MAC MUST be
+          computed over the NTP header and all the extension fields (including
+          padding of fields whose length is not divisble by 4), if present,
+          located prior to
+          the Message Authentication Code Extension Field.  The extension
+          field MUST be the last extension field in the message unless an
+          extension field is specifically allowed to be placed after a MAC or
+          another authenticator field, such as the
+          <xref target="correction-extension-field">Correction Extension
+          Field</xref>.</t>
+
+        <t>If a server receives a client request that contains the Message
+          Authentication Code Extension Field and the MAC is valid, the
+          response, if there is one, MUST include the Message Authentication
+          Code Extension Field using the same key as was used in the request.
+          If the MAC in the request is not valid, or the key is unknown, the
+          server MUST either drop the request, or respond with a message that
+          does not contain the Message Authentication Code Extension Field and
+          has the Authentication NAK flag set in the header.</t>
+
+        <t>A client configured to use a symmetric key for a given server MUST
+          add the Message Authentication Code Extension Field to all requests
+          sent to the server. The client MUST accept for synchronization only
+          responses that contains a valid MAC using the expected key and the
+          MAC is at the expected location in the message (normally the last
+          extension field).</t>
+
+        <t>Each client/server pair SHOULD be configured with a different
+          symmetric key to prevent other clients and servers from performing
+          on-path attacks on the client.</t>
+      </section>
+    </section>
+
+    <section title="NTPv5 extensions mandatory for servers">
+      <t>In addition to the basic functioning of the protocol described above,
+        NTPv5 capable servers SHALL also implement these extensions. Pure
+        clients implementations MAY choose to ignore these extensions</t>
+
+      <section title="Server Information"
+          anchor="server-information-extension-field">
+        <t>Clients can query a server for information about which NTP versions
+          are supported by the server. This is done through the Server
+          Information extension field.</t>
+
+        <t>The server information extension field contains a 16-bit field with
+          flags indicating support for NTP versions in the range of 1 to 16,
+          where the least significant bit corresponds to the version 1. The
+          extension field has a fixed length of 8 octets.</t>
+
+        <t>This field provides clients with information about which NTP
+          versions are supported by the server, i.e. whether it can respond to
+          requests conforming to the specific version. It contains a 16-bit
+          field with flags indicating support for NTP versions in the range of
+          1 to 16, where the least significant bit corresponds to the version
+          1. The extension field has a fixed length of 8 octets. In requests,
+          all data fields of the extension are 0.</t>
+
+        <figure align="center" anchor="server-information-ext-field"
+            title="Format of Server Information Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF505) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    Supported NTP versions     |            Reserved           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>A client requests a servers supported information by including a
+          Server Information Extension Field in the request. It SHOULD set
+          all data fields of the extension to 0.</t>
+        
+        <t>When receiving a request with a Server Information Extension Field,
+          a server MUST include a Server Information Extension Field in any
+          successful response to the request. In the response, the server SHALL
+          set the bit of corresponding to an NTP version if and only if it
+          is able to handle requests for the NTP version in question.</t>
+
+        <t>Support for the Server Information Extension Field is mandatory
+          on NTPv5 servers</t>
+      </section>
+
+      <section title="Synchronization loop detection"
+          anchor="reference-ids-extension-fields">
+        <t>To facilitate synchronization loop detection, each NTPv5 server 
+          has a randomly generated 120-bit reference ID. Sets of these IDs 
+          are exchanged between server and client in order to detect 
+          synchronizations loops, that is, situations in which a server 
+          directly or indirectly uses itself as a source for its time.</t>
+
+        <t>As each client can be synchronized to an unlimited number of
+          servers (and there can be up to 15 strata of servers), the reference
+          IDs are exchanged as a <xref target="Bloom">Bloom filter</xref>
+          instead of a list to limit the amount of data that needs to be
+          exchanged.</t>
+
+        <t>The Bloom filter is an array of 4096 bits. When empty, all bits are
+          zero. To add a reference ID to the filter, the 120-bit value of the
+          reference ID is split into 10 12-bit values and the bits of the array
+          at the 10 positions given by the 12-bit values are set to one.</t>
+
+        <t>A server maintains a copy of the filter for each server it acquires
+          time from. The filter provided by the server to clients is the
+          union of the filters (using the bitwise OR operation) of the server's
+          sources selected for synchronization and the server's own reference
+          ID.</t>
+
+        <t>If the server uses a previous version of NTP for some of its
+          sources, the reference IDs added to the filter are generated from
+          their IP addresses as the first 120 bits of the
+          <xref target="RFC1321">MD5</xref> sum of the address in network
+          order. If the server uses a reference clock, the reference ID is the
+          first 120 bits of the MD5 sum of the 4-octet zero-padded ASCII
+          string from the NTP Reference Identifier Codes registry maintained by
+          IANA, or a string beginning with the uppercase letter X, which are
+          reserved for private and experimental use.</t>
+
+        <t>A client checking whether the server's set of reference IDs contains
+          the client's own reference ID checks whether the bits at the 10
+          positions corresponding to the 12-bit values from the reference ID
+          are all set to one.</t>
+
+        <t>When a client that also serves time to other clients as an NTPv5
+          server detects its reference ID in a server's set of reference IDs,
+          it SHOULD assume it is in a synchronization loop, and stop using
+          that server for synchronization. When the client's reference ID is
+          no longer detected in the server's filter, it SHOULD wait for a
+          random number of polling intervals (e.g. between 0 and 4) before
+          selecting the server again. The random delay helps with stabilization
+          of the selection in longer loops. If a recurring loop is detected,
+          it is recommended to increase the random delay in order to avoid
+          livelock scenarios.</t>
+
+        <t>False positives are possible. The probability of a collision grows
+          with the number of reference IDs in the filter. With 26 reference IDs
+          it is about 1e-12. With 118 IDs it is about 1e-6. The client MAY avoid
+          selecting a server which has too many bits set in the filter (e.g.
+          more than half) to reduce the probability of the collision for its
+          own clients. A client which detected a synchronization loop MAY
+          change its own reference ID to limit the duration of the potential
+          collision.</t>
+
+        <t>Bloom filters are free from false negatives. However, there is a
+          transient period between the addition of a reference ID to a server's
+          Bloom filter and the propagation of this information through a chain
+          of clients. During this period, the new reference ID may not be
+          detected, potentially causing a temporary synchronization loop. For
+          instance, if two servers inquire each other about the list of
+          reference IDs roughly at the same time, neither will detect its
+          reference ID in the other's Bloom filter, resulting in a temporary
+          loop.</t>
+
+        <t>Generally, when a server updates the Bloom filter it distributes to
+          clients, temporary synchronization loops might occur before
+          converging to an acyclic distribution tree.</t>
+
+        <t>The filter can be exchanged as a single 512-octet array, or it can
+          be exchanged in smaller chunks over multiple NTP messages, making
+          them shorter, but delaying the detection of the synchronization
+          loop.</t>
+
+        <t>The request extension field specifies the offset of the requested
+          chunk in the filter as a number of octets. The requested length of
+          the chunk is given by the length of data in the request extension
+          field. The response extension field MUST have the same length as the
+          request extension field. If the request contains an invalid offset
+          for the length, i.e. it is larger than 512 minus length of data in
+          the extension field, the extension field MUST be ignored.</t>
+
+        <t>When a filter is sent to a client in multiple chunks, the server
+          might update the Bloom filter to a new value after some chunks have
+          been sent. This can cause the subsequent chunks to be inconsistent
+          with the previously sent ones. The partially updated Bloom filter
+          might cause false negative or false positive detections. This
+          transient issue is resolved once the server completes sending the
+          updated Bloom filter.</t>
+
+        <t>The client SHOULD use requests of a constant length for the
+          association to avoid adding a variation to the measured NTP
+          delay.</t>
+
+        <t>The format of the Reference IDs Request is shown in Figure <xref
+          format="counter" target="reference-ids-req-ext-field"/>.</t>
+
+        <figure align="center" anchor="reference-ids-req-ext-field"
+            title="Format of Reference IDs Request Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF503) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|            Offset             |                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
+.                                                               .
+.                        Padding (variable)                     .
+.                                                               .
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>The format of the Reference IDs Response is shown in Figure <xref
+          format="counter" target="reference-ids-res-ext-field"/>.</t>
+
+        <figure align="center" anchor="reference-ids-res-ext-field"
+            title="Format of Reference IDs Response Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF504) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+.                                                               .
+.                  Bloom filter chunk (variable)                .
+.                                                               .
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>These fields MUST be supported on servers which can be synchronized
+          to other NTP servers (i.e. they can be in a synchronization loop).</t>
+      </section>
+    </section>
+
+    <section title="Optional extensions to NTPv5">
+      <t>The following features are optional for both clients and servers.
+        Implementations MAY choose to ignore these features.</t>
+
+      <section title="Interleaved mode" anchor="interleaved-mode">
+        <t>Interleaved mode is an alternate measurement mode that allows the server
+          to provide a more precise send timestamp on the response. It achieves
+          this by sending the transmit timestamp in the response to the next
+          request instead of immediately.</t>
+
+        <t>Servers capable of interleaved mode SHALL provide a cookie value in every
+          response in the server cookie field. This cookie can be used by the client
+          to request the precise transmit timestamp for the response by sending a
+          subsequent request with the Interleaved mode flag enabled and the server
+          cookie copied from the response.</t>
+        
+        <t>The server, on receiving a request with the interleaved mode flag enabled,
+          checks whether it still has the precise transmit timestamp for the response
+          indicated by the cookie. If it has that timestamp, it SHALL enable the
+          interleaved mode flag in the response, and the transmit timestamp in the
+          response SHALL be the precise transmit timestamp of the response referenced
+          by the server cookie in the request, instead of the transmit timestamp 
+          of the current response. If the server no longer has the precise transmit
+          timestamp for the requested response, it SHALL leave the interleaved mode
+          flag unset and the transmit timestamp SHALL be an estimate for when the
+          current response is sent.</t>
+
+        <t>Note that the above process has some differences to the interleaved
+          client-server mode specified for NTPv4 in <xref target="RFC9769">RFC 9769</xref>.
+          The difference between NTPv5 and NTPv4 is that in NTPv5 the interleaved mode
+          is enabled explicitly by a flag and the previous transmit timestamp on the
+          server is identified by the server cookie instead of the receive timestamp,
+          which avoids the requirements for receive timestamps to be unique and not 
+          equal to transmit timestamps. Therefore, the NTPv5 interleaved mode is
+          easier to implement. A server implementation that supports both NTPv4 and
+          NTPv5 does not need to process interleaved requests and save timestamps
+          separately for the different NTP versions. It can reuse the NTPv4
+          support in NTPv5 by setting the server cookie to the (unique) receive
+          timestamp.</t>
+
+        <t>An example of an NTPv5 exchange using the interleaved mode is shown in
+          Figure <xref format="counter" target="interleaved-exchange"></xref>.
+          The messages in the basic and interleaved mode are indicated with B and
+          I respectively. The timestamps t3' and t11' correspond to the same
+          transmissions as t3 and t11, but they may be less accurate (e.g. due to
+          being captured in software before the transmission). The first
+          exchange is in the basic mode followed by a second exchange in the
+          interleaved mode. For the third exchange, the client request is in the
+          interleaved mode, but the server response is in the basic mode, because
+          the server no longer had the timestamp t7 (e.g. it was dropped to save
+          timestamps for other clients using the interleaved mode).</t>
+
+        <figure align="center" anchor="interleaved-exchange"
+            title="Cookies and timestamps in interleaved mode">
+          <artwork><![CDATA[
+  Server   t2   t3               t6   t7              t10  t11
+      -----+----+----------------+----+----------------+----+-----
+          /      \              /      \              /      \
+  Client /        \            /        \            /        \
+      --+----------+----------+----------+----------+----------+--
+        t1         t4         t5         t8         t9        t12
+
+  Mode: B         B           I         I           I         B
+      +----+    +----+      +----+    +----+      +----+    +----+
+  SC  | 0  |    | s1 |      | s1 |    | s2 |      | s2 |    | s3 |
+  CC  | c1 |    | c1 |      | c2 |    | c2 |      | c3 |    | c3 |
+  Rx  | 0  |    | t2 |      | 0  |    | t6 |      | 0  |    |t10 |
+  Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
+      +----+    +----+      +----+    +----+      +----+    +----+
+          ]]></artwork>
+        </figure>
+
+        <t>From the three exchanges in this example, the client would use the
+          following sets of timestamps:
+
+          <list style="symbols">
+            <t>(t1, t2, t3', t4)</t>
+            <t>(t1, t2, t3, t4) or (t5, t6, t3, t4)</t>
+            <t>(t9, t10, t11', t12)</t>
+          </list>
+        </t>
+      </section>
+
+      <section title="Switching delay correction" anchor="correction-extension-field">
+        <t>Processing and queueing delays in network switches and routers may
+          be a significant source of jitter and asymmetry in network delay,
+          which has a negative impact on accuracy and stability of clocks
+          synchronized by NTP. A solution to this problem is defined in the
+          <xref target="IEEE1588">Precision Time Protocol (PTP)</xref>, which
+          is a different protocol for synchronization of clocks in networks. In
+          PTP a special type of switch or router, called a Transparent Clock
+          (TC), updates a correction field in PTP messages to account for the
+          time messages spend in the TC. This is accomplished by timestamping
+          the message at the ingress and egress ports, taking the difference to
+          determine time in the TC and adding this to the Delay Correction.
+          Clients can account for the accumulated Delay Correction to determine
+          a more accurate clock offset and network delay.</t>
+
+        <t>The NTPv5 Delay Correction has the same format as the PTP
+          correctionField to make it easier for manufacturers of switches and
+          routers to implement NTP corrections. The format of the Correction
+          Extension Field is shown in Figure <xref format="counter"
+          target="correction-ext-field"/>.</t>
+
+        <figure align="center" anchor="correction-ext-field"
+                title="Format of Correction Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF506) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                       Origin Correction                       +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Origin Path ID         |            Reserved           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                       Delay Correction                        +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       Delay Path ID           |     Checksum Complement       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>
+          <list style="hanging">
+            <t hangText="Field Type"><vspace/>
+               The type which identifies the Correction extension field (value
+               TBD).</t>
+
+            <t hangText="Length"><vspace/>
+               The length of the extension field, which is 28 octets.</t>
+
+            <t hangText="Origin Correction"><vspace/>
+               A field which contains a copy of the accumulated delay
+               correction from the request packet in the NTP exchange.</t>
+
+            <t hangText="Origin Path ID"><vspace/>
+               A field which contains a copy of the final path ID from the
+               request packet in the NTP exchange.</t>
+
+            <t hangText="Reserved"><vspace/>
+               16 bit reserved for future specification by the IETF.
+               Transmit with all zeros.</t>
+
+            <t hangText="Delay Correction"><vspace/>
+               A signed fixed-point number of nanoseconds with 48 integer
+               bits and 16 binary fractional bits, which represents the current
+               correction of the network delay that has accumulated for this
+               packet on the path from the source to the destination. A value
+               of one in all bits, except the most significant, of the field
+               indicates that the correction is too big to be represented.
+               The format of this field is identical to the PTP
+               correctionField.</t>
+
+            <t hangText="Path ID"><vspace/>
+               A 16-bit identification number of the path where the delay
+               correction was updated.</t>
+
+            <t hangText="Checksum Complement"><vspace/>
+               A field which can be modified in order to keep the UDP
+               checksum of the packet valid. This allows the UDP checksum
+               to be transmitted before the Correction Field is received and
+               modified. The same field is described in <xref
+               target="RFC7821">RFC 7821</xref>.</t>
+          </list>
+        </t>
+
+        <t>An NTP client with enabled support for network corrections SHOULD
+          add the Correction Extension Field to its requests, with all fields
+          of the extension field set to zero. It MUST be the last extension
+          field in the NTP message.</t>
+
+        <t>A network device forwarding packets (e.g. a switch or router) with
+          enabled support for NTP corrections MUST modify only packets which
+          meet all of the following requirements:
+
+          <list style="numbers">
+            <t>It is an IPv4 or IPv6 packet</t>
+            <t>The IP protocol number is 17 (UDP)</t>
+            <t>The UDP source port or destination port is 123 (NTP)</t>
+            <t>The NTP version is 5</t>
+            <t>The NTP message contains the Correction Extension Field</t>
+          </list>
+        </t>
+
+        <t>The network device SHOULD add the difference between the beginning of
+          the NTP message retransmission and the end of the message reception to
+          the Delay Correction value in the Correction Extension Field. Note
+          that this time difference might be negative, e.g. in a cut-through
+          switch. If the packet is transmitted at the same speed as it was
+          received and the length of the packet does not change (e.g. due to
+          adding or removing a VLAN tag), the beginning and end of the interval
+          may correspond to any point of the reception and transmission as long
+          as it is consistent for all forwarded packets of the same length. If
+          the transmission speed or length of the packet is different, the
+          beginning and end of the interval SHOULD correspond to the end of the
+          reception and beginning of the transmission respectively.</t>
+
+        <t>The receive timestamp of the ingress port and transmit timestamp of
+          the egress port MUST be from the same clock, or two clocks that are
+          synchronized to each other. The clocks do not need to be synchronized
+          to an external reference if their frequency is accurate enough for
+          the accuracy of measured NTP delay required by the application. The
+          correction field is updated before or during the transmission of the
+          message. It is a one-step end-to-end transparent clock in the PTP
+          terminology.</t>
+
+        <t>The network device SHOULD have a randomly generated 16-bit ID
+          number assigned to each of its ports. When it modifies the Correction
+          Extension Field, it SHOULD update the Path ID field of the extension
+          field by adding to it the values of the incoming and outgoing port
+          ID. The Path ID values can be used by clients to determine if the NTP
+          request and response have likely traversed the same network path.</t>
+
+        <t>If the network device modified any fields of the Correction
+          Extension Field, it MUST also update the Checksum Complement field in
+          order to keep the existing UDP checksum valid, or update the UDP
+          checksum in the UDP header itself. The network device MUST NOT modify
+          any other data in the UDP payload.</t>
+
+        <t>If an NTP server supports the Correction Extension Field and
+          receives a request which contains this extension field, it SHOULD
+          include the extension field in the response. If it is included, it
+          MUST be the last extension field in the message. It MUST copy the
+          Delay Correction and Path ID from the request to the Origin
+          Correction and Origin Path ID fields in the response respectively. It
+          SHOULD set the Delay Correction and Path ID fields of the response to
+          zero.</t>
+
+        <t>The Correction Extension Field is required to be the last extension
+          field in the message to provide an indicator at a fixed offset from
+          the ending of the message reception (which might simplify hardware
+          implementation of the correction) and to avoid being covered by the
+          Message Authentication Code Extension Field, or other
+          authenticator extension fields (e.g. Network Time Security). It is
+          the exception in the requirement specified for the Message
+          Authentication Code Extension Field. If the corrections were
+          covered by the authenticator fields, the network devices would need
+          to have access to the keys and have a significant additional
+          complexity in order to update the authenticator fields when they
+          modify the Correction Extension Field.</t>
+
+        <t>As the Correction Extension Field is not protected, NTP clients
+          MUST validate the corrections before their application as specified
+          below. Clients
+          MUST ignore an unexpected Correction Extension Field in the response,
+          i.e. if it was not included in the request.</t>
+
+        <t>If the Correction Extension Field is used and the corrections are
+          known for both the request and response, a corrected offset and delay
+          is calculated:
+
+          <list style="symbols">
+            <t>offset_c = offset + (Cd - Co) / 2</t>
+            <t>delay_c = delay - (Cd + Co - Drx - Dtx) * (1 - FC)|</t>
+          </list>
+
+          where
+
+          <list style="symbols">
+            <t>Co is the Origin Correction from the response to the request
+              corresponding to timestamps T1 and T2</t>
+            <t>Cd is the Delay Correction from the response corresponding to
+              timestamps T3 and T4</t>
+            <t>FC is the maximum expected frequency error of devices providing
+              the delay corrections (e.g. 100 ppm)</t>
+            <t>Drx is the time it took to receive the frame containing the
+              response corresponding to T3 and T4</t>
+            <t>Dtx is the time it took to transmit the frame containing the
+              request corresponding to T1 and T2. If unknown, it SHOULD be set to
+              Drx.</t>
+          </list>
+        </t>
+
+        <t>The corrected offset and delay MUST NOT be accepted if any of delay_c,
+          Co and Cr is negative. The uncorrected delay MUST always be used for
+          calculation of the root delay.</t>
+      </section>
+
+      <section title="Reference Timestamp"
+          anchor="reference-timestamp-extension-field">
+        <t>The Reference Timestamp Extension Field provides a means for the
+          client to request the time of the last update to the servers clock.
+          To do this, the client includes the Reference Timestamp Extension
+          field in the request with a timestamp of 0.</t>
+        
+        <t>A server supporting this option SHALL, when receiving a request
+          with the Reference Timestamp Extension Field, include a Reference
+          Timestamp Extension Field in the response, with the timestamp field
+          set to the time of the last update of the servers clock.</t>
+        
+        <t>The Reference Timestamp Extension Field structure is shown below. It
+          has a fixed length of 12 octest.</t>
+
+        <t>(Is this really needed? It was mostly unused in NTPv4.)</t>
+
+        <figure align="center" anchor="reference-timestamp-ext-field"
+            title="Format of Reference Timestamp Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF507) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+|                      Reference Timestamp (64)                 |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+      </section>
+
+      <section title="Monotonic Receive Timestamp"
+          anchor="monotonic-receive-timestamp-extension-field">
+
+        <t>When a clock is synchronized to a time source, there is a compromise
+          between time (phase) accuracy and frequency accuracy, because the
+          frequency of the clock has to be adjusted to correct time errors that
+          accumulate due to the frequency error (e.g. caused by changes in the
+          temperature of the crystal). Faster corrections of time can minimize
+          the time error, but increase the frequency error, which transfers to
+          clients using that clock as a time source and increases their
+          frequency and time errors. This issue can be avoided by transferring
+          time and frequency separately using different clocks.</t>
+
+        <t>The Monotonic Receive Timestamp Extension Field contains an extra
+          receive timestamp with a 32-bit epoch ID captured by a clock which
+          does not have corrected phase and can better transfer frequency than
+          the clock which captures the receive and transmit timestamps in the
+          header. The extension field has a constant length of 16 octets. In
+          requests, the counter and timestamp are always 0.</t>
+
+        <t>The epoch ID is a random number which is changed when
+          frequency transfer needs to be restarted, e.g. due to a step of the
+          clock.</t>
+
+        <figure align="center" anchor="monotonic-timestamp-ext-field"
+            title="Format of Monotonic Receive Timestamp Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF508) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Epoch ID                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+|                  Monotonic Receive Timestamp (64)             |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>The client can determine the frequency-transfer offset from the
+          time-transfer offset and difference between the two receive
+          timestamps in the response. It can use the frequency-transfer offset
+          to better control the frequency of its clock, avoiding the frequency
+          error in the server's time-transfer clock.</t>
+
+      </section>
+
+      <section title="Receive Timestamps in alternate timescales"
+          anchor="secondary-receive-timestamp-extension-field">
+        <t>The Secondary Receive Timestamp Extension Field provides 
+          an additional receive timestamp of the
+          client request in a selected timescale. It enables the client to get
+          the same receive timestamp in different timescales in order to
+          calculate the current offset between the timescales.</t>
+
+        <t>In requests, the Timescale field selects the requested timescale.
+          The other data fields in the extension field MUST be set to 0.</t>
+
+        <t>The Timescale, Era, and Secondary Receive Timestamp fields in a
+          response have the same meaning as the Timescale, Era, and Receive
+          Timestamp fields in the header respectively.</t>
+
+        <t>If the server does not support the requested timescale, it MUST
+          ignore the extension field in the request. If the server supports the
+          timescale, but does not have a reliable timestamp (e.g. due to being
+          close to a leap second), it SHOULD set the timestamp field to 0.</t>
+
+        <t>The server MAY provide in this extension field timestamps in
+          timescales which it does not provide in the header, e.g. it can
+          provide UTC in addition to leap-smeared UTC to enable its clients to
+          measure the current smearing offset.</t>
+
+        <t>A request MAY contain multiple instances of this extension field,
+          but each timescale MUST be requested at most once, not counting the
+          timescale in the header. The server SHOULD include in its response
+          timestamps in all requested timescales it supports.</t>
+
+        <figure align="center" anchor="secondary-receive-timestamp-ext-field"
+            title="Format of Secondary Receive Timestamp Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF509) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Timescale   |      Era      |            Reserved           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+|                Secondary Receive Timestamp (64)               |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+      </section>
+    </section>
+
     <section anchor="IANA" title="IANA Considerations">
       <t>IANA is requested to allocate the following entries in the <xref
         target="RFC9748">NTP Extension Field Types Registry</xref>:</t>
@@ -1696,17 +1767,17 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         <c><xref target="mac-extension-field">[[this memo]]</xref></c>
 
         <c>[[TBD]]</c>
+        <c>Server Information</c>
+        <c><xref target="server-information-extension-field">
+          [[this memo]]</xref></c>
+
+        <c>[[TBD]]</c>
         <c>Reference IDs Request</c>
         <c><xref target="reference-ids-extension-fields">[[this memo]]</xref></c>
 
         <c>[[TBD]]</c>
         <c>Reference IDs Response</c>
         <c><xref target="reference-ids-extension-fields">[[this memo]]</xref></c>
-
-        <c>[[TBD]]</c>
-        <c>Server Information</c>
-        <c><xref target="server-information-extension-field">
-          [[this memo]]</xref></c>
 
         <c>[[TBD]]</c>
         <c>Correction</c>
@@ -1806,7 +1877,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         Extension Field are not authenticated. On-path attackers can
         modify the correction values. In order to mitigate such attacks, the
         client validates the correction values as described in <xref
-        target="measurement-modes"/>. Thus, only corrections smaller than the
+        target="correction-extension-field"/>. Thus, only corrections smaller than the
         measured delay are accepted by clients. The security impact is
         comparable to the impact of delaying unmodified NTP messages, as
         described above.</t>
