@@ -676,53 +676,6 @@
 
         <t>This field MUST be supported on servers.</t>
       </section>
-
-      <section title="Secondary Receive Timestamp Extension Field"
-          anchor="secondary-receive-timestamp-extension-field">
-        <t>This extension field provides an additional receive timestamp of the
-          client request in a selected timescale. It enables the client to get
-          the same receive timestamp in different timescales in order to
-          calculate the current offset between the timescales.</t>
-
-        <t>In requests, the Timescale field selects the requested timescale.
-          The other data fields in the extension field MUST be set to 0.</t>
-
-        <t>The Timescale, Era, and Secondary Receive Timestamp fields in a
-          response have the same meaning as the Timescale, Era, and Receive
-          Timestamp fields in the header respectively.</t>
-
-        <t>If the server does not support the requested timescale, it MUST
-          ignore the extension field in the request. If the server supports the
-          timescale, but does not have a reliable timestamp (e.g. due to being
-          close to a leap second), it SHOULD set the timestamp field to 0.</t>
-
-        <t>The server MAY provide in this extension field timestamps in
-          timescales which it does not provide in the header, e.g. it can
-          provide UTC in addition to leap-smeared UTC to enable its clients to
-          measure the current smearing offset.</t>
-
-        <t>A request MAY contain multiple instances of this extension field,
-          but each timescale MUST be requested at most once, not counting the
-          timescale in the header. The server SHOULD include in its response
-          timestamps in all requested timescales it supports.</t>
-
-        <figure align="center" anchor="secondary-receive-timestamp-ext-field"
-            title="Format of Secondary Receive Timestamp Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF509) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Timescale   |      Era      |            Reserved           |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-|                Secondary Receive Timestamp (64)               |
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-      </section>
     </section>
 
     <section title="Measurement Modes" anchor="measurement-modes">
@@ -1693,6 +1646,53 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
           to better control the frequency of its clock, avoiding the frequency
           error in the server's time-transfer clock.</t>
 
+      </section>
+
+      <section title="Secondary Receive Timestamp Extension Field"
+          anchor="secondary-receive-timestamp-extension-field">
+        <t>This extension field provides an additional receive timestamp of the
+          client request in a selected timescale. It enables the client to get
+          the same receive timestamp in different timescales in order to
+          calculate the current offset between the timescales.</t>
+
+        <t>In requests, the Timescale field selects the requested timescale.
+          The other data fields in the extension field MUST be set to 0.</t>
+
+        <t>The Timescale, Era, and Secondary Receive Timestamp fields in a
+          response have the same meaning as the Timescale, Era, and Receive
+          Timestamp fields in the header respectively.</t>
+
+        <t>If the server does not support the requested timescale, it MUST
+          ignore the extension field in the request. If the server supports the
+          timescale, but does not have a reliable timestamp (e.g. due to being
+          close to a leap second), it SHOULD set the timestamp field to 0.</t>
+
+        <t>The server MAY provide in this extension field timestamps in
+          timescales which it does not provide in the header, e.g. it can
+          provide UTC in addition to leap-smeared UTC to enable its clients to
+          measure the current smearing offset.</t>
+
+        <t>A request MAY contain multiple instances of this extension field,
+          but each timescale MUST be requested at most once, not counting the
+          timescale in the header. The server SHOULD include in its response
+          timestamps in all requested timescales it supports.</t>
+
+        <figure align="center" anchor="secondary-receive-timestamp-ext-field"
+            title="Format of Secondary Receive Timestamp Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF509) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Timescale   |      Era      |            Reserved           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+|                Secondary Receive Timestamp (64)               |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
       </section>
     </section>
 
