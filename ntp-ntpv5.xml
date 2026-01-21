@@ -1147,8 +1147,17 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
         NTPv5 capable servers SHALL also implement these extensions. Pure
         clients implementations MAY choose to ignore these extensions</t>
 
-      <section title="Server Information Extension Field"
+      <section title="Server Information"
           anchor="server-information-extension-field">
+        <t>Clients can query a server for information about which NTP versions
+          are supported by the server. This is done through the Server
+          Information extension field.</t>
+
+        <t>The server information extension field contains a 16-bit field with
+          flags indicating support for NTP versions in the range of 1 to 16,
+          where the least significant bit corresponds to the version 1. The
+          extension field has a fixed length of 8 octets.</t>
+
         <t>This field provides clients with information about which NTP
           versions are supported by the server, i.e. whether it can respond to
           requests conforming to the specific version. It contains a 16-bit
@@ -1170,7 +1179,18 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
           ]]></artwork>
         </figure>
 
-        <t>This field MUST be supported on servers.</t>
+        <t>A client requests a servers supported information by including a
+          Server Information Extension Field in the request. It SHOULD set
+          all data fields of the extension to 0.</t>
+        
+        <t>When receiving a request with a Server Information Extension Field,
+          a server MUST include a Server Information Extension Field in any
+          successful response to the request. In the response, the server SHALL
+          set the bit of corresponding to an NTP version if and only if it
+          is able to handle requests for the NTP version in question.</t>
+
+        <t>Support for the Server Information Extension Field is mandatory
+          on NTPv5 servers</t>
       </section>
 
       <section title="Reference IDs Request and Response Extension Fields"
