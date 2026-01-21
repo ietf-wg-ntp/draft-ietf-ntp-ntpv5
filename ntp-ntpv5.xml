@@ -210,7 +210,7 @@
       </t>
     </section>
 
-    <section title="Basic Concepts">
+    <section title="Basic Concepts" anchor="basic-concepts">
       <section anchor="ntp-exchange-sec" title="The NTP Message Exchange">
         <t>An NTP client exchanges messages with one or more NTP servers;
           the client sends a request to each server and the servers send their
@@ -571,8 +571,7 @@
             0. In responses it is the server's time denoting the beginning of
             the transmission of a
             response to the client. Which response it refers to depends
-            on the selected mode (basic or interleaved). See <xref
-            target="measurement-modes">Measurement Modes</xref> for detail.</t>
+            on the selected mode (basic or interleaved).</t>
         </list>
       </t>
 
@@ -823,7 +822,7 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
             SHOULD expand the timestamps with the provided NTP era.</t>
 
           <t>Calculates the offset, delay, and dispersion as specified in
-            <xref target="measurement-modes">Measurement Modes</xref>.</t>
+            <xref target="basic-concepts">the basic concepts</xref>.</t>
         </list>
       </t>
 
@@ -1542,7 +1541,7 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
 
         <t>As the Correction Extension Field is not protected, NTP clients
           MUST validate the corrections before their application as specified
-          in <xref target="measurement-modes">Measurement Modes</xref>. Clients
+          below. Clients
           MUST ignore an unexpected Correction Extension Field in the response,
           i.e. if it was not included in the request.</t>
 
@@ -1826,7 +1825,7 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
         Extension Field are not authenticated. On-path attackers can
         modify the correction values. In order to mitigate such attacks, the
         client validates the correction values as described in <xref
-        target="measurement-modes"/>. Thus, only corrections smaller than the
+        target="correction-extension-field"/>. Thus, only corrections smaller than the
         measured delay are accepted by clients. The security impact is
         comparable to the impact of delaying unmodified NTP messages, as
         described above.</t>
