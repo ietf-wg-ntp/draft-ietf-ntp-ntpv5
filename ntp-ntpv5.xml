@@ -1618,11 +1618,20 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
           calculation of the root delay.</t>
       </section>
 
-      <section title="Reference Timestamp Extension Field"
+      <section title="Reference Timestamp"
           anchor="reference-timestamp-extension-field">
-        <t>This field contains the time of the last update of the clock. It
-          has a fixed length of 12 octets. In requests, that timestamp is always
-          0.</t>
+        <t>The Reference Timestamp Extension Field provides a means for the
+          client to request the time of the last update to the servers clock.
+          To do this, the client includes the Reference Timestamp Extension
+          field in the request with a timestamp of 0.</t>
+        
+        <t>A server supporting this option SHALL, when receiving a request
+          with the Reference Timestamp Extension Field, include a Reference
+          Timestamp Extension Field in the response, with the timestamp field
+          set to the time of the last update of the servers clock.</t>
+        
+        <t>The Reference Timestamp Extension Field structure is shown below. It
+          has a fixed length of 12 octest.</t>
 
         <t>(Is this really needed? It was mostly unused in NTPv4.)</t>
 
