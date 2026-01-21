@@ -1418,8 +1418,7 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
         </t>
       </section>
 
-      <section title="Correction Extension Field" anchor="correction-extension-field">
-
+      <section title="Switching delay correction" anchor="correction-extension-field">
         <t>Processing and queueing delays in network switches and routers may
           be a significant source of jitter and asymmetry in network delay,
           which has a negative impact on accuracy and stability of clocks
