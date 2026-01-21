@@ -677,55 +677,6 @@
         <t>This field MUST be supported on servers.</t>
       </section>
 
-      <section title="Monotonic Receive Timestamp Extension Field"
-          anchor="monotonic-receive-timestamp-extension-field">
-
-        <t>When a clock is synchronized to a time source, there is a compromise
-          between time (phase) accuracy and frequency accuracy, because the
-          frequency of the clock has to be adjusted to correct time errors that
-          accumulate due to the frequency error (e.g. caused by changes in the
-          temperature of the crystal). Faster corrections of time can minimize
-          the time error, but increase the frequency error, which transfers to
-          clients using that clock as a time source and increases their
-          frequency and time errors. This issue can be avoided by transferring
-          time and frequency separately using different clocks.</t>
-
-        <t>The Monotonic Receive Timestamp Extension Field contains an extra
-          receive timestamp with a 32-bit epoch ID captured by a clock which
-          does not have corrected phase and can better transfer frequency than
-          the clock which captures the receive and transmit timestamps in the
-          header. The extension field has a constant length of 16 octets. In
-          requests, the counter and timestamp are always 0.</t>
-
-        <t>The epoch ID is a random number which is changed when
-          frequency transfer needs to be restarted, e.g. due to a step of the
-          clock.</t>
-
-        <figure align="center" anchor="monotonic-timestamp-ext-field"
-            title="Format of Monotonic Receive Timestamp Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF508) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                            Epoch ID                           |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-|                  Monotonic Receive Timestamp (64)             |
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-
-        <t>The client can determine the frequency-transfer offset from the
-          time-transfer offset and difference between the two receive
-          timestamps in the response. It can use the frequency-transfer offset
-          to better control the frequency of its clock, avoiding the frequency
-          error in the server's time-transfer clock.</t>
-
-      </section>
-
       <section title="Secondary Receive Timestamp Extension Field"
           anchor="secondary-receive-timestamp-extension-field">
         <t>This extension field provides an additional receive timestamp of the
@@ -1693,6 +1644,55 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
           ]]></artwork>
         </figure>
+      </section>
+
+      <section title="Monotonic Receive Timestamp Extension Field"
+          anchor="monotonic-receive-timestamp-extension-field">
+
+        <t>When a clock is synchronized to a time source, there is a compromise
+          between time (phase) accuracy and frequency accuracy, because the
+          frequency of the clock has to be adjusted to correct time errors that
+          accumulate due to the frequency error (e.g. caused by changes in the
+          temperature of the crystal). Faster corrections of time can minimize
+          the time error, but increase the frequency error, which transfers to
+          clients using that clock as a time source and increases their
+          frequency and time errors. This issue can be avoided by transferring
+          time and frequency separately using different clocks.</t>
+
+        <t>The Monotonic Receive Timestamp Extension Field contains an extra
+          receive timestamp with a 32-bit epoch ID captured by a clock which
+          does not have corrected phase and can better transfer frequency than
+          the clock which captures the receive and transmit timestamps in the
+          header. The extension field has a constant length of 16 octets. In
+          requests, the counter and timestamp are always 0.</t>
+
+        <t>The epoch ID is a random number which is changed when
+          frequency transfer needs to be restarted, e.g. due to a step of the
+          clock.</t>
+
+        <figure align="center" anchor="monotonic-timestamp-ext-field"
+            title="Format of Monotonic Receive Timestamp Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF508) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Epoch ID                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+|                  Monotonic Receive Timestamp (64)             |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>The client can determine the frequency-transfer offset from the
+          time-transfer offset and difference between the two receive
+          timestamps in the response. It can use the frequency-transfer offset
+          to better control the frequency of its clock, avoiding the frequency
+          error in the server's time-transfer clock.</t>
+
       </section>
     </section>
 
