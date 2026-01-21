@@ -1678,6 +1678,27 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         switch to NTPv5 and back after missing a valid response.</t>
     </section>
 
+    <section title="Security for NTPv5">
+      <t>This document defines two approaches for securing NTPv5 traffic. MAC
+        authentication, based on symmetric keys shared between the server and
+        client out-of-band. And Network Time Security, which uses existing PKI
+        infrastructure to verify the identity of the server on the client.</t>
+
+    </section>
+
+    <section title="NTPv5 extensions mandatory for servers">
+      <t>In addition to the basic functioning of the protocol described above,
+        NTPv5 capable servers SHALL also implement these extensions. Pure
+        clients implementations MAY choose to ignore these extensions</t>
+
+    </section>
+
+    <section title="Optional extensions to NTPv5">
+      <t>The following features are optional for both clients and servers.
+        Implementations MAY choose to ignore these features.</t>
+
+    </section>
+
     <section anchor="IANA" title="IANA Considerations">
       <t>IANA is requested to allocate the following entries in the <xref
         target="RFC9748">NTP Extension Field Types Registry</xref>:</t>
