@@ -1700,9 +1700,10 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
 
       </section>
 
-      <section title="Secondary Receive Timestamp Extension Field"
+      <section title="Receive Timestamps in alternate timescales"
           anchor="secondary-receive-timestamp-extension-field">
-        <t>This extension field provides an additional receive timestamp of the
+        <t>The Secondary Receive Timestamp Extension Field provides 
+          an additional receive timestamp of the
           client request in a selected timescale. It enables the client to get
           the same receive timestamp in different timescales in order to
           calculate the current offset between the timescales.</t>
