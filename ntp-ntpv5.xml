@@ -677,32 +677,6 @@
         <t>This field MUST be supported on servers.</t>
       </section>
 
-      <section title="Server Information Extension Field"
-          anchor="server-information-extension-field">
-        <t>This field provides clients with information about which NTP
-          versions are supported by the server, i.e. whether it can respond to
-          requests conforming to the specific version. It contains a 16-bit
-          field with flags indicating support for NTP versions in the range of
-          1 to 16, where the least significant bit corresponds to the version
-          1. The extension field has a fixed length of 8 octets. In requests,
-          all data fields of the extension are 0.</t>
-
-        <figure align="center" anchor="server-information-ext-field"
-            title="Format of Server Information Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF505) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|    Supported NTP versions     |            Reserved           |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-
-        <t>This field MUST be supported on servers.</t>
-      </section>
-
       <section title="Correction Extension Field" anchor="correction-extension-field">
 
         <t>Processing and queueing delays in network switches and routers may
@@ -1546,6 +1520,32 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       <t>In addition to the basic functioning of the protocol described above,
         NTPv5 capable servers SHALL also implement these extensions. Pure
         clients implementations MAY choose to ignore these extensions</t>
+
+      <section title="Server Information Extension Field"
+          anchor="server-information-extension-field">
+        <t>This field provides clients with information about which NTP
+          versions are supported by the server, i.e. whether it can respond to
+          requests conforming to the specific version. It contains a 16-bit
+          field with flags indicating support for NTP versions in the range of
+          1 to 16, where the least significant bit corresponds to the version
+          1. The extension field has a fixed length of 8 octets. In requests,
+          all data fields of the extension are 0.</t>
+
+        <figure align="center" anchor="server-information-ext-field"
+            title="Format of Server Information Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF505) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    Supported NTP versions     |            Reserved           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>This field MUST be supported on servers.</t>
+      </section>
 
       <section title="Reference IDs Request and Response Extension Fields"
           anchor="reference-ids-extension-fields">
