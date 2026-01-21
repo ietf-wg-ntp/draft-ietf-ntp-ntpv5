@@ -1651,7 +1651,7 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
         </figure>
       </section>
 
-      <section title="Monotonic Receive Timestamp Extension Field"
+      <section title="Monotonic Receive Timestamp"
           anchor="monotonic-receive-timestamp-extension-field">
 
         <t>When a clock is synchronized to a time source, there is a compromise
