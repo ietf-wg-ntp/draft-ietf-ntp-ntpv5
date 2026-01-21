@@ -677,149 +677,6 @@
         <t>This field MUST be supported on servers.</t>
       </section>
 
-      <section title="Reference IDs Request and Response Extension Fields"
-          anchor="reference-ids-extension-fields">
-        <t>Each NTPv5 server has a randomly generated 120-bit reference ID
-          (it will be split into 10 12-bit values). The
-          extension fields described in this section are used to exchange sets
-          of reference IDs in order to detect synchronization loops, i.e. when
-          a client is synchronizing (directly or indirectly) to one of its own
-          clients, or more generally detect presence of a specific time
-          source in the synchronization chain.</t>
-
-        <t>As each client can be synchronized to an unlimited number of
-          servers (and there can be up to 15 strata of servers), the reference
-          IDs are exchanged as a <xref target="Bloom">Bloom filter</xref>
-          instead of a list to limit the amount of data that needs to be
-          exchanged.</t>
-
-        <t>The Bloom filter is an array of 4096 bits. When empty, all bits are
-          zero. To add a reference ID to the filter, the 120-bit value of the
-          reference ID is split into 10 12-bit values and the bits of the array
-          at the 10 positions given by the 12-bit values are set to one.</t>
-
-        <t>A server maintains a copy of the filter for each server it acquires
-          time from. The filter provided by the server to clients is the
-          union of the filters (using the bitwise OR operation) of the server's
-          sources selected for synchronization and the server's own reference
-          ID.</t>
-
-        <t>If the server uses a previous version of NTP for some of its
-          sources, the reference IDs added to the filter are generated from
-          their IP addresses as the first 120 bits of the
-          <xref target="RFC1321">MD5</xref> sum of the address in network
-          order. If the server uses a reference clock, the reference ID is the
-          first 120 bits of the MD5 sum of the 4-octet zero-padded ASCII
-          string from the NTP Reference Identifier Codes registry maintained by
-          IANA, or a string beginning with the uppercase letter X, which are
-          reserved for private and experimental use.</t>
-
-        <t>A client checking whether the server's set of reference IDs contains
-          the client's own reference ID checks whether the bits at the 10
-          positions corresponding to the 12-bit values from the reference ID
-          are all set to one.</t>
-
-        <t>When a client that also serves time to other clients as an NTPv5
-          server detects its reference ID in a server's set of reference IDs,
-          it SHOULD assume it is in a synchronization loop, and stop using
-          that server for synchronization. When the client's reference ID is
-          no longer detected in the server's filter, it SHOULD wait for a
-          random number of polling intervals (e.g. between 0 and 4) before
-          selecting the server again. The random delay helps with stabilization
-          of the selection in longer loops. If a recurring loop is detected,
-          it is recommended to increase the random delay in order to avoid
-          livelock scenarios.</t>
-
-        <t>False positives are possible. The probability of a collision grows
-          with the number of reference IDs in the filter. With 26 reference IDs
-          it is about 1e-12. With 118 IDs it is about 1e-6. The client MAY avoid
-          selecting a server which has too many bits set in the filter (e.g.
-          more than half) to reduce the probability of the collision for its
-          own clients. A client which detected a synchronization loop MAY
-          change its own reference ID to limit the duration of the potential
-          collision.</t>
-
-        <t>Bloom filters are free from false negatives. However, there is a
-          transient period between the addition of a reference ID to a server's
-          Bloom filter and the propagation of this information through a chain
-          of clients. During this period, the new reference ID may not be
-          detected, potentially causing a temporary synchronization loop. For
-          instance, if two servers inquire each other about the list of
-          reference IDs roughly at the same time, neither will detect its
-          reference ID in the other's Bloom filter, resulting in a temporary
-          loop.</t>
-
-        <t>Generally, when a server updates the Bloom filter it distributes to
-          clients, temporary synchronization loops might occur before
-          converging to an acyclic distribution tree.</t>
-
-        <t>The filter can be exchanged as a single 512-octet array, or it can
-          be exchanged in smaller chunks over multiple NTP messages, making
-          them shorter, but delaying the detection of the synchronization
-          loop.</t>
-
-        <t>The request extension field specifies the offset of the requested
-          chunk in the filter as a number of octets. The requested length of
-          the chunk is given by the length of data in the request extension
-          field. The response extension field MUST have the same length as the
-          request extension field. If the request contains an invalid offset
-          for the length, i.e. it is larger than 512 minus length of data in
-          the extension field, the extension field MUST be ignored.</t>
-
-        <t>When a filter is sent to a client in multiple chunks, the server
-          might update the Bloom filter to a new value after some chunks have
-          been sent. This can cause the subsequent chunks to be inconsistent
-          with the previously sent ones. The partially updated Bloom filter
-          might cause false negative or false positive detections. This
-          transient issue is resolved once the server completes sending the
-          updated Bloom filter.</t>
-
-        <t>The client SHOULD use requests of a constant length for the
-          association to avoid adding a variation to the measured NTP
-          delay.</t>
-
-        <t>The format of the Reference IDs Request is shown in Figure <xref
-          format="counter" target="reference-ids-req-ext-field"/>.</t>
-
-        <figure align="center" anchor="reference-ids-req-ext-field"
-            title="Format of Reference IDs Request Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF503) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|            Offset             |                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
-.                                                               .
-.                        Padding (variable)                     .
-.                                                               .
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-
-        <t>The format of the Reference IDs Response is shown in Figure <xref
-          format="counter" target="reference-ids-res-ext-field"/>.</t>
-
-        <figure align="center" anchor="reference-ids-res-ext-field"
-            title="Format of Reference IDs Response Extension Field">
-          <artwork><![CDATA[
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Type = [[TBD]] (draft 0xF504) |             Length            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-.                                                               .
-.                  Bloom filter chunk (variable)                .
-.                                                               .
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-          ]]></artwork>
-        </figure>
-
-        <t>These fields MUST be supported on servers which can be synchronized
-          to other NTP servers (i.e. they can be in a synchronization loop).</t>
-      </section>
-
       <section title="Server Information Extension Field"
           anchor="server-information-extension-field">
         <t>This field provides clients with information about which NTP
@@ -1690,6 +1547,148 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         NTPv5 capable servers SHALL also implement these extensions. Pure
         clients implementations MAY choose to ignore these extensions</t>
 
+      <section title="Reference IDs Request and Response Extension Fields"
+          anchor="reference-ids-extension-fields">
+        <t>Each NTPv5 server has a randomly generated 120-bit reference ID
+          (it will be split into 10 12-bit values). The
+          extension fields described in this section are used to exchange sets
+          of reference IDs in order to detect synchronization loops, i.e. when
+          a client is synchronizing (directly or indirectly) to one of its own
+          clients, or more generally detect presence of a specific time
+          source in the synchronization chain.</t>
+
+        <t>As each client can be synchronized to an unlimited number of
+          servers (and there can be up to 15 strata of servers), the reference
+          IDs are exchanged as a <xref target="Bloom">Bloom filter</xref>
+          instead of a list to limit the amount of data that needs to be
+          exchanged.</t>
+
+        <t>The Bloom filter is an array of 4096 bits. When empty, all bits are
+          zero. To add a reference ID to the filter, the 120-bit value of the
+          reference ID is split into 10 12-bit values and the bits of the array
+          at the 10 positions given by the 12-bit values are set to one.</t>
+
+        <t>A server maintains a copy of the filter for each server it acquires
+          time from. The filter provided by the server to clients is the
+          union of the filters (using the bitwise OR operation) of the server's
+          sources selected for synchronization and the server's own reference
+          ID.</t>
+
+        <t>If the server uses a previous version of NTP for some of its
+          sources, the reference IDs added to the filter are generated from
+          their IP addresses as the first 120 bits of the
+          <xref target="RFC1321">MD5</xref> sum of the address in network
+          order. If the server uses a reference clock, the reference ID is the
+          first 120 bits of the MD5 sum of the 4-octet zero-padded ASCII
+          string from the NTP Reference Identifier Codes registry maintained by
+          IANA, or a string beginning with the uppercase letter X, which are
+          reserved for private and experimental use.</t>
+
+        <t>A client checking whether the server's set of reference IDs contains
+          the client's own reference ID checks whether the bits at the 10
+          positions corresponding to the 12-bit values from the reference ID
+          are all set to one.</t>
+
+        <t>When a client that also serves time to other clients as an NTPv5
+          server detects its reference ID in a server's set of reference IDs,
+          it SHOULD assume it is in a synchronization loop, and stop using
+          that server for synchronization. When the client's reference ID is
+          no longer detected in the server's filter, it SHOULD wait for a
+          random number of polling intervals (e.g. between 0 and 4) before
+          selecting the server again. The random delay helps with stabilization
+          of the selection in longer loops. If a recurring loop is detected,
+          it is recommended to increase the random delay in order to avoid
+          livelock scenarios.</t>
+
+        <t>False positives are possible. The probability of a collision grows
+          with the number of reference IDs in the filter. With 26 reference IDs
+          it is about 1e-12. With 118 IDs it is about 1e-6. The client MAY avoid
+          selecting a server which has too many bits set in the filter (e.g.
+          more than half) to reduce the probability of the collision for its
+          own clients. A client which detected a synchronization loop MAY
+          change its own reference ID to limit the duration of the potential
+          collision.</t>
+
+        <t>Bloom filters are free from false negatives. However, there is a
+          transient period between the addition of a reference ID to a server's
+          Bloom filter and the propagation of this information through a chain
+          of clients. During this period, the new reference ID may not be
+          detected, potentially causing a temporary synchronization loop. For
+          instance, if two servers inquire each other about the list of
+          reference IDs roughly at the same time, neither will detect its
+          reference ID in the other's Bloom filter, resulting in a temporary
+          loop.</t>
+
+        <t>Generally, when a server updates the Bloom filter it distributes to
+          clients, temporary synchronization loops might occur before
+          converging to an acyclic distribution tree.</t>
+
+        <t>The filter can be exchanged as a single 512-octet array, or it can
+          be exchanged in smaller chunks over multiple NTP messages, making
+          them shorter, but delaying the detection of the synchronization
+          loop.</t>
+
+        <t>The request extension field specifies the offset of the requested
+          chunk in the filter as a number of octets. The requested length of
+          the chunk is given by the length of data in the request extension
+          field. The response extension field MUST have the same length as the
+          request extension field. If the request contains an invalid offset
+          for the length, i.e. it is larger than 512 minus length of data in
+          the extension field, the extension field MUST be ignored.</t>
+
+        <t>When a filter is sent to a client in multiple chunks, the server
+          might update the Bloom filter to a new value after some chunks have
+          been sent. This can cause the subsequent chunks to be inconsistent
+          with the previously sent ones. The partially updated Bloom filter
+          might cause false negative or false positive detections. This
+          transient issue is resolved once the server completes sending the
+          updated Bloom filter.</t>
+
+        <t>The client SHOULD use requests of a constant length for the
+          association to avoid adding a variation to the measured NTP
+          delay.</t>
+
+        <t>The format of the Reference IDs Request is shown in Figure <xref
+          format="counter" target="reference-ids-req-ext-field"/>.</t>
+
+        <figure align="center" anchor="reference-ids-req-ext-field"
+            title="Format of Reference IDs Request Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF503) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|            Offset             |                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
+.                                                               .
+.                        Padding (variable)                     .
+.                                                               .
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>The format of the Reference IDs Response is shown in Figure <xref
+          format="counter" target="reference-ids-res-ext-field"/>.</t>
+
+        <figure align="center" anchor="reference-ids-res-ext-field"
+            title="Format of Reference IDs Response Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF504) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+.                                                               .
+.                  Bloom filter chunk (variable)                .
+.                                                               .
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>These fields MUST be supported on servers which can be synchronized
+          to other NTP servers (i.e. they can be in a synchronization loop).</t>
+      </section>
     </section>
 
     <section title="Optional extensions to NTPv5">
