@@ -1193,15 +1193,13 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
           on NTPv5 servers</t>
       </section>
 
-      <section title="Reference IDs Request and Response Extension Fields"
+      <section title="Synchronization loop detection"
           anchor="reference-ids-extension-fields">
-        <t>Each NTPv5 server has a randomly generated 120-bit reference ID
-          (it will be split into 10 12-bit values). The
-          extension fields described in this section are used to exchange sets
-          of reference IDs in order to detect synchronization loops, i.e. when
-          a client is synchronizing (directly or indirectly) to one of its own
-          clients, or more generally detect presence of a specific time
-          source in the synchronization chain.</t>
+        <t>To facilitate synchronization loop detection, each NTPv5 server 
+          has a randomly generated 120-bit reference ID. Sets of these IDs 
+          are exchanged between server and client in order to detect 
+          synchronizations loops, that is, situations in which a server 
+          directly or indirectly uses itself as a source for its time.</t>
 
         <t>As each client can be synchronized to an unlimited number of
           servers (and there can be up to 15 strata of servers), the reference
