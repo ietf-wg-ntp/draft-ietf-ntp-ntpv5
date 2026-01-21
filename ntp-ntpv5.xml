@@ -1767,17 +1767,17 @@ Tx  | 0  |    | t3 |      | 0  |    | t7 |      | 0  |    |t11 |
         <c><xref target="mac-extension-field">[[this memo]]</xref></c>
 
         <c>[[TBD]]</c>
+        <c>Server Information</c>
+        <c><xref target="server-information-extension-field">
+          [[this memo]]</xref></c>
+
+        <c>[[TBD]]</c>
         <c>Reference IDs Request</c>
         <c><xref target="reference-ids-extension-fields">[[this memo]]</xref></c>
 
         <c>[[TBD]]</c>
         <c>Reference IDs Response</c>
         <c><xref target="reference-ids-extension-fields">[[this memo]]</xref></c>
-
-        <c>[[TBD]]</c>
-        <c>Server Information</c>
-        <c><xref target="server-information-extension-field">
-          [[this memo]]</xref></c>
 
         <c>[[TBD]]</c>
         <c>Correction</c>
