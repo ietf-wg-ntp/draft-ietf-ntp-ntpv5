@@ -1213,7 +1213,7 @@
 
         <list style="symbols">
           <t>offset_c = offset + (Cd - Co) / 2</t>
-          <t>delay_c = delay - (Cd + Co - Drx - Dtx) * (1 - FC)|</t>
+          <t>delay_c = delay - (Cd + Co - Drx - Dtx) * (1 - FC)</t>
         </list>
 
         where
