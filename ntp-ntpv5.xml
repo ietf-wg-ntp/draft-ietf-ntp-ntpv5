@@ -1444,10 +1444,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
                 different configured maximum value.</t>
 
               <t>Root delay is not larger than an implementation-specific
-                or configured maximum acceptable value (e.g. 16 seconds).</t>
+                or configured maximum acceptable value (e.g. 4 seconds).</t>
 
               <t>Root dispersion is not larger than an implementation-specific
-                or configured maximum acceptable value (e.g. 16 seconds).</t>
+                or configured maximum acceptable value (e.g. 4 seconds).</t>
 
               <t>Timescale is equal to the requested timescale. If the
                 timescale is different, the client can switch to the provided
