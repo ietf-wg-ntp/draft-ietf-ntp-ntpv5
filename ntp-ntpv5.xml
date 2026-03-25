@@ -481,7 +481,8 @@
             A 3-bit field containing the value 3 (request) or 4 (response).</t>
 
           <t hangText="Stratum"><vspace/>
-            An 8-bit field containing the stratum of the server. Primary time
+            An 8-bit unsigned integer containing the stratum of the server.
+            Primary time
             servers have a stratum of 1, their clients have a stratum of 2, and
             so on. The value of 0 indicates an unknown or infinite stratum. In
             requests it is always 0. When 0 in a response, it indicates the
