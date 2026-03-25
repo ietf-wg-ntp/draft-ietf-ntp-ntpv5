@@ -688,7 +688,7 @@
           computed over the NTP header and all the extension fields (including
           padding of fields whose length is not divisble by 4), if present,
           located prior to
-          the Message Authentication Code Extension Field.  The extension
+          the Message Authentication Code Extension Field.  This extension
           field MUST be the last extension field in the message unless an
           extension field is specifically allowed to be placed after a MAC or
           another authenticator field, such as the
@@ -715,7 +715,8 @@
           ]]></artwork>
         </figure>
 
-        <t>The Key ID is a 32-bit number identifying the key that was used to
+        <t>The Key ID is a 32-bit number identifying the key and algorithm that
+          was used to
           compute the MAC stored in the MAC field. The MAC field MUST contain
           the whole generated MAC. The length depends on the key, e.g. the
           recommended AES-CMAC with an AES-128 key generates 128-bit MACs.</t>
@@ -789,10 +790,10 @@
           that server for synchronization. When the client's reference ID is
           no longer detected in the server's filter, it SHOULD wait for a
           random number of polling intervals (e.g. between 0 and 4) before
-          selecting the server again. The random delay helps with stabilization
-          of the selection in longer loops. If a recurring loop is detected,
-          it is recommended to increase the random delay in order to avoid
-          livelock scenarios.</t>
+          selecting the server again. The random interval helps with
+          stabilization of the selection in longer loops. If a recurring loop
+          is detected, it is recommended to increase the random interval in
+          order to avoid livelock scenarios.</t>
 
         <t>False positives are possible. The probability of a collision grows
           with the number of reference IDs in the filter. With 26 reference IDs
@@ -1125,7 +1126,7 @@
           header. The extension field has a constant length of 16 octets. In
           requests, the counter and timestamp are always 0.</t>
 
-        <t>The epoch ID is a random number which is changed when
+        <t>The epoch ID is a random number which MUST change when
           frequency transfer needs to be restarted, e.g. due to a step of the
           clock.</t>
 
@@ -1179,9 +1180,9 @@
           measure the current smearing offset.</t>
 
         <t>A request MAY contain multiple instances of this extension field,
-          but each timescale MUST be requested at most once, not counting the
-          timescale in the header. The server SHOULD include in its response
-          timestamps in all requested timescales it supports.</t>
+          but they all MUST request different timescales. The server MUST
+          include in its response timestamps in all requested timescales it
+          supports.</t>
 
         <figure align="center" anchor="secondary-receive-timestamp-ext-field"
             title="Format of Secondary Receive Timestamp Extension Field">
@@ -1234,9 +1235,13 @@
         </list>
       </t>
 
-      <t>The corrected offset and delay MUST NOT be accepted if any of delay_c,
-        Co and Cr is negative. The uncorrected delay MUST always be used for
-        calculation of the root delay.</t>
+      <t>The client SHOULD use the corrected values for synchronization of its
+        clock in order to improve the accuracy and stability. The corrected
+        values MUST NOT be accepted if any of delay_c, Co and Cr is negative to
+        limit the error in case the corrections are provided by faulty devices
+        or on-path attackers. The root delay MUST always be calculated from the
+        uncorrected delay to avoid making the estimated maximum error (root
+        distance) dependent on accurate network corrections.</t>
 
       <t>The client can make measurements in the basic mode, or interleaved
         mode if supported on the server. In the basic mode, the transmit
@@ -1244,12 +1249,15 @@
         contains the timestamp itself. In the interleaved mode it corresponds
         to a previous response identified by the server cookie. The
         interleaved mode enables the server to provide the client with a more
-        accurate transmit timestamp which is available only after the
-        response was formed or sent.</t>
+        accurate transmit timestamp that is available only after the response
+        was formed or sent (e.g. a hardware timestamp captured at the data link
+        layer or physical layer), which improves the accuracy and stability of
+        the synchronization.</t>
 
       <t>An example of cookies and timestamps in an NTPv5 exchange using the
         basic mode is shown in Figure <xref format="counter"
-        target="basic-exchange"></xref>.</t>
+        target="basic-exchange"></xref> (SC - server cookie, CC - client
+        cookie, Rx - receive timestamp, Tx - transmit timestamp).</t>
 
       <figure align="center" anchor="basic-exchange"
           title="Cookies and timestamps in basic mode">
@@ -1367,10 +1375,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         8 requests using an interval of only 2^1 (2) seconds in order to
         make the initial correction of the clock sooner.</t>
 
-      <t>The polling interval SHOULD contain a small random part (e.g. up to 2%
-        of the target interval in a uniform distribution) in order to spread
-        the load on the server if a large number of identical clients are
-        (re)started at the same time.</t>
+      <t>The polling interval SHOULD contain a small random part changing with
+        every request (e.g. up to 2% of the target interval in a uniform
+        distribution) in order to spread the load on the server if a large
+        number of identical clients are (re)started at the same time.</t>
 
       <t>Each successful measurement provides the client with an offset, delay
         and dispersion. When combined with the server's root delay and
@@ -1410,22 +1418,44 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             transmit timestamp for the packet.</t>
 
           <t>Waits for a valid response from the server and captures a receive
-            timestamp. A valid response has version 5, mode 4, client cookie
-            equal to the cookie from the request, and passes authentication if
-            enabled. The client MUST ignore all invalid responses and accept at
-            most one valid response.</t>
+            timestamp. A response is considered valid when all of the following
+            applies:
+            <list style="symbols">
+              <t>Version is 5.</t>
+
+              <t>Mode is 4.</t>
+
+              <t>Client cookie is equal to the client cookie from the request.</t>
+
+              <t>Authentication checks pass if enabled for the server.</t>
+            </list>
+
+            The client MUST ignore all invalid responses and accept only the
+            first valid response if more than one were received (e.g. the
+            request or response was duplicated in the network).</t>
 
           <t>Checks whether the response is usable for synchronization of the
-            clock. Such a response has the Synchronized flag set, stratum
-            not equal to 0 and not larger than 15 (or a different maximum value
-            that the client is configured to accept), root delay and dispersion
-            both smaller than
-            a specific value (e.g. 16 seconds), and timescale equal to the
-            requested timescale. If the response is in a different timescale,
-            the client can switch to the provided timescale, convert the
-            timestamps if the offset between the timescales is known from the
-            Secondary Receive Timestamp Extension Field or other sources, or
-            ignore the response.</t>
+            clock. For such a response all of the following applies:
+
+            <list style="symbols">
+              <t>Synchronized flag is set.</t>
+
+              <t>Stratum is not equal to 0 and not larger than 15, or a
+                different configured maximum value.</t>
+
+              <t>Root delay is not larger than an implementation-specific
+                or configured maximum acceptable value (e.g. 16 seconds).</t>
+
+              <t>Root dispersion is not larger than an implementation-specific
+                or configured maximum acceptable value (e.g. 16 seconds).</t>
+
+              <t>Timescale is equal to the requested timescale. If the
+                timescale is different, the client can switch to the provided
+                timescale, convert the timestamps if the offset between the
+                timescales is known from the Secondary Receive Timestamp
+                Extension Field or other sources, or ignore the response.</t>
+            </list>
+          </t>
 
           <t>Saves the server's receive and transmit timestamps. If the client
             internally counts seconds using a type wider than 32 bits, it
@@ -1479,7 +1509,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
           <t>Leap indicator MUST be 0, 1, 2, or 3 if, within the next 14 days,
             no leap second will be applied, a leap second will be inserted, a
             leap second will be deleted, or the server has no information about
-            leap seconds respectively.</t>
+            leap seconds, respectively.</t>
           <t>Stratum SHOULD be 1 if the server is synchronized to a local
             reference clock, or be one larger than the stratum of the NTP
             server it selected as best for synchronization. It MUST be greater
@@ -1489,12 +1519,14 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
           <t>Root delay MUST be an estimate of the double of the maximum error
             of the server's clock due to asymmetries in the network delay and
             other delays (e.g. timestamping) on the path to the primary time
-            source. For a server that is synchronized to other NTP servers, one
-            possibility is to set it to the latest measured delay to the server
+            source. The doubling corresponds to the maximum asymmetry in a
+            round-trip delay causing an offset error of half of the delay. For
+            a server that is synchronized to other NTP servers, one possibility
+            is to set the root delay to the latest measured delay to the server
             it considers best plus the root delay provided in that
             response.</t>
           <t>Root dispersion MUST be an estimate of the maximum error of the
-            server's clock from other causes than those covered by root delay,
+            server's clock from causes other than those covered by root delay,
             e.g. instability of the clock and measurements by which it is
             synchronized. If the server is synchronized to other NTP servers,
             it MUST include root dispersion from one of the servers'
@@ -1593,7 +1625,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             its length if necessary to make the length of the response equal to
             the length of the request.</t>
 
-          <t>Drops the response if it is longer than the request to prevent
+          <t>Drops the response if it ends up longer than the request (e.g. due
+            to a bug in handling of a specific extension field) to prevent
             traffic amplification.</t>
 
           <t>Sends the response.</t>
@@ -1637,14 +1670,14 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         versions of NTP, even if they do not contain any extension fields. Some
         widely used server NTPv4 implementations are known to accept requests
         indicating a higher version, interpreting them as NTPv4, and copying
-        the version number from the request to its NTPv4 response. Responses to
-        NTPv5 requests have a zero client cookie, which causes them to fail the
-        NTPv5 validation and be ignored by the client.</t>
+        the version number from the request to its NTPv4 response. Responses
+        from such servers to NTPv5 requests have a zero client cookie, which
+        causes them to fail validation on the NTPv5 client and be dropped.</t>
 
       <t>The implementations are also known to not respond to requests
         with an unknown extension field, which prevents an NTPv4 extension
         field to be specified for NTPv5 negotiation. Instead, the negotiation
-        reuses the reference timestamp field.</t>
+        reuses the reference timestamp field:</t>
 
       <t>An NTP server which supports NTPv5 and also NTPv4, NTPv3, NTPv2, or
         NTPv1, SHOULD check the reference timestamp in received client-mode
