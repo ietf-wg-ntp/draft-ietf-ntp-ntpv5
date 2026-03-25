@@ -1454,6 +1454,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
                 timescale, convert the timestamps if the offset between the
                 timescales is known from the Secondary Receive Timestamp
                 Extension Field or other sources, or ignore the response.</t>
+
+              <t>Receive timestamp and transmit timestamp are both valid (i.e.
+                not equal to 0).</t>
             </list>
           </t>
 
