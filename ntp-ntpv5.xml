@@ -1237,7 +1237,7 @@
 
       <t>The client SHOULD use the corrected values for synchronization of its
         clock in order to improve the accuracy and stability. The corrected
-        values MUST NOT be accepted if any of delay_c, Co and Cr is negative to
+        values MUST NOT be accepted if any of delay_c, Co and Cd is negative to
         limit the error in case the corrections are provided by faulty devices
         or on-path attackers. The root delay MUST always be calculated from the
         uncorrected delay to avoid making the estimated maximum error (root
