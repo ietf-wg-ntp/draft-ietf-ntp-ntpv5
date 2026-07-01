@@ -24,7 +24,7 @@
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
 
-<rfc category="std" docName="draft-ietf-ntp-ntpv5-08" ipr="trust200902">
+<rfc category="std" docName="draft-ietf-ntp-ntpv5-09" ipr="trust200902">
   <front>
     <title>Network Time Protocol Version 5</title>
 
@@ -42,7 +42,7 @@
       </address>
     </author>
 
-    <date year="2026" month="Mar" day="2"/>
+    <date year="2026" month="Jul" day="1"/>
 
     <area>General</area>
 
