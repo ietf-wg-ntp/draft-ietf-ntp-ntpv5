@@ -769,15 +769,11 @@
           sources selected for synchronization and the server's own reference
           ID.</t>
 
-        <t>If the server uses a previous version of NTP for some of its
-          sources, the reference IDs added to the filter are generated from
-          their IP addresses as the first 120 bits of the
-          <xref target="RFC1321">MD5</xref> sum of the address in network
-          order. If the server uses a reference clock, the reference ID is the
-          first 120 bits of the MD5 sum of the 4-octet zero-padded ASCII
-          string from the NTP Reference Identifier Codes registry maintained by
-          IANA, or a string beginning with the uppercase letter X, which are
-          reserved for private and experimental use.</t>
+        <t>Sources the server uses that are not using NTPv5 shall not be included
+          in the bloom filter. Furthermore, a server not considering any NTPv5
+          server as a potential source may choose to send an empty bloom filter
+          to its clients. This provides more room in the bloom filter for downstream
+          clients, lowering the probability of false positives.</t>
 
         <t>A client checking whether the server's set of reference IDs contains
           the client's own reference ID checks whether the bits at the 10
