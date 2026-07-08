@@ -881,6 +881,56 @@
           to other NTP servers (i.e. they can be in a synchronization loop).</t>
       </section>
 
+      <section title="Primary Source Extension Field"
+          anchor="primary-source-extension-field">
+        <t>This extension filed provides a method for clients to query a server
+          about what its most important source of time synchronization is. It consists
+          of a Kind field describing the kind of identifier, together with the actual
+          value of the source identifier.</t>
+
+        <t>The format of the Primary Source Extension Field is shown in Figure <xref
+          format="counter" target="primary-source-ext-field"/>.</t>
+
+        <figure align="center" anchor="primary-source-ext-field"
+            title="Format of Primary Source Extension Field">
+          <artwork><![CDATA[
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type = [[TBD]] (draft 0xF50A) |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Kind     |    Reserved   |                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
+.                                                               .
+.                   Source Identifier (variable)                .
+.                                                               .
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          ]]></artwork>
+        </figure>
+
+        <t>The client requests information on the primary source of a server by
+          including the Primary Source Extension Field in its request, with special None kind (0)
+          and a identifier 16 bytes long consisting of all 0s. The dummy value is provided to
+          ensure there is room for the identifier in the response regardless of its kind.</t>
+
+        <t>If supported by the server, and if the identifier is shorter or equal in length to the
+          None identifier provided by the client, the server SHALL include a Primary Source Extension
+          Field in its response containing the source identifier of the source which most
+          contributes to its estimate of the current time. The server SHALL NOT send a Primary Source
+          Extension Field in its response which is larger than the Primary Source Extension Field in the
+          client's request.</t>
+
+        <t>If the servers primary source is an NTP source reached over IpV4, it shall use the IpV4 kind (1)
+          and provide the IpV4 address of the source as the source identifier.</t>
+
+        <t>If the servers primary source is an NTP source reached over IpV6, it shall use the IpV6 kind (2)
+          and provide the IpV6 address of the source as the source identifier.</t>
+
+        <t>If the servers primary source cannot reasonably be described by any of the other kinds known to
+          the server, it may use the NTP Reference Identifer kind (3), and provide an entry from the IANA NTP Reference
+          Identifier Codes table to describe the source.</t>
+      </section>
+
       <section title="Server Information Extension Field"
           anchor="server-information-extension-field">
         <t>This field provides clients with information about which NTP
@@ -1733,6 +1783,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         <c><xref target="reference-ids-extension-fields">[[this memo]]</xref></c>
 
         <c>[[TBD]]</c>
+        <c>Primary Source</c>
+        <c><xref target="primary-source-extension-field">[[this memo]]</xref></c>
+
+        <c>[[TBD]]</c>
         <c>Reference IDs Response</c>
         <c><xref target="reference-ids-extension-fields">[[this memo]]</xref></c>
 
@@ -1773,6 +1827,49 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         <c>[[TBD]], selected by IANA from the IETF Review range</c>
         <c>Network Time Protocol version 5 (NTPv5)</c>
         <c><xref target="network-time-security">[[this memo]]</xref></c>
+      </texttable>
+
+      <t>IANA is requested to create a new registry entitled "Network Time
+        Protocol Source Identifier Types". Its entries SHALL have the following
+        fields:
+        <list>
+          <t>Number (REQUIRED): An integer in the range 0&ndash;255 inclusive.</t>
+          <t>Description (REQUIRED): A short text description of the identifier type.</t>
+          <t>Reference document (REQUIRED): A reference to the relevant
+            specification document.</t>
+        </list>
+        The policy for allocation of new entries in this registry SHALL vary by
+        their Number, as follows:
+        <list>
+          <t> 0&ndash;247: IETF Review</t>
+          <t> 248&ndash;255: Private and Experimental Use</t>
+        </list>
+      </t>
+
+      <t> The initial contents of the Network Time Protocol Source Identifier Types
+        Registry SHALL be as follows:
+      </t>
+
+      <texttable>
+        <ttcol>Number</ttcol>
+        <ttcol>Description</ttcol>
+        <ttcol>Reference</ttcol>
+
+        <c>0</c>
+        <c>None</c>
+        <c><xref target="primary-source-extension-field">[[this memo]]</xref></c>
+
+        <c>1</c>
+        <c>IpV4</c>
+        <c><xref target="primary-source-extension-field">[[this memo]]</xref></c>
+
+        <c>2</c>
+        <c>IpV6</c>
+        <c><xref target="primary-source-extension-field">[[this memo]]</xref></c>
+
+        <c>3</c>
+        <c>NTP Reference Identifier</c>
+        <c><xref target="primary-source-extension-field">[[this memo]]</xref></c>
       </texttable>
     </section>
 
