@@ -1173,15 +1173,18 @@
           time and frequency separately using different clocks.</t>
 
         <t>The Monotonic Receive Timestamp Extension Field contains an extra
-          receive timestamp with a 32-bit epoch ID captured by a clock which
-          does not have corrected phase and can better transfer frequency than
-          the clock which captures the receive and transmit timestamps in the
-          header. The extension field has a constant length of 16 octets. In
-          requests, the counter and timestamp are always 0.</t>
+          receive timestamp with a 32-bit epoch ID captured by a
+          frequency-transfer clock that is not corrected in phase, but is more
+          stable and accurate in frequency than the time-transfer clock
+          capturing the receive and transmit timestamps in the header.</t>
 
-        <t>The epoch ID is a random number which MUST change when
-          frequency transfer needs to be restarted, e.g. due to a step of the
-          clock.</t>
+        <t>The extension field has a constant length of 16 octets. In requests,
+          the epoch ID and timestamp are always 0. In responses, the epoch ID
+          is a number assigned by the server (e.g. randomly generated) that
+          MUST change when the frequency transfer needs to be restarted, e.g.
+          due to a step of the frequency-transfer clock. Two monotonic receive
+          timestamps from the server can be compared only when they come from
+          the same epoch.</t>
 
         <figure align="center" anchor="monotonic-timestamp-ext-field"
             title="Format of Monotonic Receive Timestamp Extension Field">
@@ -1200,12 +1203,31 @@
           ]]></artwork>
         </figure>
 
-        <t>The client can determine the frequency-transfer offset from the
-          time-transfer offset and difference between the two receive
-          timestamps in the response. It can use the frequency-transfer offset
-          to better control the frequency of its clock, avoiding the frequency
-          error in the server's time-transfer clock.</t>
+        <t>The client can calculate the offset of its frequency-transfer clock:
 
+          <artwork><![CDATA[
+offset_f = offset + (T2_f - T2) - (T4_f - T4)
+          ]]></artwork>
+
+          where
+
+          <list style="symbols">
+            <t>offset is the (time-transfer) offset calculated from the
+              server's timestamps in the header and client's timestamps as
+              described in <xref target="ntp-exchange-sec"/></t>
+            <t>T2 is the server's (time-transfer) receive timestamp</t>
+            <t>T2_f is the server's (frequency-transfer) monotonic receive
+              timestamp</t>
+            <t>T4 is the client's (time-transfer) receive timestamp</t>
+            <t>T4_f is the client's (frequency-transfer) monotonic receive
+              timestamp</t>
+          </list>
+        </t>
+
+        <t>The client can use the frequency-transfer offset to better control
+          the frequency of its time-transfer clock, avoiding the frequency
+          error in the server's time-transfer clock, or directly synchronize
+          its frequency-transfer clock.</t>
       </section>
 
       <section title="Secondary Receive Timestamp Extension Field"
