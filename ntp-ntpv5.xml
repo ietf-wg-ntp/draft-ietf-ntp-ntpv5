@@ -506,11 +506,13 @@
 
           <t hangText="Root Delay"><vspace/>
             A field using the time32 type. In responses it is the server's root
-            delay. In requests it is always 0.</t>
+            delay. The value SHOULD be rounded up to avoid underestimating root
+            distance as the maximum error. In requests it is always 0.</t>
 
           <t hangText="Root Dispersion"><vspace/>
             A field using the time32 type. In responses it is the server's root
-            dispersion. In requests it is always 0.</t>
+            dispersion. The value SHOULD be rounded up to avoid underestimating
+            root distance as the maximum error. In requests it is always 0.</t>
 
           <t hangText="Timescale"><vspace/>
             An 8-bit identifier of the timescale. In requests it is the
