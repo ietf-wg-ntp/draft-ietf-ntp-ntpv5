@@ -1882,7 +1882,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       <t>The following implementations are known to have an NTPv5 support:
 
         <list>
-          <t><eref target="https://github.com/beevik/ntp/tree/ntp5"></eref></t>
+          <t><eref target="https://github.com/beevik/ntp"></eref></t>
           <t><eref target="https://github.com/mlichvar/chrony-ntp5"></eref></t>
           <t><eref target="https://github.com/mlichvar/ntp5-exp"></eref></t>
           <t><eref target="https://github.com/pendulum-project/ntpd-rs"></eref></t>
