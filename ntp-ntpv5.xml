@@ -8,7 +8,6 @@
 <!ENTITY RFC8039 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8039.xml">
 <!ENTITY RFC8174 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml">
 <!ENTITY RFC8573 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8573.xml">
-<!ENTITY RFC8877 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8877.xml">
 <!ENTITY RFC8915 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8915.xml">
 <!ENTITY RFC9523 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9523.xml">
 <!ENTITY RFC9748 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9748.xml">
@@ -205,6 +204,8 @@
 
           <t>Clients do not leak information about their clock (e.g.
             timestamps, estimated accuracy).</t>
+
+          <t>Support for announcing leap seconds is removed.</t>
         </list>
       </t>
     </section>
@@ -319,39 +320,6 @@
           reference IDs, which are exchanged in NTP messages as described in
           <xref target="reference-ids-extension-fields"/>.</t>
       </section>
-
-      <section title="Leap Seconds">
-        <t>An NTPv5 server can distribute time using one of four timescales: UTC,
-          TAI, UT1, or leap-smeared UTC. The specific timescale in use is
-          indicated by the Timescale field in the NTP message. Of these options,
-          UTC and leap-smeared UTC are subject to leap second adjustments.</t>
-
-        <t>A leap second is a one-second adjustment occasionally applied to UTC
-          to maintain alignment with solar time. This adjustment can be either
-          positive, by inserting an extra second, or negative, by removing one.
-          To date, only positive leap seconds have been introduced. Therefore,
-          the following discussion focuses on the more common case of a positive
-          leap second, though the behavior of a negative leap second can be
-          inferred.</t>
-
-        <t>When time is distributed using the UTC timescale, a system clock may
-          handle a positive leap second in one of two ways: it may either roll
-          back by one second at the end of the leap second, or it may pause,
-          holding the same time, for the duration of the leap second, as outlined
-          in <xref target="RFC8877"/>. As a result, any NTP message exchange that
-          occurs outside of a leap second will yield timestamps that reflect
-          server's clock according to the actual UTC time.</t>
-
-        <t>When using the leap-smeared timescale, the system clock is gradually
-          slowed down during the leap second and surrounding time intervals,
-          allowing the time to smoothly adjust until it aligns with the correct
-          value. This adjustment period, known as a leap smear period, can span
-          from a few seconds to several hours before, during, and/or after the
-          scheduled leap second.</t>
-
-        <t>The Leap Indicator (LI) field in an NTP message signals that a leap
-          second is scheduled to occur within the next 14 days.</t>
-       </section>
     </section>
 
     <section title="Data Types">
@@ -409,7 +377,7 @@
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|LI | VN  |Mode |    Stratum    |     Poll      |  Precision    |
+| 0 | VN  |Mode |    Stratum    |     Poll      |  Precision    |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                           Root Delay                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -455,26 +423,10 @@
       <t>Each NTPv5 message has a header containing the following fields:
 
         <list style="hanging">
-          <t hangText="Leap indicator (LI)"><vspace/>
-            A 2-bit field indicating upcoming leap seconds. In requests it is
-            always 0. In responses it has one of the following values:
-
-            <list style="hanging">
-              <t hangText="0: Normal"><vspace/>
-                No leap second will be inserted or deleted in the next 14 days,
-                or the server is responding in a leap-smeared timescale (i.e.
-                the client is not expected to be handling leap seconds).</t>
-              <t hangText="1: Insert leap second"><vspace/>
-                A leap second will be inserted in the next 14 days at the end
-                of the current month.</t>
-              <t hangText="2: Delete leap second"><vspace/>
-                A leap second will be deleted in the next 14 days at the end of
-                the current month.</t>
-              <t hangText="3: Unknown"><vspace/>
-                The server does not have a time source or other source
-                providing information about leap seconds.</t>
-            </list>
-          </t>
+          <t hangText="Reserved"><vspace/>
+            A 2-bit field containing the value 0. It MUST be ignored by the
+            receiver. In previous versions of NTP this field indicated upcoming
+            leap seconds.</t>
 
           <t hangText="Version Number (VN)"><vspace/>
             A 3-bit field containing the value 5.</t>
@@ -526,7 +478,6 @@
               <t>0: UTC</t>
               <t>1: TAI</t>
               <t>2: UT1</t>
-              <t>3: Leap-smeared UTC</t>
             </list>
           </t>
 
@@ -1246,13 +1197,13 @@ offset_f = offset + (T2_f - T2) - (T4_f - T4)
 
         <t>If the server does not support the requested timescale, it MUST
           ignore the extension field in the request. If the server supports the
-          timescale, but does not have a reliable timestamp (e.g. due to being
-          close to a leap second), it SHOULD set the timestamp field to 0.</t>
+          timescale, but it does not have a reliable receive timestamp of the
+          request, or is not able to convert another receive timestamp to this
+          timescale, it SHOULD set the timestamp field to 0 to indicate the
+          presence of the support.</t>
 
         <t>The server MAY provide in this extension field timestamps in
-          timescales which it does not provide in the header, e.g. it can
-          provide UTC in addition to leap-smeared UTC to enable its clients to
-          measure the current smearing offset.</t>
+          timescales that it cannot provide in the header.</t>
 
         <t>A request MAY contain multiple instances of this extension field,
           but they all MUST request different timescales. The server MUST
@@ -1562,10 +1513,6 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         using the most common or preferred timescale, or convert them to a
         common timescale if it knows the offsets between them.</t>
 
-      <t>If the client synchronizes its clock to a leap-smeared timescale,
-        it MUST NOT apply leap seconds and it SHOULD provide the leap-smeared
-        timescale to its own clients if it is a server.</t>
-
       <t>The client SHOULD periodically (e.g. every two weeks) refresh IP
         addresses of all servers specified by hostname to limit the duration
         when an IP address of a migrated or decommissioned server will still be
@@ -1584,14 +1531,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         client-specific state. For the interleaved mode it needs to save
         transmit timestamps and be able to identify them by a cookie.</t>
 
-      <t>The server maintains its leap indicator, stratum, root delay, and root
-        dispersion:
+      <t>The server maintains its stratum, root delay, and root dispersion:
 
         <list style="symbols">
-          <t>Leap indicator MUST be 0, 1, 2, or 3 if, within the next 14 days,
-            no leap second will be applied, a leap second will be inserted, a
-            leap second will be deleted, or the server has no information about
-            leap seconds, respectively.</t>
           <t>Stratum SHOULD be 1 if the server is synchronized to a local
             reference clock, or be one larger than the stratum of the NTP
             server it selected as best for synchronization. It MUST be greater
@@ -1635,8 +1577,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
             the fields in the header as follows:
 
             <list style="symbols">
-              <t>Leap Indicator, Stratum, Root Delay, and Root Dispersion, are
-                set to the current server's values.</t>
+              <t>Stratum, Root Delay, and Root Dispersion, are set to the
+                current server's values.</t>
 
               <t>Version is set to 5.</t>
 
@@ -1992,8 +1934,6 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       &RFC7822;
 
       &RFC8039;
-
-      &RFC8877;
 
       &RFC8915;
 
