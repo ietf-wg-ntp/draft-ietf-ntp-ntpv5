@@ -1928,9 +1928,9 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       <t>IANA is requested to create a new registry entitled "NTP Source
         Identifier Types". Its entries MUST have the following fields:
         <list>
-          <t>ID Type (REQUIRED): An integer in the range 0&ndash;255 inclusive.</t>
+          <t>ID Type (REQUIRED): An integer in the range 0-255 inclusive.</t>
           <t>Description (REQUIRED): A short text description of the identifier type.</t>
-          <t>Length (REQUIRED): An integer in the range 0&ndash;252 inclusive
+          <t>Length (REQUIRED): An integer in the range 0-252 inclusive
             and divisible by 4.</t>
           <t>Reference document (REQUIRED): A reference to the relevant
             specification document.</t>
@@ -1938,8 +1938,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         The policy for allocation of new entries in this registry varies by
         the ID Type, as follows:
         <list>
-          <t> 0&ndash;247: IETF Review</t>
-          <t> 248&ndash;255: Private and Experimental Use</t>
+          <t>0-247: IETF Review</t>
+          <t>248-255: Private and Experimental Use</t>
         </list>
       </t>
 
