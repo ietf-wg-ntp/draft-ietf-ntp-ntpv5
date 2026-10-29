@@ -2076,13 +2076,10 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
     </section>
 
     <section anchor="Acknowledgements" title="Acknowledgements">
-      <t>Some ideas were taken from a different NTPv5 design proposed by Daniel
-        Franke.</t>
-
-      <t>The author would like to thank Doug Arnold and David Venhoek for their
-        contributions and Dan Drown, Richard Laager, Watson Ladd, Hal Murray,
-        Kurt Roeckx, Dieter Sibold, Brett Vickers, and Ulrich Windl for their
-        suggestions and comments.</t>
+      <t>The authors would like to thank Doug Arnold and David Venhoek for
+        their contributions and Dan Drown, Daniel Franke, Richard Laager,
+        Watson Ladd, Hal Murray, Kurt Roeckx, Dieter Sibold, Brett Vickers, and
+        Ulrich Windl for their suggestions and comments.</t>
     </section>
 
   </middle>
