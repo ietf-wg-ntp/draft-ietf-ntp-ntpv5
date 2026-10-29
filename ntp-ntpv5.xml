@@ -584,9 +584,10 @@
 
       <t>The rest of this section describes extension fields specified for
         NTPv5. Clients are not required to use or support any of these
-        extension fields, but servers are required to support the following
-        extension fields: Padding, Server Information, Reference IDs Request,
-        Reference IDs Response.</t>
+        extension fields. Servers are required to support at least the Padding
+        and Server Information extension fields, and if they can synchronize to
+        other NTP servers, also the Reference IDs Request and Reference IDs
+        Response extension fields.</t>
 
       <section title="Draft Identification Extension Field">
         <t>Note to the editors: this section must be removed before final publication.</t>
