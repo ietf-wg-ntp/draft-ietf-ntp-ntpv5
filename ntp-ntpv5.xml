@@ -1855,7 +1855,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
     <section anchor="IANA" title="IANA Considerations">
       <t>IANA is requested to allocate the following entries in the <xref
-        target="RFC9748">NTP Extension Field Types Registry</xref>:</t>
+        target="RFC9748">NTP Extension Field Types registry</xref>:</t>
 
       <texttable>
         <ttcol>Field Type</ttcol>
@@ -1913,7 +1913,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
 
       <t>IANA is requested to allocate the following entry in the
         <xref target="RFC8915">Network Time Security Next Protocols
-          Registry</xref>:</t>
+          registry</xref>:</t>
 
       <texttable>
         <ttcol>Protocol ID</ttcol>
@@ -1926,7 +1926,8 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       </texttable>
 
       <t>IANA is requested to create a new registry entitled "NTP Source
-        Identifier Types". Its entries MUST have the following fields:
+        Identifier Types" in the "Network Time Protocol (NTP) Parameters"
+        group. Its entries MUST have the following fields:
         <list>
           <t>ID Type (REQUIRED): An integer in the range 0-255 inclusive.</t>
           <t>Description (REQUIRED): A short text description of the identifier type.</t>
@@ -1943,7 +1944,7 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
         </list>
       </t>
 
-      <t>The initial contents of the NTP Source Identifier Types Registry are
+      <t>The initial contents of the NTP Source Identifier Types registry are
         as follows:</t>
 
       <texttable>
