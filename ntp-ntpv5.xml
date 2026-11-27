@@ -1792,6 +1792,22 @@ Tx  | 0  |    | t3'|      | 0  |    | t3 |      | 0  |    |t11'|
       <t>The NTS extension fields specified for NTPv4 are compatible with
         NTPv5. No new extension fields are specified.</t>
 
+      <t>Following a successful NTS-KE exchange in which NTPv5 is selected as
+        the Next Protocol, the client-to-server (C2S) and server-to-client
+        (S2C) AEAD keys MUST be derived using the TLS exporter and
+        disambiguating label string specified in Section 4.3 of
+        <xref target="RFC8915"/>. The per-association context value MUST
+        consist of the following five octets:
+        <list style="symbols">
+          <t>The first two octets MUST be the NTPv5 Protocol ID ([[TBD]]) in
+            network byte order.</t>
+          <t>The next two octets MUST be the Numeric Identifier of the
+            negotiated AEAD algorithm in network byte order.</t>
+          <t>The final octet MUST be 0x00 for the C2S key or 0x01 for the
+            S2C key.</t>
+        </list>
+      </t>
+
       <t>(Note to editor: remove this paragraph before publishing.) Client
         implementations of a draft of this specification MUST provide the
         identity of the draft implemented as data in an NTS-KE record of type
